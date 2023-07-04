@@ -1,0 +1,92 @@
+<manifest projecttype="ACCOUNTCUSTOMIZATION">
+  <projectname>Factura_2020</projectname>
+  <frameworkversion>1.0</frameworkversion>
+  <dependencies>
+    <features>
+      <feature required="false">EXPREPORTS</feature>
+      <feature required="false">ADVRECEIVING</feature>
+      <feature required="false">MULTILOCINVT</feature>
+      <feature required="false">INVENTORY</feature>
+      <feature required="false">RECEIVABLES</feature>
+      <feature required="false">PAYABLES</feature>
+      <feature required="false">PERIODENDJOURNALENTRIES</feature>
+      <feature required="true">SERVERSIDESCRIPTING</feature>
+      <feature required="false">OPPORTUNITIES</feature>
+      <feature required="false">PAYCHECKJOURNAL</feature>
+      <feature required="false">WEBSTORE</feature>
+      <feature required="false">ASSEMBLIES</feature>
+      <feature required="false">WORKORDERS</feature>
+      <feature required="false">MULTILANGUAGE</feature>
+      <feature required="false">WEBSITE</feature>
+      <feature required="false">CUSTOMSEGMENTS</feature>
+      <feature required="false">EXTREMELIST</feature>
+      <feature required="false">MAILMERGE</feature>
+      <feature required="true">CUSTOMRECORDS</feature>
+      <feature required="false">MERCHANDISEHIERARCHY</feature>
+      <feature required="false">TIMETRACKING</feature>
+      <feature required="false">SUITESIGNON</feature>
+      <feature required="false">CRM</feature>
+      <feature required="false">JOBS</feature>
+      <feature required="false">ADVANCEDJOBS</feature>
+      <feature required="false">CREATESUITEBUNDLES</feature>
+      <feature required="true">SUBSIDIARIES</feature>
+      <feature required="true">MULTICURRENCY</feature>
+      <feature required="true">ADVANCEDPRINTING</feature>
+      <feature required="true">ACCOUNTING</feature>
+      <feature required="true">CUSTOMTRANSACTIONS</feature>
+      <feature required="true">WORKFLOW</feature>
+      <feature required="true">LOCATIONS</feature>
+      <feature required="true">PURCHASEORDERS</feature>
+      <feature required="true">CUSTOMGLLINES</feature>
+    </features>
+    <objects>
+      <object>customrecord_psg_ei_template</object>
+      <object>customrecord_psg_ei_template.custrecord_edoc_template_xsd_folder</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_template_description</object>
+      <object>custbody_psg_ei_generated_edoc</object>
+      <object>customrecord_mx_sat_cfdi_usage</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_ei_temp_edoc_status</object>
+      <object>customrecord_efx_pagos_compensacion</object>
+      <object>customrecord_mx_sat_rel_type</object>
+      <object>customrecord_mx_mapper_values</object>
+      <object>customlist_efx_fe_status_ws_gbl</object>
+      <object>custtab_mx_cfdi_data</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_ei_template_subsidiary</object>
+      <object>customrecord_psg_ei_template.custrecord_ei_inject_data_source_impl</object>
+      <object>customlist_psg_ei_status</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_ei_template_trans_type</object>
+      <object>customrecordefx_pp_vendor_pconfig</object>
+      <object>custbody_psg_ei_content</object>
+      <object>customrecord_psg_ei_template.custrecord_ei_pl_digital_signature_impl</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_file_content_type</object>
+      <object>customrecord_mx_mapper_category.sat_payment_method</object>
+      <object>custentity_mx_rfc</object>
+      <object>customrecord_mx_mapper_values.custrecord_mx_mapper_value_category</object>
+      <object>customrecord_psg_ei_template.custrecord_ei_mapping_format</object>
+      <object>customrecord_psg_ei_template.custrecord_edoc_template_xsd</object>
+      <object>custbody_psg_ei_status</object>
+      <object>customrecord_psg_ei_template.custrecord_edoc_template_outbound_xsd</object>
+      <object>customrecord_psg_ei_template_validator.custrecord_psg_ei_temp_validator_xpath</object>
+      <object>custbody_mx_cfdi_uuid</object>
+      <object>customrecord_mx_sat_payment_term</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_ei_template_edoc_standard</object>
+      <object>custtab_6_4346104_208</object>
+      <object>customrecord_efx_kiosko_config</object>
+      <object>custtab_185_t1440478_793</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_template_validator_help</object>
+      <object>customrecord_psg_ei_inbound_edoc</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_ei_identifier</object>
+      <object>customrecord_psg_ei_standards</object>
+      <object>custtab_7_4346104_208</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_ei_template_content</object>
+      <object>customrecord_ei_sending_method</object>
+      <object>customrecord_psg_ei_template.custrecord_psg_ei_parsing_template</object>
+      <object>customrecord_psg_ei_template_validator.custrecord_psg_ei_temp_validator_parent</object>
+      <object>customrecord_psg_ei_template_validator.custrecord_psg_ei_temp_validator_regex</object>
+    </objects>
+    <files>
+      <file>/SuiteScripts/Factura_2020/PortalProveedores/efx_pp_show_report_results_sl.js</file>
+      <file>/SuiteScripts/Factura_2020/PortalProveedores/efx_pp_get_saved_search_ws_sl.js</file>
+    </files>
+  </dependencies>
+</manifest>
