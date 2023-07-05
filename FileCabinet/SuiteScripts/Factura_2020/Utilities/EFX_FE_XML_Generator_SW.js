@@ -273,6 +273,8 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                             log.audit({ title: 'tax_id_pac', details: tax_id_pac });
                             var user_pac = resultado[0].getValue({ name: 'custrecord_mx_pacinfo_username' });
                             log.audit({ title: 'user_pac', details: user_pac });
+                            var pass_pac = resultado[0].getValue({name: 'custrecord_mx_pacinfo_password'});
+                            log.audit({title: 'pass_pac', details: pass_pac});
                             var url_pac = resultado[0].getValue({ name: 'custrecord_mx_pacinfo_url' });
                             log.audit({ title: 'url_pac', details: url_pac });
                             var template_invoice_pac = '';
@@ -725,24 +727,33 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                 }
                             }
                             if (validacion.validado) {
-                                // recordobj.setValue({fieldId: 'custbody_psg_ei_status', value: 19});
-
-
-                                var xmlDocument_receipt = timbraDocumento(content, id_transaccion, user_pac, url_pac, idCompensacion);
-
+                                var PAC_Service = scriptObj.getParameter({ name: 'custscript_fb_is_smarterweb' });
+                                log.debug({title:'PAC_Service on request', details:PAC_Service});
+                                var xmlResultData = timbraDocumento(content, id_transaccion, user_pac, url_pac, idCompensacion, PAC_Service, pass_pac);
+                                if (xmlResultData.success == true) {
+                                    var xmlDocument_receipt = xmlResultData.xmlDocument
+                                }else{
+                                    createErrorMsg(xmlResultData.error, id_transaccion, id_cliente_tran, idPropietario);
+                                    banderaXML = false;
+                                }
                                 log.audit({ title: 'xmlDocument_receipt', details: xmlDocument_receipt });
-                                //ruta de la información del cfdi timbrado dentro de la respuesta del pac
-                                var xpath = 'soap:Envelope//soap:Body//nlapi:TimbraCFDIResponse//nlapi:TimbraCFDIResult//nlapi:anyType';
-                                var anyType = xml.XPath.select({
-                                    node: xmlDocument_receipt,
-                                    xpath: xpath
-                                }); //se obtiene un arreglo con la informacion devuelta del pac
-                                log.audit({ title: 'anyType', details: anyType });
+                                if (PAC_Service == true) { // Es SmarterWeb
+                                    var anyType = xmlDocument_receipt;
+                                    log.audit({title: 'anyType smarter', details: anyType});
+                                }else{ // Es profact
+                                    //ruta de la información del cfdi timbrado dentro de la respuesta del pac
+                                    var xpath = 'soap:Envelope//soap:Body//nlapi:TimbraCFDIResponse//nlapi:TimbraCFDIResult//nlapi:anyType';
+                                    var anyType = xml.XPath.select({
+                                        node: xmlDocument_receipt,
+                                        xpath: xpath
+                                    }); //se obtiene un arreglo con la informacion devuelta del pac
+                                    log.audit({ title: 'anyType', details: anyType });
+                                }
 
                                 if (tipo_transaccion_gbl) {
-                                    var objRespuesta = obtenCFDIDatos(anyType, id_transaccion, tipo_transaccion_gbl, cfdiversion, cfdiversionCustomer);
+                                    var objRespuesta = obtenCFDIDatos(anyType, id_transaccion, tipo_transaccion_gbl, cfdiversion, cfdiversionCustomer, PAC_Service);
                                 } else {
-                                    var objRespuesta = obtenCFDIDatos(anyType, id_transaccion, tipo_transaccion, cfdiversion, cfdiversionCustomer);
+                                    var objRespuesta = obtenCFDIDatos(anyType, id_transaccion, tipo_transaccion, cfdiversion, cfdiversionCustomer, PAC_Service);
                                 }
 
 
@@ -752,7 +763,18 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                 log.audit({ title: 'objRespuesta.certData.existError', details: objRespuesta.certData.existError });
                                 if (!objRespuesta.certData.existError) {
                                     log.audit({ title: 't1', details: 't1' });
-                                    xmlTimbrado = anyType[3].textContent;
+                                    if (PAC_Service == true) { // Es smarterWeb
+                                        var cfdiResult = anyType.cfdi;
+                                        log.audit({ title: 'cfdiResult_2', details: cfdiResult });
+                                        xmlTimbrado = encode.convert({
+                                            string: cfdiResult,
+                                            inputEncoding: encode.Encoding.BASE_64,
+                                            outputEncoding: encode.Encoding.UTF_8
+                                        });
+                                        log.audit({ title: 'xmlTimbrado_transform', details: xmlTimbrado });
+                                    }else{ // Es profact
+                                        xmlTimbrado = anyType[3].textContent;
+                                    }
 
                                     var xmlObj = xml.Parser.fromString({
                                         text: xmlTimbrado
@@ -1353,41 +1375,43 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
 
                         } catch (error_servicio_automatico) {
                             log.audit({ title: 'error_servicio_automatico', details: error_servicio_automatico });
-                            var mensaje_generacion = 'Mensaje: ' + error_servicio_automatico;
-                            var log_record = record.create({
-                                type: 'customrecord_psg_ei_audit_trail',
-                                isDynamic: true
-                            });
-
-                            log_record.setValue({
-                                fieldId: 'custrecord_psg_ei_audit_transaction',
-                                value: id_transaccion
-                            });
-
-                            log_record.setValue({
-                                fieldId: 'custrecord_psg_ei_audit_entity',
-                                value: id_cliente_tran
-                            });
-
-                            log_record.setValue({
-                                fieldId: 'custrecord_psg_ei_audit_event',
-                                value: 5
-                            });
-
-                            log_record.setValue({
-                                fieldId: 'custrecord_psg_ei_audit_owner',
-                                value: idPropietario
-                            });
-
-                            log_record.setValue({
-                                fieldId: 'custrecord_psg_ei_audit_details',
-                                value: mensaje_generacion
-                            });
-
-                            var log_id = log_record.save({
-                                enableSourcing: true,
-                                ignoreMandatoryFields: true
-                            });
+                            if (banderaXML == true) {
+                                var mensaje_generacion = 'Mensaje: ' + error_servicio_automatico;
+                                var log_record = record.create({
+                                    type: 'customrecord_psg_ei_audit_trail',
+                                    isDynamic: true
+                                });
+    
+                                log_record.setValue({
+                                    fieldId: 'custrecord_psg_ei_audit_transaction',
+                                    value: id_transaccion
+                                });
+    
+                                log_record.setValue({
+                                    fieldId: 'custrecord_psg_ei_audit_entity',
+                                    value: id_cliente_tran
+                                });
+    
+                                log_record.setValue({
+                                    fieldId: 'custrecord_psg_ei_audit_event',
+                                    value: 5
+                                });
+    
+                                log_record.setValue({
+                                    fieldId: 'custrecord_psg_ei_audit_owner',
+                                    value: idPropietario
+                                });
+    
+                                log_record.setValue({
+                                    fieldId: 'custrecord_psg_ei_audit_details',
+                                    value: mensaje_generacion
+                                });
+    
+                                var log_id = log_record.save({
+                                    enableSourcing: true,
+                                    ignoreMandatoryFields: true
+                                });
+                            }
 
                             respuesta.success = false;
                             respuesta.xml_generated = '';
@@ -2344,332 +2368,449 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
             return pattern;
         }
 
-        function timbraDocumento(xmlDocument, id, user_pac, url_pac, idCompensacion) {
-            var xmlStrX64 = encode.convert({
-                string: xmlDocument,
-                inputEncoding: encode.Encoding.UTF_8,
-                outputEncoding: encode.Encoding.BASE_64
-            }); // se convierte el xml en base 64 para mandarlo al pac
+        function timbraDocumento(xmlDocument, id, user_pac, url_pac, idCompensacion, PAC_Service, pass_pac) {
+            var dataReturn = {success: false, error: '', xmlDocument: ''};
+            try {
+                log.audit({title:'PAC_Service timbra docu',details:PAC_Service});
+                var xmlStrX64 = encode.convert({
+                    string: xmlDocument,
+                    inputEncoding: encode.Encoding.UTF_8,
+                    outputEncoding: encode.Encoding.BASE_64
+                }); // se convierte el xml en base 64 para mandarlo al pac
+                log.audit({ title: 'xmlStrX64', details: xmlStrX64 });
+                var url_pruebas = url_pac;
+                var xmlDocument_receipt;
+                if (PAC_Service == true) { // se utiliza SmarterWeb
+                    var tokenResult = getTokenSW(user_pac, pass_pac, url_pac);
+                    log.debug({title:'tokenResult', details:tokenResult});
+                    if (tokenResult.success == false) {
+                        throw 'Error getting token'
+                    }
+                    var tokentry = tokenResult.token;
+                    log.debug({title:'tokentry', details:tokentry});
+                    var headers = {
+                        "Content-Type": 'application/json',
+                        "Authorization": "Bearer "+ tokentry.token
+                    };
+                    var cuerpo = {"data": xmlStrX64};
+                    var fecha_envio = new Date();
+                    log.audit({title:'fecha_envio',details:fecha_envio});
+                    log.audit({title:'headers',details:headers});
+                    log.audit({title:'cuerpo',details:cuerpo});
+                    url_pruebas = url_pruebas + '/cfdi33/issue/json/v4/b64';
+                    log.audit({title:'url timbrado', details:url_pruebas});
+                    var response = http.post({
+                        url: url_pruebas,
+                        headers: headers,
+                        body: JSON.stringify(cuerpo)
+                    });
+                    // var response = {
+                    //     "type": "http.ClientResponse",
+                    //     "code": 200,
+                    //     "headers": {
+                    //     "Content-Type": "text/json; charset=utf-8",
+                    //     "content-type": "text/json; charset=utf-8",
+                    //     "Date": "Thu, 22 Jun 2023 22:06:27 GMT",
+                    //     "date": "Thu, 22 Jun 2023 22:06:27 GMT",
+                    //     "Request-Context": "appId=cid-v1:aa56c64f-d639-4232-87f9-f0d0b91b6d6a",
+                    //     "request-context": "appId=cid-v1:aa56c64f-d639-4232-87f9-f0d0b91b6d6a",
+                    //     "Transfer-Encoding": "chunked",
+                    //     "transfer-encoding": "chunked",
+                    //     "Vary": "Accept-Encoding",
+                    //     "vary": "Accept-Encoding",
+                    //     "Via": "1.1 mono003",
+                    //     "via": "1.1 mono003",
+                    //     "X-Azure-Ref": "04sWUZAAAAADEPbMWtKlRS4MDHMba7GSKU0pDMjExMDUxMjAxMDExADE3ZmQzMjdiLTA4YTktNGVhMy04NzdmLTczNmViZGI4M2UxNg==",
+                    //     "x-azure-ref": "04sWUZAAAAADEPbMWtKlRS4MDHMba7GSKU0pDMjExMDUxMjAxMDExADE3ZmQzMjdiLTA4YTktNGVhMy04NzdmLTczNmViZGI4M2UxNg==",
+                    //     "X-Cache": "CONFIG_NOCACHE",
+                    //     "x-cache": "CONFIG_NOCACHE",
+                    //     "X-Powered-By": "ASP.NET",
+                    //     "x-powered-by": "ASP.NET"
+                    //     },
+                    //     "body": "{\"data\":{\"cadenaOriginalSAT\":\"||1.1|24ebfe7a-40d1-4c75-a7bb-36f4bc2cb2a9|2023-06-22T16:06:27|SPR190613I52|f/e8zGZRzz39H1YoyRzuoWClL6IW7KNuDjg8MmnFqW7bPVfp6cUUW/m+3erD8mHBbnMUz37OvnwPL5jhwlaW/MrOMkzktYtDv571yXNH14vT56yxfkG5MJvd6QrkIsb3avyErNFVrO4Z06KswWT9fFQ/shnSSf1/n2YwLnBmh6YWD3y90contxkgv3Q53qOU68BnGPIxNrvHF5EbT5qt9UBYaHXSk7Itz53pspnULw0w92e7dktiBeiiKChrz3fIvSI26nD0GdFmwo8cVA3mVuQ6DgZKuEw9G1ExI9tgLRtovpJTQpCtXCqTt7Jo7DYAeTpm0ujlOVAgt4zzoSYl0w==|30001000000400002495||\",\"noCertificadoSAT\":\"30001000000400002495\",\"noCertificadoCFDI\":\"00001000000514588133\",\"uuid\":\"24ebfe7a-40d1-4c75-a7bb-36f4bc2cb2a9\",\"selloSAT\":\"DVLA09PBUJmVukZ6M6EwtKUS4SUjq9TIXO1rpXkbu2Ob3wtf3TErEiUR1ZyZOU2LNEDO32H0015fqDjWzuU6Vc1vEPblUTOvpPPQ9vetf87dHKK4ieGwg689YSWNuNIR/WQACq4jKc71fxGI5tlBJn7lXcZtscIPZCGGnNNszAnX0MIar9HpBXY83YPlNbEKIMNVG6oKdElzMmEPgucsadEPPoCf5C+8NQgl26XZWz6M0uWQiG7PFveXAPO6GuzKPtUF1gtzUwLt6JSzsLYSxOHZxE6bP7m/dzdnvZjYx9emUATpYOovyBeX+YOX9nboT0YO+GXfbVD9u0b9zsF10g==\",\"selloCFDI\":\"f/e8zGZRzz39H1YoyRzuoWClL6IW7KNuDjg8MmnFqW7bPVfp6cUUW/m+3erD8mHBbnMUz37OvnwPL5jhwlaW/MrOMkzktYtDv571yXNH14vT56yxfkG5MJvd6QrkIsb3avyErNFVrO4Z06KswWT9fFQ/shnSSf1/n2YwLnBmh6YWD3y90contxkgv3Q53qOU68BnGPIxNrvHF5EbT5qt9UBYaHXSk7Itz53pspnULw0w92e7dktiBeiiKChrz3fIvSI26nD0GdFmwo8cVA3mVuQ6DgZKuEw9G1ExI9tgLRtovpJTQpCtXCqTt7Jo7DYAeTpm0ujlOVAgt4zzoSYl0w==\",\"fechaTimbrado\":\"2023-06-22T16:06:27\",\"qrCode\":\"iVBORw0KGgoAAAANSUhEUgAAAIwAAACMCAYAAACuwEE+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAxfSURBVHhe7ZLRigTJjkPn/396loQWiEOobGe5LsMSB/QgWeF2NfnPv5fLgPvBXEbcD+Yy4n4wlxH3g7mMuB/MZcT9YC4j7gdzGXE/mMuI+8FcRtwP5jLifjCXEfeDuYy4H8xlxP1gLiPuB3MZcT+Yy4iVD+aff/55pYrTm0ddqr7vdFWwl3wlUs0Fe11tsLLldFxHFac3j7pUfd/pqmAv+Uqkmgv2utpgZcv0IPan70V6p5zz5KlENRe+65MSVS/liWn/Eytbvv0B0/civVPOefJUopoL3/VJiaqX8sS0/4mVLTxInhLJMxfdecLfeu+tryToxdueYC5PCfpvWNmSDqRE8sxFd57wt9576ysJevG2J5jLU4L+G1a2pAMpMfUkzZV351IFe/72k8RpdpJ46ylB/w0rW9KBlJh6kubKu3Opgj1/+0niNDtJvPWUoP+GlS3pQErQk26/yqu58O43SqQecyrBub9xCfpvWNmSDqQEPen2q7yaC+9+o0TqMacSnPsbl6D/hpUt04NSXznnzClxmj2qqHrTPewn381JNSfT/idWtmz9AOWcM6fEafaooupN97CffDcn1ZxM+59Y2aKDphLXv/NTbbCy5XRcR+L6d36qDXa2fEn6QdUPreYJvqv2VH16oZxz5kn/Rf4TV6V/UPWPq+YJvqv2VH16oZxz5kn/RVaumv5A9uVTXuFvT/3pfCpxmrlIyoW/PYmcOo82Wdk2PYx9+ZRX+NtTfzqfSpxmLpJy4W9PIqfOo01WtvEwP/YkUuUUeTtnTiW6c0q8zYV3PCfV/A0r23iYfBKpcoq8nTOnEt05Jd7mwjuek2r+hpVtPEyeEt08iVTzLtV7zpNPEvRT0j7mv2BlOw/1412imyeRat6les958kmCfkrax/wXrG5PB/uP8Xk3l8Q0J5z7m095JUEvUi+pgr3uu29Y3Z4OVs55N5fENCec+5tPeSVBL1IvqYK97rtvWN2ugymRcsG5VFH1OE/+bZ4kpr6L3lGCfoPVbX60S6RccC5VVD3Ok3+bJ4mp76J3lKDfYHfbH368q+JXffYk0s27vQr25ZmLKuc85d+wswXwUKniV332JNLNu70K9uWZiyrnPOXfsLKFB1UHap5ETp1HosqJdydz+i7VHvqEeuwnz3yDlW08rDpU8yRy6jwSVU68O5nTd6n20CfUYz955husbOOBEnmbV3ORfJI4zVziNHtEUi668ySRfMo3WNniR7rI27yai+STxGnmEqfZI5Jy0Z0nieRTvsHKFj/SD2NOJVIveeaCc0lUuai8SL2UE+/6nJ6kPvMNVralA5lTidRLnrngXBJVLiovUi/lxLs+pyepz3yD3W1/8GCpgj1/e8qFd1ziNHNVnN48EvSJ1GMuz7xi2n/DT7b7j3VVsOdvT7nwjkucZq6K05tHgj6ReszlmVdM+29Y2c5Duz5JVHmimifSu2rf1pw9euJvXCTlb1jZwoO6PklUeaKaJ9K7at/WnD164m9cJOVv2NnyBw/rHqpekpjmhHN/47no5pVPqMc+c6mCve67Cavb3h6sXpKY5oRzf+O56OaVT6jHPnOpgr3uuwkr29KhlKhykXyVVxLJU6LyRHP2qlx45yRBT6r5hJUtPEieElUukq/ySiJ5SlSeaM5elQvvnCToSTWfsLJFB1Ek5YJz+Uqi8qLqyVdKbM0pcZo9EvSbrGz1o10k5YJz+Uqi8qLqyVdKbM0pcZo9EvSbrG5NhyqnRNdPc+GdU94lve9KVLnwzikX9L9k9a+kw5VTouunufDOKe+S3nclqlx455QL+l+y+leqH5I8c5Fy4jtcCc5TXznnyae8Ir2jSMpJt9dhZ8sfPKzrmYuUE9/hSnCe+so5Tz7lFekdRVJOur0OO1sAD5TviqR5lSdSvyvC3Lsucuq4xGl2Eqnmb9jZAnigH90RSfMqT6R+V4S5d13k1HGJ0+wkUs3fsLKFB1WeVH16UfXohXIqceq6BL3wrs/phXddiaqX8jesbOFBlSdVn15UPXqhnEqcui5BL7zrc3rhXVei6qX8DTtbAA/s+mle4W9P/TSvfEI99pNPIswr/0t+8leqH5T8NK/wt6d+mlc+oR77yScR5pX/JT/5K/oBVIJzf/Mmpwjz1BPdfpVznnzKE/7G9Qt+svV0/KME5/7mTU4R5qknuv0q5zz5lCf8jesXrGw9HfuNRMpFlVPk1PkkkXLCXpLo5l0J+m9Y2eJHbkikXFQ5RU6dTxIpJ+wliW7elaD/hp0tf1SHcS7PfEq1h7l3PRcpF5x3++wxpyq6/Wo+YWfLH9PD5ZlPqfYw967nIuWC826fPeZURbdfzSesbOkepF7qM/fuJ5EqT3pLes88eeaCuXddFd1eh5Ut08NTn7l3P4lUedJb0nvmyTMXzL3rquj2Oqxs8eNdU047HnXp9qd7Bd/Jp5x41+dVLrzjEvQi5W9Y2aKDqCmnHY+6dPvTvYLv5FNOvOvzKhfecQl6kfI37GwBOjAd2p2TlCemfcL38swFc++6Emnub08i1fwbdrf9UR3cnZOUJ6Z9wvfyzAVz77oSae5vTyLV/BtWtvFASdBXpPeVBH3C37rIqXOSmOaimhP2kzZZ2XY68pGgr0jvKwn6hL91kVPnJDHNRTUn7CdtsrItHfY2pwjz1BOaT3tUl9PbR6LyidRTzjn9Bivb0mFvc4owTz2h+bRHdTm9fSQqn0g95ZzTb7CyrXsYe/JJhHnVS3OSeszlU/4W3+l7qlzQ/5KVv9I9mD35JMK86qU5ST3m8il/i+/0PVUu6H/Jyl/RwZQ4zT6JMPeu54K5d08i3bnwrkukXDD37idVTPsdVrbwMEmcZp9EmHvXc8HcuyeR7lx41yVSLph795Mqpv0OK1vSYfQJf3uSSJ5KnLouQS+863N64d1Pc7Kdp/kbVrakw+gT/vYkkTyVOHVdgl541+f0wruf5mQ7T/M3rGxJBzGXr3LqLek9865POfHuG03hO9/l+QYr29JhzOWrnHpLes+861NOvPtGU/jOd3m+wcq27oFpzjz1RJorT/OK9L7yIuWC8+QrkVPnpA1WtnQPS3PmqSfSXHmaV6T3lRcpF5wnX4mcOidtsLKFB1UHbs+3fMpJlSeJaZ5gr/vuG1a2Tw/fnm/5lJMqTxLTPMFe9903rG7XwZUI866nROVFN5enCPPUS6jPd/Tk2/mEnS1/6LBKhHnXU6LyopvLU4R56iXU5zt68u18wsoWHcTDmFOJ7bl8kjjNHlWkfspFmjNPEqfZI0H/DStb/Eg/jDmV2J7LJ4nT7FFF6qdcpDnzJHGaPRL037Cz5Q8/tnNg6nfzJJLyhO86vWPu3ZMSqdfNKZLyb1jd5sd3Dk39bp5EUp7wXad3zL17UiL1ujlFUv4Nu9tA94d0ewn1KFLlXYnKC+Wc04vUm+oX/GbrH+lw5t1eQj2KVHlXovJCOef0IvWm+gW/2TqEPzD94KpHT1KfOeE89ZVzzjxJnGaPEqfuo1/wm61D+APTD6569CT1mRPOU18558yTxGn2KHHqPvoFK1tPx3aU4NzfeC7ezqtceOeUk6pHL1Iv5YL+l6z8FR08VYJzf+O5eDuvcuGdU06qHr1IvZQL+l+y8lemB1d9zalEd85eygnnlRfKKcLcu65E6qX8G1a2TA+q+ppTie6cvZQTzisvlFOEuXddidRL+TesbOFBfqRL0AvvnuaCPUl086nEafYoceo+EikXnCf9L1j5KzzYf4RL0AvvnuaCPUl086nEafYoceo+EikXnCf9L1j5KzzYf4RL0Avvughz737KJdKdi9Qj6lGJU9c15dv3J1a28CA/0iXohXddhLl3P+US6c5F6hH1qMSp65ry7fsTK1t4kB/pEvTCuz6nF92eSHPm8imv8Lenfsor+E6eEin/hpUtPMiPdAl64V2f04tuT6Q5c/mUV/jbUz/lFXwnT4mUf8PKlulBVZ/zqk9Sn3nylQS98O6neYLz5JkL5qn3hpUt04OqPudVn6Q+8+QrCXrh3U/zBOfJMxfMU+8NK1t00FTiNHskUi5STtiTTzlJuajecU7fxXe5BP0mK1v96InEafZIpFyknLAnn3KSclG945y+i+9yCfpNfrP18v+W+8FcRtwP5jLifjCXEfeDuYy4H8xlxP1gLiPuB3MZcT+Yy4j7wVxG3A/mMuJ+MJcR94O5jLgfzGXE/WAuI+4HcxlxP5jLgH///T/b0slWcJ46NQAAAABJRU5ErkJggg==\",\"cfdi\":\"PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48Y2ZkaTpDb21wcm9iYW50ZSB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIiB4bWxuczpjZmRpPSJodHRwOi8vd3d3LnNhdC5nb2IubXgvY2ZkLzQiIHhzaTpzY2hlbWFMb2NhdGlvbj0iaHR0cDovL3d3dy5zYXQuZ29iLm14L2NmZC80IGh0dHA6Ly93d3cuc2F0LmdvYi5teC9zaXRpb19pbnRlcm5ldC9jZmQvNC9jZmR2NDAueHNkIiBGZWNoYT0iMjAyMy0wNi0yMlQxNjowNjoyMSIgRm9saW89IjEwMDA2Mzg1IiBTZXJpZT0iSU5WIiBGb3JtYVBhZ289Ijk5IiBMdWdhckV4cGVkaWNpb249IjA1MTAwIiBNZXRvZG9QYWdvPSJQUEQiIFRpcG9DYW1iaW89IjEiIE1vbmVkYT0iTVhOIiBTdWJUb3RhbD0iMjAwLjAwIiBUb3RhbD0iMjMyLjAwIiBUaXBvRGVDb21wcm9iYW50ZT0iSSIgRXhwb3J0YWNpb249IjAxIiBWZXJzaW9uPSI0LjAiIERlc2N1ZW50bz0iMC4wMCIgTm9DZXJ0aWZpY2Fkbz0iMDAwMDEwMDAwMDA1MTQ1ODgxMzMiIENlcnRpZmljYWRvPSJNSUlGL1RDQ0ErV2dBd0lCQWdJVU1EQXdNREV3TURBd01EQTFNVFExT0RneE16TXdEUVlKS29aSWh2Y05BUUVMQlFBd2dnR0VNU0F3SGdZRFZRUUREQmRCVlZSUFVrbEVRVVFnUTBWU1ZFbEdTVU5CUkU5U1FURXVNQ3dHQTFVRUNnd2xVMFZTVmtsRFNVOGdSRVVnUVVSTlNVNUpVMVJTUVVOSlQwNGdWRkpKUWxWVVFWSkpRVEVhTUJnR0ExVUVDd3dSVTBGVUxVbEZVeUJCZFhSb2IzSnBkSGt4S2pBb0Jna3Foa2lHOXcwQkNRRVdHMk52Ym5SaFkzUnZMblJsWTI1cFkyOUFjMkYwTG1kdllpNXRlREVtTUNRR0ExVUVDUXdkUVZZdUlFaEpSRUZNUjA4Z056Y3NJRU5QVEM0Z1IxVkZVbEpGVWs4eERqQU1CZ05WQkJFTUJUQTJNekF3TVFzd0NRWURWUVFHRXdKTldERVpNQmNHQTFVRUNBd1FRMGxWUkVGRUlFUkZJRTFGV0VsRFR6RVRNQkVHQTFVRUJ3d0tRMVZCVlVoVVJVMVBRekVWTUJNR0ExVUVMUk1NVTBGVU9UY3dOekF4VGs0ek1Wd3dXZ1lKS29aSWh2Y05BUWtDRTAxeVpYTndiMjV6WVdKc1pUb2dRVVJOU1U1SlUxUlNRVU5KVDA0Z1EwVk9WRkpCVENCRVJTQlRSVkpXU1VOSlQxTWdWRkpKUWxWVVFWSkpUMU1nUVV3Z1EwOU9WRkpKUWxWWlJVNVVSVEFlRncweU1qQTRNVGN4T1RFME1EbGFGdzB5TmpBNE1UY3hPVEUwTURsYU1JSExNUjh3SFFZRFZRUURFeFpHVWtWRklFSlZSeUJUSUVSRklGSk1JRVJGSUVOV01SOHdIUVlEVlFRcEV4WkdVa1ZGSUVKVlJ5QlRJRVJGSUZKTUlFUkZJRU5XTVI4d0hRWURWUVFLRXhaR1VrVkZJRUpWUnlCVElFUkZJRkpNSUVSRklFTldNU1V3SXdZRFZRUXRFeHhHUWxVeU1qQTFNRE0xVlRrZ0x5QlFSVUpUT0RZd09ETXhSelEyTVI0d0hBWURWUVFGRXhVZ0x5QlFSVUpUT0RZd09ETXhUVkJNVWxKVE1ETXhIekFkQmdOVkJBc1RGa1pTUlVVZ1FsVkhJRk1nUkVVZ1Vrd2dSRVVnUTFZd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUUNma1pLdTlJL005WHFjWDRYYzdzVFRoOWZNL1p0MHE1YmF5WHlVK2JrTStMVkdwREFtYzFBTFVxdmZVbm5SNFRMMTVGN3hwNWQ5VzBkak54YzRmd25SVGRuOEllL3RnZEtKd2FMUGgrT0ZGRjBCRDVNWGM4U2YyT1A1aXErd2g5U1FFbVdZZkVrdXMveURmbUxRTFEzZ24xV0hQNnhkbUJKRjRHMXNrR20xNzgvN1pwVzdMNFdvMUlRTDVtbGtuckZ0eU9QdTY4b1FNYU1GRVFXbDM5UklYbWJaTXI4UUtIWEtUTnRSbFF4NHl2SlB1Q0d0OTFMSEVkN0JlN09ENnFuOWJKQzJNZzFtWjRlRFJiRXlHWDZoUmUrajRYdWI0UVpzekVJWkQ5bDJqdkFhSjljMEhKbW1ta2NDL3FHVWh4d0t6SFJ3Q1FPMElDODlEZllDdlN5QkFnTUJBQUdqSFRBYk1Bd0dBMVVkRXdFQi93UUNNQUF3Q3dZRFZSMFBCQVFEQWdiQU1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQ0FRQlBpRExhbTVJUHNzTFh5SkZRdzRFRlQzTFFNVmN3R1B3Zi96K3FNNFozMmMyNndHTVplV2gyaFF1NDlDWUlOUit3ZHE5TDFjZm5tN0krcGN3V2ZRUFlXKzBDTXgrVUtnVkJhNDdVeTF2WVE5ZTlqa3FzSXphMm11SlRzZFc4VTU3ZXJEQnV2TDVJYUhDTTFnc2ZqMGVCNmhYd3dQay9lOXBQRkYvNWxXZWw5aCtscHBXSjlYWDFjR1grZC9oK0tQb0tzcXVxTWVaT05PTHk5dGdjODBxT1VadkdZMFpsT0NYY0ZOdk9YMkNXdjFSMlhzN3hsYXh5ZFpsYnhlUEEyZzhVVlJTZ2lRRkRaaDN1azVsY1FSQkdGRHhiN0ZHR1JWaElJdGJ6REpIR3JnWGNFSkMwakpaNTd1bTBzV1ZqSVkzSXRTMURnMnIxb1NxM3UwU1BwNENJdExpd2VJM0tMSjN4VEk5WW9YVy9vWk1nUFVWN1lWaXp2RlRHcWc1Wi85SHMra3NKay8vZHJEcHVYL25WbWQxTWFuc2tsa0ExVDJZTHR1eG9ZRDZqdzZmS0xXQlFvSHh4Nit5b1k3SWtYVEtwTnNOR1hwZU5GWUJoWlJZNEEyNWlqTE1yS0ZQcWQ5UWQ5UDQwTUNiYUMyQzk0WmlrNE80bitCQ2ZIeHVaVTliK2xCbzQxSWJER2l2Vmg3SXZhSGJqN3phRjFmc216cXpqcXdNYTRXMU1VZ2lYM0JPSjlIVTlWcHJDUWlpMHduUytEQWdETFFTVDNNSjhkcjcrZjErV1p3RjRkamxyeDV0ZURZdmFTMTd0TFdrQVBZczNIN2kwM1lMb3hUM0VJR0x3azY1TzBWRVlqYi9jam13TFRneFA4V3RpMmxyUmc5WGt6ekhXazc3YSt3PT0iIFNlbGxvPSJmL2U4ekdaUnp6MzlIMVlveVJ6dW9XQ2xMNklXN0tOdURqZzhNbW5GcVc3YlBWZnA2Y1VVVy9tKzNlckQ4bUhCYm5NVXozN092bndQTDVqaHdsYVcvTXJPTWt6a3RZdER2NTcxeVhOSDE0dlQ1Nnl4ZmtHNU1KdmQ2UXJrSXNiM2F2eUVyTkZWck80WjA2S3N3V1Q5ZkZRL3NoblNTZjEvbjJZd0xuQm1oNllXRDN5OTBjb250eGtndjNRNTNxT1U2OEJuR1BJeE5ydkhGNUViVDVxdDlVQllhSFhTazdJdHo1M3BzcG5VTHcwdzkyZTdka3RpQmVpaUtDaHJ6M2ZJdlNJMjZuRDBHZEZtd284Y1ZBM21WdVE2RGdaS3VFdzlHMUV4STl0Z0xSdG92cEpUUXBDdFhDcVR0N0pvN0RZQWVUcG0wdWpsT1ZBZ3Q0enpvU1lsMHc9PSI+PGNmZGk6Q2ZkaVJlbGFjaW9uYWRvcyBUaXBvUmVsYWNpb249IjA3Ij48Y2ZkaTpDZmRpUmVsYWNpb25hZG8gVVVJRD0iYTNhNjU1ZDQtYWE0Ni00MzVmLTkzM2MtMDFhODc3MDU2NTlhIiAvPjwvY2ZkaTpDZmRpUmVsYWNpb25hZG9zPjxjZmRpOkVtaXNvciBOb21icmU9IkZSRUUgQlVHIiBSZWdpbWVuRmlzY2FsPSI2MDEiIFJmYz0iRkJVMjIwNTAzNVU5IiAvPjxjZmRpOlJlY2VwdG9yIFJmYz0iWEVYWDAxMDEwMTAwMCIgTm9tYnJlPSJQw5pCTElDTyBFTiBHRU5FUkFMIiBEb21pY2lsaW9GaXNjYWxSZWNlcHRvcj0iMDUxMDAiIFJlZ2ltZW5GaXNjYWxSZWNlcHRvcj0iNjE2IiBVc29DRkRJPSJTMDEiIC8+PGNmZGk6Q29uY2VwdG9zPjxjZmRpOkNvbmNlcHRvIENhbnRpZGFkPSIxMC4wMDAwMDAiIE5vSWRlbnRpZmljYWNpb249IjgwMTMxNTAwIiBDbGF2ZVByb2RTZXJ2PSI4NjExMTYwNCIgQ2xhdmVVbmlkYWQ9IkFDVCIgRGVzY3JpcGNpb249IkRpZ2l0YWwgU2luZ2xlIExpbmUgVGVsZXBob25lICggNDQwMCkgZm9yIHN1cHBvcnQgY2FsbHMiIEltcG9ydGU9IjIwMC4wMCIgVmFsb3JVbml0YXJpbz0iMjAuMDAiIERlc2N1ZW50bz0iMC4wMCIgT2JqZXRvSW1wPSIwMiI+PGNmZGk6SW1wdWVzdG9zPjxjZmRpOlRyYXNsYWRvcz48Y2ZkaTpUcmFzbGFkbyBCYXNlPSIyMDAuMDAiIEltcG9ydGU9IjMyLjAwIiBJbXB1ZXN0bz0iMDAyIiBUYXNhT0N1b3RhPSIwLjE2MDAwMCIgVGlwb0ZhY3Rvcj0iVGFzYSIgLz48L2NmZGk6VHJhc2xhZG9zPjwvY2ZkaTpJbXB1ZXN0b3M+PC9jZmRpOkNvbmNlcHRvPjwvY2ZkaTpDb25jZXB0b3M+PGNmZGk6SW1wdWVzdG9zIFRvdGFsSW1wdWVzdG9zVHJhc2xhZGFkb3M9IjMyLjAwIj48Y2ZkaTpUcmFzbGFkb3M+PGNmZGk6VHJhc2xhZG8gQmFzZT0iMjAwLjAwIiBJbXBvcnRlPSIzMi4wMCIgSW1wdWVzdG89IjAwMiIgVGFzYU9DdW90YT0iMC4xNjAwMDAiIFRpcG9GYWN0b3I9IlRhc2EiIC8+PC9jZmRpOlRyYXNsYWRvcz48L2NmZGk6SW1wdWVzdG9zPjxjZmRpOkNvbXBsZW1lbnRvPjx0ZmQ6VGltYnJlRmlzY2FsRGlnaXRhbCB4c2k6c2NoZW1hTG9jYXRpb249Imh0dHA6Ly93d3cuc2F0LmdvYi5teC9UaW1icmVGaXNjYWxEaWdpdGFsIGh0dHA6Ly93d3cuc2F0LmdvYi5teC9zaXRpb19pbnRlcm5ldC9jZmQvVGltYnJlRmlzY2FsRGlnaXRhbC9UaW1icmVGaXNjYWxEaWdpdGFsdjExLnhzZCIgVmVyc2lvbj0iMS4xIiBVVUlEPSIyNGViZmU3YS00MGQxLTRjNzUtYTdiYi0zNmY0YmMyY2IyYTkiIEZlY2hhVGltYnJhZG89IjIwMjMtMDYtMjJUMTY6MDY6MjciIFJmY1Byb3ZDZXJ0aWY9IlNQUjE5MDYxM0k1MiIgU2VsbG9DRkQ9ImYvZTh6R1pSenozOUgxWW95Unp1b1dDbEw2SVc3S051RGpnOE1tbkZxVzdiUFZmcDZjVVVXL20rM2VyRDhtSEJibk1VejM3T3Zud1BMNWpod2xhVy9Nck9Na3prdFl0RHY1NzF5WE5IMTR2VDU2eXhma0c1TUp2ZDZRcmtJc2IzYXZ5RXJORlZyTzRaMDZLc3dXVDlmRlEvc2huU1NmMS9uMll3TG5CbWg2WVdEM3k5MGNvbnR4a2d2M1E1M3FPVTY4Qm5HUEl4TnJ2SEY1RWJUNXF0OVVCWWFIWFNrN0l0ejUzcHNwblVMdzB3OTJlN2RrdGlCZWlpS0NocnozZkl2U0kyNm5EMEdkRm13bzhjVkEzbVZ1UTZEZ1pLdUV3OUcxRXhJOXRnTFJ0b3ZwSlRRcEN0WENxVHQ3Sm83RFlBZVRwbTB1amxPVkFndDR6em9TWWwwdz09IiBOb0NlcnRpZmljYWRvU0FUPSIzMDAwMTAwMDAwMDQwMDAwMjQ5NSIgU2VsbG9TQVQ9IkRWTEEwOVBCVUptVnVrWjZNNkV3dEtVUzRTVWpxOVRJWE8xcnBYa2J1Mk9iM3d0ZjNURXJFaVVSMVp5Wk9VMkxORURPMzJIMDAxNWZxRGpXenVVNlZjMXZFUGJsVVRPdnBQUFE5dmV0Zjg3ZEhLSzRpZUd3ZzY4OVlTV051TklSL1dRQUNxNGpLYzcxZnhHSTV0bEJKbjdsWGNadHNjSVBaQ0dHbk5Oc3pBblgwTUlhcjlIcEJYWTgzWVBsTmJFS0lNTlZHNm9LZEVsek1tRVBndWNzYWRFUFBvQ2Y1Qys4TlFnbDI2WFpXejZNMHVXUWlHN1BGdmVYQVBPNkd1ektQdFVGMWd0elV3THQ2SlN6c0xZU3hPSFp4RTZiUDdtL2R6ZG52WmpZeDllbVVBVHBZT292eUJlWCtZT1g5bmJvVDBZTytHWGZiVkQ5dTBiOXpzRjEwZz09IiB4bWxuczp0ZmQ9Imh0dHA6Ly93d3cuc2F0LmdvYi5teC9UaW1icmVGaXNjYWxEaWdpdGFsIiB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIiAvPjwvY2ZkaTpDb21wbGVtZW50bz48L2NmZGk6Q29tcHJvYmFudGU+\"},\"status\":\"success\"}"
+                    // };
+                    log.emergency({title: 'response', details: JSON.stringify(response)});
+                    log.audit({title: 'response.body', details: JSON.stringify(response.body)});
+                    var responseBody = JSON.parse(response.body);
+                    log.audit({ title: 'getBody', details: responseBody });
+                    if (response.code == 200) {
+                        if (responseBody.status == 'success') {
+                            responseBody = responseBody.data;
+                            log.audit({ title: 'getBody.data', details: responseBody });
+                            var cfdiResult = responseBody.cfdi;
+                            log.audit({ title: 'cfdiResult', details: cfdiResult });
+                            cfdiResult = encode.convert({
+                                string: cfdiResult,
+                                inputEncoding: encode.Encoding.BASE_64,
+                                outputEncoding: encode.Encoding.UTF_8
+                            });
+                            log.audit({ title: 'cfdiResult_transform', details: cfdiResult });
+                            var fileXML_new = file.create({
+                                name: 'certificadoResponse_new.xml',
+                                fileType: file.Type.PLAINTEXT,
+                                contents: cfdiResult,
+                                folder: -15
+                            });
+                            // var idFileNew = fileXML_new.save();
+                            // xmlDocument_receipt = xml.Parser.fromString({
+                            //     text: cfdiResult
+                            // });
+                            xmlDocument_receipt = responseBody;
+                        }
+                    }else{
+                        var msg = responseBody.message;
+                        if (responseBody.messageDetail != null) {
+                            msg += '\n\n\n' + responseBody.messageDetail;
+                        }
+                        dataReturn.success = false;
+                        dataReturn.error = msg;
+                        return dataReturn
+                    }
+                }else{ // se utiliza Profact
+                    //Estructura xml soap para enviar la peticion de timbrado al pac
+                    var xmlSend = '';
+                    xmlSend += '<?xml version="1.0" encoding="utf-8"?>';
+                    xmlSend += '<soap:Envelope ';
+                    xmlSend += '    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
+                    xmlSend += '    xmlns:xsd="http://www.w3.org/2001/XMLSchema" ';
+                    xmlSend += '    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">';
+                    xmlSend += '    <soap:Body>';
+                    xmlSend += '        <TimbraCFDI ';
+                    xmlSend += '            xmlns="http://tempuri.org/">';
+                    xmlSend += '            <usuarioIntegrador>' + user_pac + '</usuarioIntegrador>';
+                    xmlSend += '            <xmlComprobanteBase64>' + xmlStrX64 + '</xmlComprobanteBase64>';
+                    if (idCompensacion) {
+                        xmlSend += '            <idComprobante>' + 'Factura' + idCompensacion + '</idComprobante>';
+                    } else {
+                        xmlSend += '            <idComprobante>' + 'Factura' + id + '</idComprobante>';
+                    }
+                    xmlSend += '        </TimbraCFDI>';
+                    xmlSend += '    </soap:Body>';
+                    xmlSend += '</soap:Envelope>';
 
-            log.audit({ title: 'xmlStrX64', details: xmlStrX64 });
-            //Estructura xml soap para enviar la peticion de timbrado al pac
-            var xmlSend = '';
-            xmlSend += '<?xml version="1.0" encoding="utf-8"?>';
-            xmlSend += '<soap:Envelope ';
-            xmlSend += '    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
-            xmlSend += '    xmlns:xsd="http://www.w3.org/2001/XMLSchema" ';
-            xmlSend += '    xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">';
-            xmlSend += '    <soap:Body>';
-            xmlSend += '        <TimbraCFDI ';
-            xmlSend += '            xmlns="http://tempuri.org/">';
-            xmlSend += '            <usuarioIntegrador>' + user_pac + '</usuarioIntegrador>';
-            xmlSend += '            <xmlComprobanteBase64>' + xmlStrX64 + '</xmlComprobanteBase64>';
-            if (idCompensacion) {
-                xmlSend += '            <idComprobante>' + 'Factura' + idCompensacion + '</idComprobante>';
-            } else {
-                xmlSend += '            <idComprobante>' + 'Factura' + id + '</idComprobante>';
+                    log.audit({ title: 'xmlSend', details: xmlSend });
+
+                    //creacion de la peticion post para envio soap
+                    var headers = {
+                        'Content-Type': 'text/xml'
+                    };
+
+                    var fecha_envio = new Date();
+                    log.audit({ title: 'fecha_envio', details: fecha_envio });
+
+                    var response = https.post({
+                        url: url_pruebas,
+                        headers: headers,
+                        body: xmlSend
+                    });
+
+                    log.emergency({ title: 'response', details: JSON.stringify(response) });
+                    var fecha_recibe = new Date();
+                    log.audit({ title: 'fecha_recibe', details: fecha_recibe });
+                    log.audit({ title: 'response.body', details: JSON.stringify(response.body) });
+
+                    var responseBody = response.body;
+                    log.audit({ title: 'getBody', details: responseBody });
+
+                    //parseo de la respuesta del pac
+                    xmlDocument_receipt = xml.Parser.fromString({
+                        text: response.body
+                    });
+                }
+                dataReturn.xmlDocument = xmlDocument_receipt;
+                dataReturn.success = true;
+            } catch (error) {
+                log.error({title:'timbradoDocumento', details:error});
+                dataReturn.success = false;
+                dataReturn.error = error;
             }
-            xmlSend += '        </TimbraCFDI>';
-            xmlSend += '    </soap:Body>';
-            xmlSend += '</soap:Envelope>';
-
-            log.audit({ title: 'xmlSend', details: xmlSend });
-
-            //creacion de la peticion post para envio soap
-            var headers = {
-                'Content-Type': 'text/xml'
-            };
-
-            //url del web service del pack de facturacion
-            var url_pruebas = url_pac;
-
-            var fecha_envio = new Date();
-            log.audit({ title: 'fecha_envio', details: fecha_envio });
-
-            var response = https.post({
-                url: url_pruebas,
-                headers: headers,
-                body: xmlSend
-            });
-
-            log.emergency({ title: 'response', details: JSON.stringify(response) });
-            var fecha_recibe = new Date();
-            log.audit({ title: 'fecha_recibe', details: fecha_recibe });
-            log.audit({ title: 'response.body', details: JSON.stringify(response.body) });
-
-            var responseBody = response.body;
-            log.audit({ title: 'getBody', details: responseBody });
-
-            //parseo de la respuesta del pac
-            var xmlDocument_receipt = xml.Parser.fromString({
-                text: response.body
-            });
-
-            return xmlDocument_receipt;
+            return dataReturn;
         }
 
-        function obtenCFDIDatos(anyType, id_transaccion, tipo_transaccion, cfdiversion, cfdiversionCustomer) {
-            var uuid_ObtieneCFDI = '';
-            var cfdi_relResSat = [];
-            var errorTitle = '';
-            var errorDetails = '';
-            var cadenaOriginal = '';
-            var xmlSatTEXT = '';
-            var infoUUID = '';
-            var infoSelloCFD = '';
-            var infoSelloSAT = '';
-            var noCertificadoSAT = '';
-            var noCertificadoContribuyenteResSat = '';
-            var FolioResSat = '';
-            var LugarExpedicionResSat = '';
-            var Serie = ''
-            var infoFechaTimbradoResSat = '';
-            var existError = false;
-            var xml_ObtieneCFDI = '';
+        function getTokenSW(user, pass, url) {
+            var dataReturn = {success: false, error: '', token: ''}
+            try {
+                var urlToken = url + '/security/authenticate';
+                log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
+                // pass = 'AAA111';
+                pass = 'mQ*wP^e52K34';
+                var headers = {
+                    "user": user,
+                    "password": pass
+                };
+                var response = http.post({
+                    url: urlToken,
+                    headers: headers,
+                    body: {}
+                });
+                // log.debug({title:'response', details:response});
+                if (response.code == 200) {
+                    var token = JSON.parse(response.body);
+                    log.debug({title:'token', details:token});
+                    dataReturn.token = token.data;
+                    dataReturn.success = true;
+                }
+            } catch (error) {
+                log.error({title:'getTokenSW', details:error});
+                dataReturn.success = false;
+                dataReturn.error = error;
+            }
+            return dataReturn;
+        }
 
-            //Se obtiene el status del contenido, si es 0 fue satisfactorio el timbrado, si es 25 el uuid ya existia
-            if (parseInt(anyType[1].textContent, 10) == 0) {//0 Response Successfully
-                if (anyType[3].textContent != '') {
-                    cadenaOriginal = anyType[5].textContent;
-                    //se obtiene el xml timbrado
-                    xmlSatTEXT = anyType[3].textContent;
-                    xmlSat = xml.Parser.fromString({ text: xmlSatTEXT });
+        function createErrorMsg(msg, id_transaccion, id_cliente_tran, idPropietario) {
+            var dataReturn = {success: false, error: '', idmsg: ''};
+            try {
+                var mensaje_generacion = msg;
+                var log_record = record.create({
+                    type: 'customrecord_psg_ei_audit_trail',
+                    isDynamic: true
+                });
 
-                    //Se obtienen las turas de los atributos del xml timbrado
-                    var TimbreFiscalDigital = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante//cfdi:Complemento//tfd:TimbreFiscalDigital' });
+                log_record.setValue({
+                    fieldId: 'custrecord_psg_ei_audit_transaction',
+                    value: id_transaccion
+                });
 
-                    infoUUID = TimbreFiscalDigital[0].getAttributeNode({ name: 'UUID' });
+                log_record.setValue({
+                    fieldId: 'custrecord_psg_ei_audit_entity',
+                    value: id_cliente_tran
+                });
 
-                    infoSelloCFD = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloCFD' });
+                log_record.setValue({
+                    fieldId: 'custrecord_psg_ei_audit_event',
+                    value: 22
+                });
 
-                    infoSelloSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloSAT' });
+                log_record.setValue({
+                    fieldId: 'custrecord_psg_ei_audit_owner',
+                    value: idPropietario
+                });
 
-                    infoFechaTimbradoResSat = TimbreFiscalDigital[0].getAttributeNode({ name: 'FechaTimbrado' });
+                log_record.setValue({
+                    fieldId: 'custrecord_psg_ei_audit_details',
+                    value: mensaje_generacion
+                });
 
-                    noCertificadoSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'NoCertificadoSAT' });
+                var log_id = log_record.save({
+                    enableSourcing: true,
+                    ignoreMandatoryFields: true
+                });
+                dataReturn.idmsg = log_id;
+                dataReturn.success = true;
+            } catch (error) {
+                log.error({title:'createErrorMsg', details:error});
+                dataReturn.success = false;
+                dataReturn.error = error;
+            }
+            return dataReturn;
+        }
 
-                    var nodosSuperior = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante' });
-
-                    noCertificadoContribuyenteResSat = nodosSuperior[0].getAttributeNode({ name: 'NoCertificado' });
-
-                    LugarExpedicionResSat = nodosSuperior[0].getAttributeNode({ name: 'LugarExpedicion' });
-
-                    Serie = nodosSuperior[0].getAttributeNode({ name: 'Serie' });
-
-                    FolioResSat = nodosSuperior[0].getAttributeNode({ name: 'Folio' });
-
-                    if (tipo_transaccion == 'customerpayment') {
-                        if (cfdiversionCustomer == 1) {
-                            var nodosCfdiRelacionado = xml.XPath.select({
-                                node: xmlSat,
-                                xpath: 'cfdi:Comprobante//cfdi:Complemento//pago10:Pagos//pago10:Pago//pago10:DoctoRelacionado'
-                            });
-                        } else if (cfdiversionCustomer == 2) {
-                            var nodosCfdiRelacionado = xml.XPath.select({
-                                node: xmlSat,
-                                xpath: 'cfdi:Comprobante//cfdi:Complemento//pago20:Pagos//pago20:Pago//pago20:DoctoRelacionado'
-                            });
-                        } else {
-                            if (cfdiversion == 1) {
+        function obtenCFDIDatos(anyType, id_transaccion, tipo_transaccion, cfdiversion, cfdiversionCustomer, PAC_Service) {
+            var objRespuesta = {};
+            log.debug({title:'obtenCFDIDatos_PAC_Service', details:PAC_Service});
+            if (PAC_Service == true) { // Es smarterWeb
+                log.debug({title:'anytype', details:anyType});
+                var serie_obj, folio_obj;
+                var cfdiResult = anyType.cfdi;
+                log.audit({ title: 'cfdiResult', details: cfdiResult });
+                cfdiResult = encode.convert({
+                    string: cfdiResult,
+                    inputEncoding: encode.Encoding.BASE_64,
+                    outputEncoding: encode.Encoding.UTF_8
+                });
+                log.audit({ title: 'cfdiResult_transform', details: cfdiResult });
+                var xmlDocument = xml.Parser.fromString({
+                    text: cfdiResult
+                });
+                var nodeXML = xml.XPath.select({
+                    node: xmlDocument,
+                    xpath: 'cfdi:Comprobante'
+                }); //se obtiene un arreglo con la informacion devuelta del pac
+                // log.debug({title:'nodeXML', details:nodeXML[0]});
+                var folio_obj = nodeXML[0].getAttribute({
+                    name : 'Folio'
+                });
+                // log.debug({title:'folio_obj', details:folio_obj});
+                var serie_obj = nodeXML[0].getAttribute({
+                    name : 'Serie'
+                });
+                // log.debug({title:'serie_obj', details:serie_obj});
+                objRespuesta = {
+                    certData:{
+                        existError: '',
+                        errorTitle: '',
+                        errorDetails: '',
+                        custbody_mx_cfdi_signature: anyType.selloCFDI, //selloCFDI
+                        custbody_mx_cfdi_sat_signature: anyType.selloSAT,//selloSAT
+                        custbody_mx_cfdi_sat_serial: anyType.noCertificadoSAT,//noCertificadoSAT
+                        custbody_mx_cfdi_cadena_original: anyType.cadenaOriginalSAT,//cadenaOriginalSAT
+                        custbody_mx_cfdi_uuid: anyType.uuid,//uuid
+                        custbody_mx_cfdi_issuer_serial: anyType.noCertificadoCFDI,//noCertificadoCFDI
+                        Serie: serie_obj,//cfdi:serie
+                        FolioResSat: folio_obj,//cfdi:folio
+                        custbody_mx_cfdi_certify_timestamp: anyType.fechaTimbrado,//fechaTimbrado
+                        custbody_mx_cfdi_issue_datetime: anyType.fechaTimbrado,//fechaTimbrado
+                        cfdi_relResSat: '',//pendiente de hacer ejemplo con cfdi relacionado
+                        uuid_ObtieneCFDI:'',//pendiente revisar por que viene vacio y en donde pueda utilizarlo
+                        custbody_mx_cfdi_qr_code:anyType.qrCode//qrCode
+                    }
+                };
+            }else{ // Es Profact
+                var uuid_ObtieneCFDI = '';
+                var cfdi_relResSat = [];
+                var errorTitle = '';
+                var errorDetails = '';
+                var cadenaOriginal = '';
+                var xmlSatTEXT = '';
+                var infoUUID = '';
+                var infoSelloCFD = '';
+                var infoSelloSAT = '';
+                var noCertificadoSAT = '';
+                var noCertificadoContribuyenteResSat = '';
+                var FolioResSat = '';
+                var LugarExpedicionResSat = '';
+                var Serie = ''
+                var infoFechaTimbradoResSat = '';
+                var existError = false;
+                var xml_ObtieneCFDI = '';
+    
+                //Se obtiene el status del contenido, si es 0 fue satisfactorio el timbrado, si es 25 el uuid ya existia
+                if (parseInt(anyType[1].textContent, 10) == 0) {//0 Response Successfully
+                    if (anyType[3].textContent != '') {
+                        cadenaOriginal = anyType[5].textContent;
+                        //se obtiene el xml timbrado
+                        xmlSatTEXT = anyType[3].textContent;
+                        xmlSat = xml.Parser.fromString({ text: xmlSatTEXT });
+    
+                        //Se obtienen las turas de los atributos del xml timbrado
+                        var TimbreFiscalDigital = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante//cfdi:Complemento//tfd:TimbreFiscalDigital' });
+    
+                        infoUUID = TimbreFiscalDigital[0].getAttributeNode({ name: 'UUID' });
+    
+                        infoSelloCFD = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloCFD' });
+    
+                        infoSelloSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloSAT' });
+    
+                        infoFechaTimbradoResSat = TimbreFiscalDigital[0].getAttributeNode({ name: 'FechaTimbrado' });
+    
+                        noCertificadoSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'NoCertificadoSAT' });
+    
+                        var nodosSuperior = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante' });
+    
+                        noCertificadoContribuyenteResSat = nodosSuperior[0].getAttributeNode({ name: 'NoCertificado' });
+    
+                        LugarExpedicionResSat = nodosSuperior[0].getAttributeNode({ name: 'LugarExpedicion' });
+    
+                        Serie = nodosSuperior[0].getAttributeNode({ name: 'Serie' });
+    
+                        FolioResSat = nodosSuperior[0].getAttributeNode({ name: 'Folio' });
+    
+                        if (tipo_transaccion == 'customerpayment') {
+                            if (cfdiversionCustomer == 1) {
                                 var nodosCfdiRelacionado = xml.XPath.select({
                                     node: xmlSat,
                                     xpath: 'cfdi:Comprobante//cfdi:Complemento//pago10:Pagos//pago10:Pago//pago10:DoctoRelacionado'
                                 });
-                            } else if (cfdiversion == 2 || cfdiversion == '') {
+                            } else if (cfdiversionCustomer == 2) {
                                 var nodosCfdiRelacionado = xml.XPath.select({
                                     node: xmlSat,
                                     xpath: 'cfdi:Comprobante//cfdi:Complemento//pago20:Pagos//pago20:Pago//pago20:DoctoRelacionado'
                                 });
+                            } else {
+                                if (cfdiversion == 1) {
+                                    var nodosCfdiRelacionado = xml.XPath.select({
+                                        node: xmlSat,
+                                        xpath: 'cfdi:Comprobante//cfdi:Complemento//pago10:Pagos//pago10:Pago//pago10:DoctoRelacionado'
+                                    });
+                                } else if (cfdiversion == 2 || cfdiversion == '') {
+                                    var nodosCfdiRelacionado = xml.XPath.select({
+                                        node: xmlSat,
+                                        xpath: 'cfdi:Comprobante//cfdi:Complemento//pago20:Pagos//pago20:Pago//pago20:DoctoRelacionado'
+                                    });
+                                }
                             }
-                        }
-
-
-                        for (var node = 0; node < nodosCfdiRelacionado.length; node++) {
-                            var uuidEncontrado = nodosCfdiRelacionado[0].getAttributeNode({
-                                name: 'IdDocumento'
+    
+    
+                            for (var node = 0; node < nodosCfdiRelacionado.length; node++) {
+                                var uuidEncontrado = nodosCfdiRelacionado[0].getAttributeNode({
+                                    name: 'IdDocumento'
+                                });
+                                if (uuidEncontrado.value) {
+                                    cfdi_relResSat.push(uuidEncontrado.value)
+                                }
+                            }
+                        } else {
+                            var nodosCfdiRelacionado = xml.XPath.select({
+                                node: xmlSat,
+                                xpath: 'cfdi:Comprobante//cfdi:CfdiRelacionados//cfdi:CfdiRelacionado'
                             });
-                            if (uuidEncontrado.value) {
-                                cfdi_relResSat.push(uuidEncontrado.value)
+    
+                            for (var node = 0; node < nodosCfdiRelacionado.length; node++) {
+                                var uuidEncontrado = nodosCfdiRelacionado[0].getAttributeNode({
+                                    name: 'UUID'
+                                });
+                                if (uuidEncontrado.value) {
+                                    cfdi_relResSat.push(uuidEncontrado.value)
+                                }
                             }
                         }
-                    } else {
-                        var nodosCfdiRelacionado = xml.XPath.select({
-                            node: xmlSat,
-                            xpath: 'cfdi:Comprobante//cfdi:CfdiRelacionados//cfdi:CfdiRelacionado'
-                        });
-
-                        for (var node = 0; node < nodosCfdiRelacionado.length; node++) {
-                            var uuidEncontrado = nodosCfdiRelacionado[0].getAttributeNode({
-                                name: 'UUID'
-                            });
-                            if (uuidEncontrado.value) {
-                                cfdi_relResSat.push(uuidEncontrado.value)
-                            }
-                        }
+    
                     }
-
-                }
-                else {
+                    else {
+                        existError = true;
+                        errorTitle = anyType[7].textContent;
+                        errorDetails = anyType[2].textContent + ' /n ' + anyType[8].textContent;
+                    }
+    
+                    // var ochoSat = '';
+                    //
+                    // ochoSat = infoSelloCFD.value.substring((infoSelloCFD.value.length - 8), infoSelloCFD.value.length);
+                } else {
                     existError = true;
                     errorTitle = anyType[7].textContent;
-                    errorDetails = anyType[2].textContent + ' /n ' + anyType[8].textContent;
+                    errorDetails = anyType[2].textContent + ' /n ' + anyType[8].textContent + ' /n ' + anyType[3].textContent;
                 }
 
-                // var ochoSat = '';
-                //
-                // ochoSat = infoSelloCFD.value.substring((infoSelloCFD.value.length - 8), infoSelloCFD.value.length);
-            } else {
-                existError = true;
-                errorTitle = anyType[7].textContent;
-                errorDetails = anyType[2].textContent + ' /n ' + anyType[8].textContent + ' /n ' + anyType[3].textContent;
-            }
-
-            //esta condicion es en caso de que el comprobante ya se encuentre timbrado, busca la info del cfdi en el sat
-            //se debe pasar como parametro el rfx emisor si se quiere usar
-
-            // if (parseInt(anyType[1].textContent, 10) == 25) {
-            //     uuid_ObtieneCFDI = anyType[7].textContent.substring(40);
-            //
-            //     var headers_ObtieneCFDI = {
-            //         'SOAPAction': 'http://tempuri.org/ObtieneCFDI',
-            //         'Content-Type': 'text/xml'
-            //     };
-            //
-            //     xml_ObtieneCFDI += '<?xml version="1.0" encoding="utf-8"?>';
-            //     xml_ObtieneCFDI += '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
-            //     xml_ObtieneCFDI += '<soap12:Body>';
-            //     xml_ObtieneCFDI += '    <ObtieneCFDI xmlns="http://tempuri.org/">';
-            //     xml_ObtieneCFDI += '    <usuarioIntegrador>' + 'mvpNUXmQfK8=' + '</usuarioIntegrador>';
-            //     xml_ObtieneCFDI += '    <rfcEmisor>' + rfc_emisor + '</rfcEmisor>';
-            //     xml_ObtieneCFDI += '    <folioUUID>' + uuid_ObtieneCFDI + '</folioUUID>';
-            //     xml_ObtieneCFDI += '    </ObtieneCFDI>';
-            //     xml_ObtieneCFDI += '</soap12:Body>';
-            //     xml_ObtieneCFDI += '</soap12:Envelope>';
-            //
-            //     var url_pruebas = 'http://cfdi33-pruebas.buzoncfdi.mx/Timbrado.asmx';
-            //
-            //     var response = http.post({
-            //         url: url_pruebas,
-            //         headers: headers_ObtieneCFDI,
-            //         body: xml_ObtieneCFDI
-            //     });
-            //     log.emergency({ title: 'response *** ', details: JSON.stringify(response.body) });
-            //
-            //     var responseBody = response.body;
-            //     log.audit({ title: 'getBody', details: responseBody });
-            //
-            //     var xmlDocument = xml.Parser.fromString({
-            //         text: responseBody
-            //     });
-            //
-            //     var xpath = 'soap:Envelope//soap:Body//nlapi:ObtieneCFDIResponse//nlapi:ObtieneCFDIResult//nlapi:anyType';
-            //
-            //     var anyType = xml.XPath.select({
-            //         node: xmlDocument,
-            //         xpath: xpath
-            //     });
-            //
-            //     if (parseInt(anyType[1].textContent, 10) == 0) {//0 Response Successfully
-            //         if (anyType[3].textContent != '') {
-            //             cadenaOriginal = anyType[5].textContent;
-            //             xmlSatTEXT = anyType[3].textContent;
-            //             xmlSat = xml.Parser.fromString({ text: xmlSatTEXT });
-            //
-            //             var TimbreFiscalDigital = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante//cfdi:Complemento//tfd:TimbreFiscalDigital' });
-            //
-            //             infoUUID = TimbreFiscalDigital[0].getAttributeNode({ name: 'UUID' });
-            //
-            //             infoSelloCFD = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloCFD' });
-            //
-            //             infoSelloSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloSAT' });
-            //
-            //             infoFechaTimbradoResSat = TimbreFiscalDigital[0].getAttributeNode({ name: 'FechaTimbrado' });
-            //
-            //             noCertificadoSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'NoCertificadoSAT' });
-            //
-            //             var nodosSuperior = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante' });
-            //
-            //             noCertificadoContribuyenteResSat = nodosSuperior[0].getAttributeNode({ name: 'NoCertificado' });
-            //
-            //             LugarExpedicionResSat = nodosSuperior[0].getAttributeNode({ name: 'LugarExpedicion' });
-            //
-            //             Serie = nodosSuperior[0].getAttributeNode({ name: 'Serie' });
-            //
-            //             FolioResSat = nodosSuperior[0].getAttributeNode({ name: 'Folio' });
-            //
-            //             var nodosCfdiRelacionado = xml.XPath.select({
-            //                 node: xmlSat,
-            //                 xpath: 'cfdi:Comprobante//cfdi:CfdiRelacionados//cfdi:CfdiRelacionado'
-            //             });
-            //
-            //             for (var node = 0; node < nodosCfdiRelacionado.length; node++) {
-            //                 var uuidEncontrado = nodosCfdiRelacionado[0].getAttributeNode({
-            //                     name: 'UUID'
-            //                 });
-            //                 if (uuidEncontrado.value) {
-            //                     cfdi_relResSat.push(uuidEncontrado.value)
-            //                 }
-            //             }
-            //         }
-            //         else {
-            //             existError = true;
-            //             errorTitle = anyType[7].textContent;
-            //             errorDetails = anyType[2].textContent + ' /n ' + anyType[8].textContent;
-            //         }
-            //     }
-            //     else {
-            //         existError = true;
-            //         errorTitle = anyType[7].textContent;
-            //         errorDetails = anyType[2].textContent + ' /n ' + anyType[8].textContent;
-            //     }
-            //
-            //
-            // }
-
-
-
-            //qrSat = 'https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?' + 'id=' + infoUUID + '&re=' + postObj.emisor.rfc + '&rr=' + postObj.receptor.rfc + '&tt=' + postObj.total + '&fe=' + ochoSat;
-
-            //qrSat = 'https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?' + 'id=' + infoUUID + '&re=' + 'AAA010101AAA' + '&rr=' + 'XEXX010101000' + '&tt=' + '56288.80' + '&fe=' + ochoSat;
-            var serie_obj = Serie;
-            if (serie_obj) {
-                serie_obj = Serie.value;
-            }
-
-            var folio_obj = FolioResSat;
-            if (folio_obj) {
-                folio_obj = FolioResSat.value;
-            }
-            var objRespuesta = {
-                certData: {
-                    //xmlStr: xmlDocument,
-                    //xmlSatTEXT: xmlSatTEXT,
-                    existError: existError,
-                    errorTitle: errorTitle,
-                    errorDetails: errorDetails,
-                    custbody_mx_cfdi_signature: infoSelloCFD.value,
-                    custbody_mx_cfdi_sat_signature: infoSelloSAT.value,
-                    custbody_mx_cfdi_sat_serial: noCertificadoSAT.value,
-                    custbody_mx_cfdi_cadena_original: cadenaOriginal,
-                    custbody_mx_cfdi_uuid: infoUUID.value,
-                    custbody_mx_cfdi_issuer_serial: noCertificadoContribuyenteResSat.value,
-                    custbody_efx_cfdi_sello: infoSelloCFD.value,
-                    custbody_efx_cfdi_sat_sello: infoSelloSAT.value,
-                    custbody_efx_cfdi_sat_serie: noCertificadoSAT.value,
-                    custbody_efx_cfdi_cadena_original: cadenaOriginal,
-                    custbody_efx_cfdi_serial: noCertificadoContribuyenteResSat.value,
-                    custbody_efx_fe_cfdi_qr_code: anyType[4].textContent,
-                    Serie: serie_obj,
-                    FolioResSat: folio_obj,
-                    custbody_mx_cfdi_certify_timestamp: infoFechaTimbradoResSat.value,
-                    custbody_mx_cfdi_issue_datetime: infoFechaTimbradoResSat.value,
-                    cfdi_relResSat: cfdi_relResSat.join(),
-                    uuid_ObtieneCFDI: uuid_ObtieneCFDI,
-                    custbody_mx_cfdi_qr_code: anyType[4].textContent
+                var serie_obj = Serie;
+                if (serie_obj) {
+                    serie_obj = Serie.value;
                 }
-            };
-
-            log.audit({ title: 'objRespuesta_return', details: objRespuesta });
+    
+                var folio_obj = FolioResSat;
+                if (folio_obj) {
+                    folio_obj = FolioResSat.value;
+                }
+                objRespuesta = {
+                    certData: {
+                        //xmlStr: xmlDocument,
+                        //xmlSatTEXT: xmlSatTEXT,
+                        existError: existError,
+                        errorTitle: errorTitle,
+                        errorDetails: errorDetails,
+                        custbody_mx_cfdi_signature: infoSelloCFD.value,
+                        custbody_mx_cfdi_sat_signature: infoSelloSAT.value,
+                        custbody_mx_cfdi_sat_serial: noCertificadoSAT.value,
+                        custbody_mx_cfdi_cadena_original: cadenaOriginal,
+                        custbody_mx_cfdi_uuid: infoUUID.value,
+                        custbody_mx_cfdi_issuer_serial: noCertificadoContribuyenteResSat.value,
+                        custbody_efx_cfdi_sello: infoSelloCFD.value,
+                        custbody_efx_cfdi_sat_sello: infoSelloSAT.value,
+                        custbody_efx_cfdi_sat_serie: noCertificadoSAT.value,
+                        custbody_efx_cfdi_cadena_original: cadenaOriginal,
+                        custbody_efx_cfdi_serial: noCertificadoContribuyenteResSat.value,
+                        custbody_efx_fe_cfdi_qr_code: anyType[4].textContent,
+                        Serie: serie_obj,
+                        FolioResSat: folio_obj,
+                        custbody_mx_cfdi_certify_timestamp: infoFechaTimbradoResSat.value,
+                        custbody_mx_cfdi_issue_datetime: infoFechaTimbradoResSat.value,
+                        cfdi_relResSat: cfdi_relResSat.join(),
+                        uuid_ObtieneCFDI: uuid_ObtieneCFDI,
+                        custbody_mx_cfdi_qr_code: anyType[4].textContent
+                    }
+                };
+            }
+            log.audit({title: 'objRespuesta_return', details: objRespuesta});
             return objRespuesta;
         }
 
