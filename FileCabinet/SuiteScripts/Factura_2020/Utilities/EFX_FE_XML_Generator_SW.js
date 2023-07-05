@@ -1,5 +1,5 @@
 /**
- * @NApiVersion 2.x
+ * @NApiVersion 2.1
  * @NScriptType Suitelet
  * @NModuleScope SameAccount
  */
@@ -424,7 +424,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                         } catch (error_result) {
                             log.audit({ title: 'error_result', details: error_result });
                         }
-
+                        var banderaXML = true;
                         try {
                             var plantilla = render.create();
 
