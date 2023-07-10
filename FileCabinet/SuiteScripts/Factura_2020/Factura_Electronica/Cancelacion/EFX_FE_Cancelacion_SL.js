@@ -1140,50 +1140,6 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     log.error("summarize", "Aún esta corriendo el deployment: "+ scriptdeploy_id);
                 }
             }
-        
-
-            
-
-
-            /*log.audit({ title: 'Edit_inv ', details: 'EDITANDO' });
-            var globalRec = record.load({
-                type: trantype,
-                id: tranid
-            });
-
-            var countInv = globalRec.getLineCount({sublistId:'item'});
-
-            for(var i=0;i<countInv;i++){
-                var factura_l = globalRec.getSublistValue({
-                    sublistId:'item',
-                    fieldId:'custcol_efx_fe_gbl_related_tran',
-                    line:i
-                });
-
-                if(factura_l) {
-                    try{
-                        record.submitFields({
-                            type: record.Type.INVOICE,
-                            id: factura_l,
-                            values: {
-                                custbody_efx_fe_cfdi_cancelled: true,
-                                custbody_efx_fe_acuse_cancel:acuseCancelacion
-                            }
-                        });
-                    }catch(errotyipo){
-                        log.error({ title: 'errotyipo ', details: errotyipo });
-                        record.submitFields({
-                            type: record.Type.CASH_SALE,
-                            id: factura_l,
-                            values: {
-                                custbody_efx_fe_cfdi_cancelled: true,
-                                custbody_efx_fe_acuse_cancel:acuseCancelacion
-                            }
-                        });
-                    }
-                }
-            }
-*/
         }
 
         function registroSustitucion(creadodesde){
