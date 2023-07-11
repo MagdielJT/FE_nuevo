@@ -160,7 +160,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     start += 1000;
                 } while (resultSet && resultSet.length == 1000);
 
-            
+
 
                 if (!SUBSIDIARIES) {
                     var configRecObj = config.load({
@@ -346,7 +346,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                 var xmlSatSend = '';
                 var xpathBode = '';
 
-                if(cfdiversionCustomer==1){
+                /* if(cfdiversionCustomer==1){
                     headersPos = {
                         'SOAPAction': 'http://tempuri.org/CancelaCFDI',
                         'Content-Type': 'text/xml'
@@ -368,9 +368,9 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                             'Content-Type': 'text/xml;charset=UTF-8'
                         };
                     }
-                }
+                } */
 
-                
+
 
                 var url_pac = '';
                 var usuario_integrador = '';
@@ -383,10 +383,18 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     url_pac = dataConectionPac.url;
                 }
 
+                var token = getTokenSW(usuario_integrador,'',url_pac);
 
-                xmlSatSend = xmlCancelSendSat(usuario_integrador, rfcEmisor, uuid,motivoCancelacion,cfdiversion,cfdiversionCustomer,uuidaCancelar);
+                log.audit({title: 'token', details: token});
 
-                if(cfdiversion==1){
+                if (token.success == false) {
+                    throw 'Error getting token'
+                }
+
+
+                // xmlSatSend = xmlCancelSendSat(usuario_integrador, rfcEmisor, uuid,motivoCancelacion,cfdiversion,cfdiversionCustomer,uuidaCancelar);
+
+                /* if(cfdiversion==1){
                     xpathBode = 'soap:Envelope//soap:Body//nlapi:CancelaCFDIResponse//nlapi:CancelaCFDIResult//nlapi:anyType';
                 }else if(cfdiversion==2){
                     xpathBode = 'soap:Envelope//soap:Body//nlapi:CancelaCFDI40Response//nlapi:CancelaCFDI40Result//nlapi:anyType';
@@ -396,17 +404,24 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     }else if(cfdiversionCustomer==2){
                         xpathBode = 'soap:Envelope//soap:Body//nlapi:CancelaCFDI40Response//nlapi:CancelaCFDI40Result//nlapi:anyType';
                     }
-                }
-                
-
-                log.audit({ title: 'headersPos', details: headersPos });
-                log.audit({ title: 'xmlSatSend', details: xmlSatSend });
+                } */
 
 
-                var response = https.post({
+                /* log.audit({ title: 'headersPos', details: headersPos });
+                log.audit({ title: 'xmlSatSend', details: xmlSatSend }); */
+                var tokentry = token.token;
+                log.debug({title:'tokentry', details:tokentry});
+
+                headersPos = {
+                    "Authorization": "Bearer "+ tokentry.token
+                };
+                motivoCancelacion = motivoCancelacion.split(',')
+                url_pac = url_pac + '/cfdi33/cancel/' + rfcEmisor + '/' + uuid + '/' + motivoCancelacion[0]
+                log.audit({title: 'url_pac', details: url_pac});
+                var response = http.post({
                     url: url_pac,
                     headers: headersPos,
-                    body: xmlSatSend
+                    body: {}
                 });
 
                 log.audit({ title: 'response ', details: response });
@@ -431,7 +446,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                 var mesageResponse = anyType[7].textContent;
                 var acuseCancelacion = '';
 
-                
+
 
                 if(parseInt(statusCode) != 330278 && parseInt(statusCode) != 330242) {
                     if (parseInt(statusCode) == 0 || parseInt(statusCode) == 330280) {
@@ -1006,8 +1021,8 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
             log.audit({ title: 'parametro cfdiversion', details: cfdiversion});
             var xmlCancel = '';
 
-            
-            if(cfdiversion==1){
+
+            /* if(cfdiversion==1){
                 xmlCancel += '<?xml version="1.0" encoding="utf-8"?>';
                 xmlCancel += '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
                 xmlCancel += '<soap12:Body>';
@@ -1066,11 +1081,41 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     xmlCancel += '</soapenv:Envelope>';
                 }
             }
-            
-            
+             */
 
             log.audit({ title: 'xmlCancel', details: xmlCancel});
             return xmlCancel;
+        }
+
+        function getTokenSW(user, pass, url) {
+            var dataReturn = {success: false, error: '', token: ''}
+            try {
+                var urlToken = url + '/security/authenticate';
+                log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
+                // pass = 'AAA111';
+                pass = 'mQ*wP^e52K34';
+                var headers = {
+                    "user": user,
+                    "password": pass
+                };
+                var response = http.post({
+                    url: urlToken,
+                    headers: headers,
+                    body: {}
+                });
+                // log.debug({title:'response', details:response});
+                if (response.code == 200) {
+                    var token = JSON.parse(response.body);
+                    log.debug({title:'token', details:token});
+                    dataReturn.token = token.data;
+                    dataReturn.success = true;
+                }
+            } catch (error) {
+                log.error({title:'getTokenSW', details:error});
+                dataReturn.success = false;
+                dataReturn.error = error;
+            }
+            return dataReturn;
         }
 
         function logError(section, err) {
@@ -1140,6 +1185,50 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     log.error("summarize", "Aún esta corriendo el deployment: "+ scriptdeploy_id);
                 }
             }
+
+
+
+
+
+            /*log.audit({ title: 'Edit_inv ', details: 'EDITANDO' });
+            var globalRec = record.load({
+                type: trantype,
+                id: tranid
+            });
+
+            var countInv = globalRec.getLineCount({sublistId:'item'});
+
+            for(var i=0;i<countInv;i++){
+                var factura_l = globalRec.getSublistValue({
+                    sublistId:'item',
+                    fieldId:'custcol_efx_fe_gbl_related_tran',
+                    line:i
+                });
+
+                if(factura_l) {
+                    try{
+                        record.submitFields({
+                            type: record.Type.INVOICE,
+                            id: factura_l,
+                            values: {
+                                custbody_efx_fe_cfdi_cancelled: true,
+                                custbody_efx_fe_acuse_cancel:acuseCancelacion
+                            }
+                        });
+                    }catch(errotyipo){
+                        log.error({ title: 'errotyipo ', details: errotyipo });
+                        record.submitFields({
+                            type: record.Type.CASH_SALE,
+                            id: factura_l,
+                            values: {
+                                custbody_efx_fe_cfdi_cancelled: true,
+                                custbody_efx_fe_acuse_cancel:acuseCancelacion
+                            }
+                        });
+                    }
+                }
+            }
+*/
         }
 
         function registroSustitucion(creadodesde){
