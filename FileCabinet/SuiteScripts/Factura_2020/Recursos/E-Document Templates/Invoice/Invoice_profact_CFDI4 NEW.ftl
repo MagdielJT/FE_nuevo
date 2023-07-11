@@ -1127,7 +1127,17 @@ Descuento="${total_desc_cabecera}">
                 <cce11:Mercancias>
                     <#list custom.items as customItem>
                         <#assign "item" = transaction.item[customItem.line?number]>
-                        <cce11:Mercancia <#if item.custcol_efx_fe_upc_code?has_content>NoIdentificacion="${item.custcol_efx_fe_upc_code}"<#else>NoIdentificacion="${item.item}"</#if> FraccionArancelaria="${item.custcol_efx_fe_ce_farancel_code}" CantidadAduana="${item.custcol_efx_fe_ce_cant_aduana?replace(',','')?number?string["0.000"]}" UnidadAduana="${item.custcol_efx_fe_unit_code_ce}" ValorUnitarioAduana="${item.custcol_efx_fe_ce_val_uni_aduana?replace(',','')?number?string["0.00"]}" ValorDolares="${item.custcol_efx_fe_ce_val_dolares?replace(',','')?number?string["0.00"]}">
+                        <cce11:Mercancia
+                            <#if item.custcol_efx_fe_upc_code?has_content>
+                                NoIdentificacion="${item.custcol_efx_fe_upc_code}"
+                            <#else>
+                                NoIdentificacion="${item.item}"
+                            </#if>
+                            FraccionArancelaria="${item.custcol_efx_fe_ce_farancel_code}"
+                            CantidadAduana="${item.custcol_efx_fe_ce_cant_aduana?replace(',','')?number?string["0.000"]}"
+                            UnidadAduana="${item.custcol_efx_fe_unit_code_ce}"
+                            ValorUnitarioAduana="${item.custcol_efx_fe_ce_val_uni_aduana?replace(',','')?number?string["0.00"]}"
+                            ValorDolares="${item.custcol_efx_fe_ce_val_dolares?replace(',','')?number?string["0.00"]}">
                             <#if item.custcol_efx_fe_ce_des_especificas?has_content>
                                 <cce11:DescripcionesEspecificas Marca="${item.custcol_efx_fe_ce_des_especificas}" NumeroSerie="${item.custcol_efx_fe_ce_des_numero_serie}" Modelo="${item.custcol_efx_fe_ce_des_modelo}"/>
                             </#if>
