@@ -926,6 +926,14 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                                             ignoreMandatoryFields: true
                                                         }
                                                     });
+                                                    log.audit({title: 'CFDI UUID', details: objRespuesta.certData.custbody_mx_cfdi_uuid});
+                                                    log.audit({title: 'CFDI Certify Time', details: objRespuesta.certData.custbody_mx_cfdi_certify_timestamp});
+                                                    log.audit({title: 'CFDI Sello', details: objRespuesta.certData.custbody_mx_cfdi_signature});
+                                                    log.audit({title: 'CFDI SAT Sello', details: objRespuesta.certData.custbody_mx_cfdi_sat_signature});
+                                                    log.audit({title: 'CFDI SAT Serie', details: objRespuesta.certData.custbody_mx_cfdi_sat_serial});
+                                                    log.audit({title: 'CFDI Cadena Original', details: objRespuesta.certData.custbody_mx_cfdi_cadena_original});
+                                                    log.audit({title: 'CFDI Serial', details: objRespuesta.certData.custbody_mx_cfdi_issuer_serial});
+                                                    log.audit({title: 'CFDI QR', details: objRespuesta.certData.custbody_mx_cfdi_qr_code});
 
                                                 } catch (error_guardadoXML) {
                                                     log.audit({ title: 'error_guardadoXML', details: error_guardadoXML });
@@ -950,6 +958,14 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                                             ignoreMandatoryFields: true
                                                         }
                                                     });
+                                                    log.audit({title: 'CFDI UUID', details: objRespuesta.certData.custbody_mx_cfdi_uuid});
+                                                    log.audit({title: 'CFDI Certify Time', details: objRespuesta.certData.custbody_mx_cfdi_certify_timestamp});
+                                                    log.audit({title: 'CFDI Sello', details: objRespuesta.certData.custbody_mx_cfdi_signature});
+                                                    log.audit({title: 'CFDI SAT Sello', details: objRespuesta.certData.custbody_mx_cfdi_sat_signature});
+                                                    log.audit({title: 'CFDI SAT Serie', details: objRespuesta.certData.custbody_mx_cfdi_sat_serial});
+                                                    log.audit({title: 'CFDI Cadena Original', details: objRespuesta.certData.custbody_mx_cfdi_cadena_original});
+                                                    log.audit({title: 'CFDI Serial', details: objRespuesta.certData.custbody_mx_cfdi_issuer_serial});
+                                                    log.audit({title: 'CFDI QR', details: objRespuesta.certData.custbody_mx_cfdi_qr_code});
                                                 }
                                             } else if (tipo_transaccion_cp) {
                                                 try {
