@@ -62,6 +62,7 @@ define(['N/currency', 'N/record', 'N/runtime','N/format','N/search'],
                 var idCampoFechaPago = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_date_payment' });
                 // debugger;
                 if (fieldId == 'custbody_efx_fe_moneda' || fieldId == 'exchangerate') {
+                    console.log({title: 'LOG', details: 'Hola'});
                     var monedaEfx = currentRecord.getValue({
                         fieldId: 'custbody_efx_fe_moneda'
                     });
