@@ -961,7 +961,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
 
                     }
 
-                }else{
+                }else{ // la cancelación salió exitosa
 
                     var rec = record.load({
                         id: tranid,
