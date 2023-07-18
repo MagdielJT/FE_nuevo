@@ -360,7 +360,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
             var arrayPedimento = new Array();
             var objetoDetalleInventario = new Object();
             var arrayinventarioObj = new Array();
-            
+
             var buscaFacdetalleinv = search.create({
                 type: search.Type.INVOICE,
                 filters: [
@@ -380,9 +380,9 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
                     })
                 ]
             });
-        
+
             buscaFacdetalleinv.run().each(function (result) {
-                
+
                 arrayInventario.push(result.getValue({
                     name: 'inventorynumber',
                     join: 'inventoryDetail'
@@ -465,12 +465,12 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
                             objetoDetalleInventario[key].cc = result.getText({name: 'custrecord_bit_cilindraje'});
                             objetoDetalleInventario[key].mark = result.getText({name: 'custrecord_bit_marca'});
                             objetoDetalleInventario[key].year = result.getText({name: 'custrecord_bit_anio'});
-                            
+
                             arrayinventarioObj.push(objetoDetalleInventario[key]);
                             objetoDetalleInventario[key] = JSON.stringify(objetoDetalleInventario[key]);
-                            
-                            
-                            
+
+
+
                         }
                     }
 
@@ -2900,7 +2900,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
 
                 postalCodeshipToLiver_envio:'',
                 postalCodeshipToLiver:'',
-                
+
                 invoiceCreator:'',//gln
                 idInvoiceCreator:'',
                 nameInvoiceCreator:'',
@@ -2966,21 +2966,21 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
                 'trandate',
                 'exchangerate',
                 'custbody_efx_fe_total_text',
-                
+
                 'customer.custentity_efx_liverpool_sellergln',
                 'customer.custentity_efx_liverpool_persondepartmen',
                 'customer.custentity_efx_liverpool_buyergln',
                 'customer.custentity_efx_liverpool_provnum',
                 'customer.custentity_efx_liverpool_allowancecharge',
-                
+
                 'shippingaddress.custrecord_efx_fe_buyer_gln',
 
                 'shippingaddress.custrecord_efx_fe_lugar_gln',
                 'billingaddress.custrecord_efx_fe_lugar_gln',
-                
+
                 'shippingaddress.custrecord_efx_fe_lugar_city',
                 'billingaddress.custrecord_efx_fe_lugar_city',
-                
+
                 'shippingaddress.city',
                 'billingaddress.city',
 
@@ -2989,7 +2989,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
 
                 'shippingaddress.zip',
                 'billingaddress.zip',
-                
+
                 'custbody_efx_liverpool_folio_recibo',
                 'custbody_efx_liverpool_fecha_recibo',
                 'custbody_efx_liverpool_fecha_ordencomp',
@@ -3025,12 +3025,12 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
                     type: search.Type.SUBSIDIARY,
                     id: LookupField.subsidiary[0].value,
                 });
-    
+
                 respuesta.data.idInvoiceCreator = resSub.getValue({fieldId: 'federalidnumber'});
                 respuesta.data.nameInvoiceCreator = resSub.getValue({fieldId: 'legalname'});
-                
+
                 addressObj = resSub.getSubrecord({fieldId: 'mainaddress'});
-    
+
                 respuesta.data.streetAddInvoiceCreator= addressObj.getValue({fieldId: 'custrecord_streetname'}) + addressObj.getValue({fieldId:'custrecord_streetnum'});
                 respuesta.data.cityOfInvoiceCreator = addressObj.getText({fieldId: 'city'});
                 respuesta.data.postalCodeOfInvoiceCreator=addressObj.getValue({fieldId: 'zip'});
@@ -3038,17 +3038,17 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
                 var RecObj = config.load({
                     type: config.Type.COMPANY_INFORMATION
                 });
-                
+
                 respuesta.data.idInvoiceCreator = RecObj.getValue({fieldId: 'employerid'});
                 respuesta.data.nameInvoiceCreator = RecObj.getValue({fieldId: 'legalname'});
-    
+
                 addressObj = RecObj.getSubrecord({fieldId: 'mainaddress'});
-                
+
                 respuesta.data.streetAddInvoiceCreator= addressObj.getValue({fieldId: 'custrecord_streetname'}) + addressObj.getValue({fieldId:'custrecord_streetnum'});
                 respuesta.data.cityOfInvoiceCreator = addressObj.getText({fieldId: 'city'});
                 respuesta.data.postalCodeOfInvoiceCreator=addressObj.getValue({fieldId: 'zip'});
             }
-                    
+
             respuesta.data.folio = LookupField['tranid'] || '';
 
             respuesta.data.specialInstruction.code = 'ZZZ';
@@ -3062,7 +3062,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
 
             respuesta.data.streetshipToLiver_envio = LookupField['shippingaddress.custrecord_streetname'];
             respuesta.data.streetshipToLiver = LookupField['billingaddress.custrecord_streetname'];
-            
+
             respuesta.data.cityshipToLiver_envio = LookupField['shippingaddress.city'];
             respuesta.data.cityshipToLiver = LookupField['billingaddress.city'];
 
@@ -3071,7 +3071,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
 
 
             respuesta.data.invoiceCreator = LookupField['customer.custentity_efx_liverpool_sellergln'];
-            
+
             respuesta.data.orderIdentification.referenceIdentification = LookupField['otherrefnum'] || '';
 
             if (LookupField['custbody_efx_liverpool_fecha_ordencomp']) {
@@ -3690,7 +3690,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
             respuesta.data.shipTo.pais_envio = LookupField['shippingaddress.country'];
             respuesta.data.shipTo.city_envio = LookupField['shippingaddress.city'];
             respuesta.data.shipTo.postalCode_envio = LookupField['shippingaddress.zip'];
-            respuesta.data.shipTo.nombre_dir_envio = LookupField['shippingaddress.addressee'];
+            respuesta.data.shipTo.nombre_dir_envio = LookupField['shippingaddress.addressee'];//addressee
 
             respuesta.data.totalAmount = LookupField['total'];
             var total_transaccion = LookupField['total'];
@@ -4205,7 +4205,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
                 'customer.custentity_efx_fe_add_sgln_hd',
                 'customer.custentity_efx_fe_add_intnum_hd',
                 'custbody_efx_fe_tax_json',
-                'shippingaddress.custrecord_efx_fe_buyer_gln',
+                // 'shippingaddress.custrecord_efx_fe_buyer_gln',
 
 
             ];
@@ -4233,7 +4233,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
             respuesta.data.AdditionalInformation.referenceIdentification = LookupField['custbody_efx_fe_add_ref_ad'] || '';
             //buyer
 
-            if(LookupField['shippingaddress.custrecord_efx_fe_buyer_gln']){
+            if(LookupField['shippingaddress.custrecord_efx_fe_buyer_gln'] || ''){
                 respuesta.data.buyer.gln = LookupField['shippingaddress.custrecord_efx_fe_buyer_gln'] || '';
             }else{
                 respuesta.data.buyer.gln = LookupField['customer.custentity_efx_fe_add_bgln_hd'] || '';
@@ -5836,7 +5836,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
             array_columnas.push('billingaddress.state');
             array_columnas.push('billingaddress.zip');
             array_columnas.push('billingaddress.country');
-            array_columnas.push('billingaddress.custrecord_efx_fe_buyer_gln');
+            array_columnas.push('billingaddress.custrecord_efx_fe_buyer_gln' || '');
             array_columnas.push('shippingaddress.addressee');
             array_columnas.push('shippingaddress.custrecord_streetname');
             array_columnas.push('shippingaddress.custrecord_streetnum');
@@ -5845,7 +5845,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
             array_columnas.push('shippingaddress.state');
             array_columnas.push('shippingaddress.zip');
             array_columnas.push('shippingaddress.country');
-            array_columnas.push('shippingaddress.custrecord_efx_fe_buyer_gln');
+            array_columnas.push('shippingaddress.custrecord_efx_fe_buyer_gln' || '');
             if(SUBSIDIARIES){
                 array_columnas.push('subsidiary');
             }
@@ -6753,7 +6753,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
             }
             respuesta.data.serie = LookupField['tranid'] || '';
             respuesta.data.folio = LookupField['tranid'] || '';
-            
+
             // try {
             //     respuesta.data.refId = LookupField['custbody_efx_fe_reference_id'] || '';
             //     if (LookupField['custbody_efx_fe_reference_date']) {
@@ -6926,7 +6926,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
                 xmlChedrahui += '               <ReferenceDate>' + param_obj_Chedrahui.refDate +'</ReferenceDate>';
                 xmlChedrahui += '           </DeliveryNote>';
             }
-            
+
             xmlChedrahui += '           <buyer>';
             xmlChedrahui += '               <gln>' + param_obj_Chedrahui.id_proveedor + '</gln>';
             xmlChedrahui += '               <contactInformation>';
@@ -7424,7 +7424,7 @@ define(["N/xml","N/search","N/record","N/format","N/runtime","N/config","./xml_g
             xmlBioPapel += '   </BioPappel>';
             xmlBioPapel += '   </cfdi:Addenda>';
 
-   
+
 
                 respuesta.data = xmlBioPapel;
 
