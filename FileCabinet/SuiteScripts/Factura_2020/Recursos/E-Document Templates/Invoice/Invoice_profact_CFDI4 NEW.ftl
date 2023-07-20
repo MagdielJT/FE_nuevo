@@ -279,6 +279,9 @@
         <#assign exportacion = transaction.custbody_mx_cfdi_sat_export_type?keep_before(' -')>
         Exportacion="${exportacion}"
         Version="4.0"
+        <#if transaction.otherrefnum != "">
+            CondicionesDePago="PO:${transaction.otherrefnum}"
+        </#if>
 
 
 <#if total_desc_cabecera gt 0>
