@@ -903,6 +903,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 906', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -917,6 +918,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 921', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -933,6 +935,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 938', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -947,6 +950,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 953', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -963,6 +967,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 970', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -977,6 +982,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 985', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -993,6 +999,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1002', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1007,6 +1014,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1017', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1024,6 +1032,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1035', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1039,6 +1048,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1051', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1054,6 +1064,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1067', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1069,6 +1080,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1083', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1086,6 +1098,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1101', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1101,6 +1114,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1117', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1116,6 +1130,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1133', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
@@ -1131,6 +1146,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 1149', details: idPlantilla});
                                     }else{
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
