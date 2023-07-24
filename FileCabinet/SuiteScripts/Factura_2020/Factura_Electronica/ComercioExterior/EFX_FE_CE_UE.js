@@ -3,8 +3,8 @@
  *@NScriptType UserEventScript
  */
 // PURCHASE_REQUISITION
-define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config', 'N/runtime', 'N/query', 'N/format'],
-    function (log, modRecord, search, modcurrency, config, runtime, query, format) {
+define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config', 'N/runtime', 'N/query', 'N/format', '../../Utilities/moment.js'],
+    function (log, modRecord, search, modcurrency, config, runtime, query, format, moment) {
 
         function beforeSubmit(context) {
             try {
@@ -302,22 +302,49 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config', 'N/runtime', 
                                 }
                                 log.audit({ title: 'local_currency: ', details: local_currency });
 
-                                //exchange = record.getValue({fieldId: 'exchangerate'});
-                                datae = 1;
-                                var sql = "SELECT TOP 2 ";
-                                sql += " cr.id, b.symbol as basecurrency, c.symbol as transactioncurrency,  cr.effectivedate, cr.exchangerate";
-                                sql += " FROM ";
-                                sql += "  currencyrate as cr, currency as c, currency b where c.id = transactioncurrency and b.id = basecurrency and b.symbol = '" + local_currency['symbol'] + "'";
-                                sql += " ORDER BY ";
-                                sql += " cr.id DESC";
+                                var querystr =  "SELECT BaseCurrency.Symbol AS BaseSymbol, "+
+                                "TansactionCurrency.Symbol AS TransactionSymbol, "+
+                                "CurrencyRate.ExchangeRate, "+
+                                "CurrencyRate.EffectiveDate, "+
+                                "CurrencyRate.LastModifiedDate "+
+                                "FROM CurrencyRate, Currency AS BaseCurrency, Currency AS TansactionCurrency "+
+                                "WHERE ( BaseCurrency.ID = CurrencyRate.BaseCurrency ) "+
+                                "AND ( TansactionCurrency.ID = CurrencyRate.TransactionCurrency ) "+
+                                "AND ( CurrencyRate.EffectiveDate = ? ) "+
+                                "AND ( BaseCurrency.Symbol = ? ) "+
+                                "AND ( TansactionCurrency.Symbol = ? ) "+
+                                "ORDER BY CurrencyRate.id DESC" ;
 
+                                log.debug({title: 'onRequest querystr', details: querystr});
+                                var hoy = new Date();
+                                log.audit({title: 'hoy', details: hoy});
+                                var DIA_EN_MILISEGUNDOS = 24 * 60 * 60 * 1000;
+                                var ayer = new Date(hoy.getTime() - DIA_EN_MILISEGUNDOS);
+                                log.audit({title: 'ayer', details: ayer});
+
+                                var configRecObj = config.load({
+                                    type: config.Type.USER_PREFERENCES
+                                });
+                                var dateFormat = configRecObj.getValue({
+                                    fieldId: 'DATEFORMAT'
+                                });
+
+                                var objDate = moment(ayer).format(dateFormat);
+                                log.audit({title: 'objDate', details: objDate});
 
                                 var results = query.runSuiteQL({
-                                    query: sql
+                                    query: querystr,
+                                    params: [objDate, "MXN", "USD"],
+                                    customScriptId: 'customscript_fb_query_sl'
                                 }).asMappedResults();
 
+                                log.debug({title: 'onRequest columns', details: results.columns});
+                                log.debug({title: 'onRequest types', details: results.types});
                                 log.audit({ title: 'results: ', details: results });
-                                var fechahoy = record.getValue({ fieldId: 'trandate' });
+
+                                exchange = results[0].exchangerate;
+
+                                /* var fechahoy = record.getValue({ fieldId: 'trandate' });
                                 var parsedDateHoy = format.parse({
                                     value: fechahoy,
                                     type: format.Type.DATE
@@ -328,17 +355,13 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config', 'N/runtime', 
                                     exchange = results[0].exchangerate;
                                 } else {
                                     exchange = results[1].exchangerate;
-                                }
+                                } */
                             }
                         }
 
                         log.audit({ title: 'exchange: ', details: exchange });
 
-
-
-
                         record.setValue({ fieldId: 'custbody_efx_fe_ce_exchage', value: exchange });
-
 
                         var numLines = record.getLineCount({ sublistId: 'item' });
                         log.audit({ title: 'Item numLines: ', details: numLines });
