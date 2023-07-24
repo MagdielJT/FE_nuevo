@@ -193,78 +193,78 @@
                 <#assign equivalenciaImpuesto = equivalenciaImpuestoCalculo/100>
                 <#if jsonImpuestoVar?has_content>
                     <#assign impuestosPago = jsonImpuestoVar?eval>
-                        <#list impuestosPago.bases_iva as ivaRate, ivaValue>
-                            <#assign esTrasladoIva = true>
-                            <#if ivaRate=="16">
-                                <#assign totaltrasladosiva16 = totaltrasladosiva16+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                    <#list impuestosPago.bases_iva as ivaRate, ivaValue>
+                        <#assign esTrasladoIva = true>
+                        <#if ivaRate=="16">
+                            <#assign totaltrasladosiva16 = totaltrasladosiva16+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
                                 <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
-                                <#else>
+                            <#else>
                                 <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
-                                </#if>
-                                <#assign totaltrasladosiva16base = totaltrasladosiva16base+(ivaValue?number*equivalenciaImpuesto)>
-                            <#elseif ivaRate=="8">
-                                <#assign totaltrasladosiva8 = totaltrasladosiva8+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                                <#else>
-                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                                </#if>
-                                <#assign totaltrasladosiva8base = totaltrasladosiva8base+(ivaValue?number*equivalenciaImpuesto)>
-                            <#elseif ivaRate=="0">
-                                <#assign totaltrasladosiva0 = totaltrasladosiva0+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
-                                <#else>
-                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
-                                </#if>
-                                <#assign totaltrasladosiva0base = totaltrasladosiva0base+(ivaValue?number*equivalenciaImpuesto)>
                             </#if>
-                        </#list>
-                        <#list impuestosPago.bases_ieps as iepsRate, iepsValue>
-                            <#if iepsRate=="53">
-                                <#assign totaltrasladosieps53 = totaltrasladosieps53+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
-                                <#else>
-                                <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
-                                </#if>
-                                <#assign totaltrasladosieps53base = totaltrasladosieps53base+(iepsValue?number*equivalenciaImpuesto)>
-                            <#elseif iepsRate=="26.5">
-                                <#assign totaltrasladosieps265 = totaltrasladosieps265+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
-                                <#else>
-                                <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
-                                </#if>
-                                <#assign totaltrasladosieps265base = totaltrasladosieps265base+(iepsValue?number*equivalenciaImpuesto)>
-                            <#elseif iepsRate=="30">
-                                <#assign totaltrasladosieps30 = totaltrasladosieps30+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosieps30div = (totaltrasladosieps30div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.30)?string["0.00"]?number)>
-                                <#else>
-                                <#assign totaltrasladosieps30div = (totaltrasladosieps30div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.30)?string["0.00"]?number)>
-                                </#if>
-                                <#assign totaltrasladosieps30base = totaltrasladosieps30base+(iepsValue?number*equivalenciaImpuesto)>
-                            <#elseif iepsRate=="8">
-                                <#assign totaltrasladosieps8 = totaltrasladosieps8+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                                <#else>
-                                <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                                </#if>
-                                <#assign totaltrasladosieps8base = totaltrasladosieps8base+(iepsValue?number*equivalenciaImpuesto)>
+                            <#assign totaltrasladosiva16base = totaltrasladosiva16base+(ivaValue?number*equivalenciaImpuesto)>
+                        <#elseif ivaRate=="8">
+                            <#assign totaltrasladosiva8 = totaltrasladosiva8+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
+                            <#else>
+                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
                             </#if>
-                        </#list>
+                            <#assign totaltrasladosiva8base = totaltrasladosiva8base+(ivaValue?number*equivalenciaImpuesto)>
+                        <#elseif ivaRate=="0">
+                            <#assign totaltrasladosiva0 = totaltrasladosiva0+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
+                            <#else>
+                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
+                            </#if>
+                            <#assign totaltrasladosiva0base = totaltrasladosiva0base+(ivaValue?number*equivalenciaImpuesto)>
+                        </#if>
+                    </#list>
+                    <#list impuestosPago.bases_ieps as iepsRate, iepsValue>
+                        <#if iepsRate=="53">
+                            <#assign totaltrasladosieps53 = totaltrasladosieps53+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                            <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
+                            <#else>
+                            <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
+                            </#if>
+                            <#assign totaltrasladosieps53base = totaltrasladosieps53base+(iepsValue?number*equivalenciaImpuesto)>
+                        <#elseif iepsRate=="26.5">
+                            <#assign totaltrasladosieps265 = totaltrasladosieps265+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                            <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
+                            <#else>
+                            <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
+                            </#if>
+                            <#assign totaltrasladosieps265base = totaltrasladosieps265base+(iepsValue?number*equivalenciaImpuesto)>
+                        <#elseif iepsRate=="30">
+                            <#assign totaltrasladosieps30 = totaltrasladosieps30+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                            <#assign totaltrasladosieps30div = (totaltrasladosieps30div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.30)?string["0.00"]?number)>
+                            <#else>
+                            <#assign totaltrasladosieps30div = (totaltrasladosieps30div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.30)?string["0.00"]?number)>
+                            </#if>
+                            <#assign totaltrasladosieps30base = totaltrasladosieps30base+(iepsValue?number*equivalenciaImpuesto)>
+                        <#elseif iepsRate=="8">
+                            <#assign totaltrasladosieps8 = totaltrasladosieps8+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                            <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
+                            <#else>
+                            <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
+                            </#if>
+                            <#assign totaltrasladosieps8base = totaltrasladosieps8base+(iepsValue?number*equivalenciaImpuesto)>
+                        </#if>
+                    </#list>
 
-                        <#list impuestosPago.bases_exento as exentoRate, exentoValue>
-                            <#assign esTrasladoIva = true>
-                            <#assign totaltrasladosivaExentobase = totaltrasladosivaExentobase+(exentoValue?number*equivalenciaImpuesto)>
-                        </#list>
+                    <#list impuestosPago.bases_exento as exentoRate, exentoValue>
+                        <#assign esTrasladoIva = true>
+                        <#assign totaltrasladosivaExentobase = totaltrasladosivaExentobase+(exentoValue?number*equivalenciaImpuesto)>
+                    </#list>
 
-                        <#list impuestosPago.rates_retencion_data as retRate, retValue>
+                    <#list impuestosPago.rates_retencion_data as retRate, retValue>
                         <#assign esRetencion = true>
-                            <#assign totaltrasladosRetencionesIva = totaltrasladosRetencionesIva+(retValue?number*equivalenciaImpuesto)>
+                        <#assign totaltrasladosRetencionesIva = totaltrasladosRetencionesIva+(retValue?number*equivalenciaImpuesto)>
                     </#list>
                 </#if>
                 <#assign montoTotalPago = montoTotalPago+txnitem.amount>
@@ -274,12 +274,17 @@
             <#assign ImportePIVA8 = "0">
             <#assign monto_total_pago = montoTotalPago>
             <#assign tipo_cambio_pago = transaction.exchangerate>
-            <pago20:Totales 
-                <#if currencyCode==transaction.custbody_efx_fe_moneda.symbol> 
+            <pago20:Totales
+                <#if currencyCode==transaction.custbody_efx_fe_moneda.symbol>
                     <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                        MontoTotalPagos="${(monto_total_pago*tipo_cambio_pago)?string["0.00"]}"
+                        <#if transaction.custbody_efx_fe_tipo_cambio?number lt 0>
+                            <#assign montoTotalPago = transaction.applied?number>
+                            MontoTotalPagos="${(monto_total_pago/tipo_cambio_pago)?string["0.00"]}"
+                        <#else>
+                            MontoTotalPagos="${(monto_total_pago*tipo_cambio_pago)?string["0.00"]}"
+                        </#if>
                     <#else>
-                        <#assign monto_multimoneda = (monto_total_pago / tipocambioCustom)?string["0.00"]> 
+                        <#assign monto_multimoneda = (monto_total_pago / tipocambioCustom)?string["0.00"]>
                         MontoTotalPagos="${(monto_multimoneda?number * tipocambioCustom)?string["0.00"]}"
                     </#if>
                 <#elseif currencyCode=="EUR">
