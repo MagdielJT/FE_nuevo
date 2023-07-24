@@ -742,14 +742,14 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                         }
                     }
 
-                    
+
                     var tipo_persona = '';
                     if(body.cliente.tipo){
                         tipo_persona = 'T';
                     }else{
                         tipo_persona = 'F';
                     }
-                    
+
 
                     var tipo_transaccion = '';
                     if (body.transaccion.transType == 'CustInvc') {
@@ -798,7 +798,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                 id: subsidiaryresico
                             });
                         }
-                    }else{                
+                    }else{
                         var subsidiaria_obj = config.load({
                             type: config.Type.COMPANY_INFORMATION
                         });
@@ -812,7 +812,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                             type: 'customrecord_mx_sat_industry_type',
                             columns: ['custrecord_mx_sat_it_code', 'name'],
                         });
-    
+
                         regFiscalSubsidiaria = campos.name;
                     }
 
@@ -907,7 +907,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                         sublistId: 'item',
                                         fieldId: 'taxcode',
                                         line: i,
-                                    });                                    
+                                    });
                                 }
                                 regimenCliente = (regFiscalSubsidiaria).split(" - ");
                                     log.audit({title: 'EFX_FE_Kiosko_Connection_SL ~ regimenCliente', details: 'regimenCliente ~ 2568 ~ ' + regimenCliente[0]});
@@ -937,7 +937,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                             });
                                         }
                                     }
-                                    
+
 
                                 record_tipo.save({
                                     enableSourcing: true,
@@ -954,7 +954,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                 } else {
                                     id_cliente = cliente_objeto;
                                 }
-                                
+
                                 generado_pdf = record_tipo.getValue({fieldId:'custbody_edoc_generated_pdf'});
                                 generado_xml = record_tipo.getValue({fieldId:'custbody_psg_ei_certified_edoc'});
                                 var rfcclientekiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_rfc'});
@@ -995,18 +995,18 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                         type: record.Type.CUSTOMER,
                                         id: id_cliente
                                     });
-            
+
                                     var array_clientes_k = cliente_obj_k.getValue({fieldId: 'custentity_efx_fe_kiosko_contact'});
-                                    
+
                                     log.audit({title: 'array_clientes_k', details: array_clientes_k});
-                                  
+
                                     record_tipo.setValue({
                                         fieldId: 'custbody_efx_fe_mail_to',
                                         value: array_clientes_k,
                                         ignoreFieldChange: true
                                     });
-                                  
-            
+
+
                                 }
 
                                 var numLines = record_tipo.getLineCount({
@@ -1018,7 +1018,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                         sublistId: 'item',
                                         fieldId: 'taxcode',
                                         line: i,
-                                    });                                    
+                                    });
                                 }
                                 regimenCliente = (regFiscalSubsidiaria).split(" - ");
                                 log.audit({title: 'EFX_FE_Kiosko_Connection_SL ~ regimenCliente', details: 'regimenCliente ~ 2568 ~ ' + regimenCliente[0]});
@@ -1048,7 +1048,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                         });
                                     }
                                 }
-                                    
+
 
                                 var contactodekiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_mail_to'});
                                 log.audit({title: 'contactodekiosko', details: contactodekiosko});
@@ -1083,7 +1083,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                             sublistId: 'item',
                                             fieldId: 'taxcode',
                                             line: i,
-                                        });                                    
+                                        });
                                     }
                                 regimenCliente = (regFiscalSubsidiaria).split(" - ");
                                     log.audit({title: 'EFX_FE_Kiosko_Connection_SL ~ regimenCliente', details: 'regimenCliente ~ 2568 ~ ' + regimenCliente[0]});
@@ -1113,7 +1113,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                             });
                                         }
                                     }
-                                    
+
                                         nueva_tran_obj.save({
                                             enableSourcing: true,
                                             ignoreMandatoryFields: true
@@ -1484,7 +1484,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                 sublistId: 'item',
                                 fieldId: 'taxcode',
                                 line: i,
-                            });                                    
+                            });
                         }
                         regimenCliente = (regFiscalSubsidiaria).split(" - ");
                             log.audit({title: 'EFX_FE_Kiosko_Connection_SL ~ regimenCliente', details: 'regimenCliente ~ 2568 ~ ' + regimenCliente[0]});
@@ -1514,7 +1514,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                     });
                                 }
                             }
-                            
+
                         record_tipo.save({
                             enableSourcing: true,
                             ignoreMandatoryFields: true
@@ -1675,6 +1675,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
             //     });
             // }
         }
+
 
         function crearXML(tranid,trantype,cliente_k_fact){
             log.audit({title:'tranid',details:tranid});
@@ -2347,7 +2348,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                     custentity_efx_fe_version:versioncfdi,
 
                 }
-                
+
                 var actualizaclientecfdi = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_actualiza_datos_cli' });
 
                 if(objcliente.cliente.metodo_pago && (actualizaclientecfdi==true || (actualizaclientecfdi && actualizaclientecfdi=='T'))){
@@ -2976,7 +2977,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                     });
                 }
 
-                
+
 
 
 
