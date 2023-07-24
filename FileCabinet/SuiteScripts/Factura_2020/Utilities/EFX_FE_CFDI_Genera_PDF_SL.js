@@ -327,7 +327,8 @@ define(['N/record', 'N/render', 'N/search','N/runtime','N/file','N/xml','N/encod
                     isOnline: true
                 });
 
-                fileObj.save();
+                var idArchivo = fileObj.save();
+                log.audit({title: 'idArchivo', details: idArchivo});
 
             }catch(creajson){
                 log.error({title:'creajson',details:creajson});
