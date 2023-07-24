@@ -3,8 +3,8 @@
  *@NScriptType UserEventScript
  */
 // PURCHASE_REQUISITION
-define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N/query','N/format'],
-    function (log, modRecord, search, modcurrency, config,runtime,query,format) {
+define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config', 'N/runtime', 'N/query', 'N/format'],
+    function (log, modRecord, search, modcurrency, config, runtime, query, format) {
 
         function beforeSubmit(context) {
             try {
@@ -21,21 +21,21 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
                     //Comercio Exterior
                     var exchange = '';
-                    var datae=1;
+                    var datae = 1;
                     if (custbody_efx_fe_comercio_exterior) {
-                        if(recType == modRecord.Type.ITEM_FULFILLMENT){
-                            var creadodeff = record.getValue({fieldId:'createdfrom'});
-                            try{
+                        if (recType == modRecord.Type.ITEM_FULFILLMENT) {
+                            var creadodeff = record.getValue({ fieldId: 'createdfrom' });
+                            try {
                                 var creadodeffReco = modRecord.load({
-                                   type: modRecord.Type.SALES_ORDER,
-                                   id: creadodeff
+                                    type: modRecord.Type.SALES_ORDER,
+                                    id: creadodeff
                                 });
                                 var tipoTransaccionff = creadodeffReco.type;
                                 log.audit({
                                     title: 'tipoTransaccionff',
                                     details: tipoTransaccionff
                                 });
-                            }catch(errortransaccionff){
+                            } catch (errortransaccionff) {
                                 log.audit({
                                     title: 'errortransaccionff',
                                     details: errortransaccionff
@@ -52,16 +52,16 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                             }
                         }
 
-                        var cliente_id = record.getValue({fieldId: 'entity'});
-                        var destinatario_id = record.getValue({fieldId: 'custbody_efx_fe_ce_destinatario_name'});
+                        var cliente_id = record.getValue({ fieldId: 'entity' });
+                        var destinatario_id = record.getValue({ fieldId: 'custbody_efx_fe_ce_destinatario_name' });
                         var subsidiaries_id = '';
                         if (SUBSIDIARIES) {
-                            subsidiaries_id = record.getValue({fieldId: 'subsidiary'});
+                            subsidiaries_id = record.getValue({ fieldId: 'subsidiary' });
                         }
 
                         var obj_direccion = {
                             emisor: {
-                                Nombre:'',
+                                Nombre: '',
                                 Calle: '',
                                 NumeroExterior: '',
                                 NumeroInterior: '',
@@ -72,11 +72,11 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                 Estado: '',
                                 Pais: '',
                                 CodigoPostal: '',
-                                RegimenFiscal:'',
-                                Rfc:''
+                                RegimenFiscal: '',
+                                Rfc: ''
                             },
                             receptor: {
-                                Nombre:'',
+                                Nombre: '',
                                 Calle: '',
                                 NumeroExterior: '',
                                 NumeroInterior: '',
@@ -88,8 +88,8 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                 Pais: '',
                                 CodigoPostal: '',
                                 Destinatario: '',
-                                Rfc:'',
-                                UsoCFDI:''
+                                Rfc: '',
+                                UsoCFDI: ''
                             },
                             destinatario: {
                                 Calle: '',
@@ -103,35 +103,35 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                 CodigoPostal: '',
 
                             },
-                            articulos:[],
-                            cfdi:{
-                                TipoCambio:'',
-                                LugarExpedicion:'',
+                            articulos: [],
+                            cfdi: {
+                                TipoCambio: '',
+                                LugarExpedicion: '',
 
                             }
                         }
 
-                        var json_direccion = buscarDirecciones(cliente_id, subsidiaries_id, obj_direccion, SUBSIDIARIES, destinatario_id,creadodeffReco,creadodeff,tipoTransaccionff);
+                        var json_direccion = buscarDirecciones(cliente_id, subsidiaries_id, obj_direccion, SUBSIDIARIES, destinatario_id, creadodeffReco, creadodeff, tipoTransaccionff);
 
                         var objRecIF = '';
                         var moneda_id = '';
-                        if(recType == modRecord.Type.ITEM_FULFILLMENT) {
+                        if (recType == modRecord.Type.ITEM_FULFILLMENT) {
 
                             var idRelacionado = record.getValue('createdfrom');
-                            moneda_id = record.getValue({fieldId: 'custbody_efx_fe_ce_currency_des'});
+                            moneda_id = record.getValue({ fieldId: 'custbody_efx_fe_ce_currency_des' });
 
                             objRecIF = modRecord.load({
                                 type: tipoTransaccionff,
                                 id: creadodeff
                             });
-                        }else{
-                            moneda_id = record.getValue({fieldId: 'currency'});
+                        } else {
+                            moneda_id = record.getValue({ fieldId: 'currency' });
                         }
                         //}else{
 
-                        if(!moneda_id){
+                        if (!moneda_id) {
                             var moneda = record.getValue('currencycode');
-                        }else{
+                        } else {
                             var moneda_record = modRecord.load({
                                 type: modRecord.Type.CURRENCY,
                                 id: moneda_id,
@@ -146,10 +146,10 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                             title: 'custbody_efx_fe_comercio_exterior',
                             details: custbody_efx_fe_comercio_exterior
                         });
-                        log.audit({title: 'moneda', details: moneda});
+                        log.audit({ title: 'moneda', details: moneda });
 
                         var noDollar = moneda != 'USD';
-                        log.audit({title: 'noDollar', details: JSON.stringify(noDollar)});
+                        log.audit({ title: 'noDollar', details: JSON.stringify(noDollar) });
 
                         if (noDollar) {
 
@@ -160,24 +160,24 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                             var config_currency = '';
                             var local_currency = '';
 
-                            if(recType == modRecord.Type.ITEM_FULFILLMENT) {
-                                var moneda_id_des = record.getValue({fieldId: 'custbody_efx_fe_ce_currency'});
+                            if (recType == modRecord.Type.ITEM_FULFILLMENT) {
+                                var moneda_id_des = record.getValue({ fieldId: 'custbody_efx_fe_ce_currency' });
                                 var moneda_record_des = modRecord.load({
                                     type: modRecord.Type.CURRENCY,
                                     id: moneda_id_des,
                                     isDynamic: true,
                                 });
                                 local_currency = moneda_record_des.getValue('symbol');
-                            }else{
+                            } else {
                                 if (SUBSIDIARIES) {
-                                    var subsidiaria_id = record.getValue({fieldId: 'subsidiary'});
+                                    var subsidiaria_id = record.getValue({ fieldId: 'subsidiary' });
                                     var subsidiary_info = search.lookupFields({
                                         type: search.Type.SUBSIDIARY,
                                         id: subsidiaria_id,
                                         columns: ['currency']
                                     });
 
-                                    log.audit({title: 'subsidiary_info.currency: ', details: subsidiary_info.currency});
+                                    log.audit({ title: 'subsidiary_info.currency: ', details: subsidiary_info.currency });
                                     local_currency = search.lookupFields({
                                         type: search.Type.CURRENCY,
                                         id: subsidiary_info.currency[0].value,
@@ -197,23 +197,23 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                 }
                             }
 
-                            log.audit({title: 'local_currency: ', details: local_currency});
-                            if(moneda!='USD' && moneda!='MXN'){
+                            log.audit({ title: 'local_currency: ', details: local_currency });
+                            if (moneda != 'USD' && moneda != 'MXN') {
                                 exchange = modcurrency.exchangeRate({
                                     source: 'USD',
                                     target: local_currency.symbol,
                                     //target: 'MXN',
-                                    date: record.getValue({fieldId: 'trandate'})
+                                    date: record.getValue({ fieldId: 'trandate' })
                                 }) || 0;
-                                log.audit({title: 'exchange: ', details: exchange});
-                            }else{
+                                log.audit({ title: 'exchange: ', details: exchange });
+                            } else {
                                 exchange = modcurrency.exchangeRate({
                                     source: moneda,
                                     target: local_currency.symbol,
                                     //target: 'MXN',
-                                    date: record.getValue({fieldId: 'trandate'})
+                                    date: record.getValue({ fieldId: 'trandate' })
                                 }) || 0;
-                                log.audit({title: 'exchange: ', details: exchange});
+                                log.audit({ title: 'exchange: ', details: exchange });
                             }
 
 
@@ -221,7 +221,7 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
 
                         } else {
-                            if(recType == modRecord.Type.ITEM_FULFILLMENT) {
+                            if (recType == modRecord.Type.ITEM_FULFILLMENT) {
 
                                 var configRecObj = config.load({
                                     type: config.Type.COMPANY_INFORMATION
@@ -231,14 +231,14 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                 var local_currency = '';
 
                                 if (SUBSIDIARIES) {
-                                    var subsidiaria_id = record.getValue({fieldId: 'subsidiary'});
+                                    var subsidiaria_id = record.getValue({ fieldId: 'subsidiary' });
                                     var subsidiary_info = search.lookupFields({
                                         type: search.Type.SUBSIDIARY,
                                         id: subsidiaria_id,
                                         columns: ['currency']
                                     });
 
-                                    log.audit({title: 'subsidiary_info.currency: ', details: subsidiary_info.currency});
+                                    log.audit({ title: 'subsidiary_info.currency: ', details: subsidiary_info.currency });
                                     local_currency = search.lookupFields({
                                         type: search.Type.CURRENCY,
                                         id: subsidiary_info.currency[0].value,
@@ -258,106 +258,106 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                 }
 
 
-                                log.audit({title: 'local_currency: ', details: local_currency});
+                                log.audit({ title: 'local_currency: ', details: local_currency });
                                 exchange = modcurrency.exchangeRate({
                                     source: moneda,
                                     target: local_currency.symbol,
                                     //target: 'MXN',
-                                    date: record.getValue({fieldId: 'trandate'})
+                                    date: record.getValue({ fieldId: 'trandate' })
                                 }) || 0;
-                                log.audit({title: 'exchange: ', details: exchange});
+                                log.audit({ title: 'exchange: ', details: exchange });
 
                                 datae = 1;
 
-                            }else {
-                                     //exchange = record.getValue({fieldId: 'exchangerate'});
-                                     var config_currency = '';
-                                     var local_currency = '';
-     
-                                     if (SUBSIDIARIES) {
-                                         var subsidiaria_id = record.getValue({fieldId: 'subsidiary'});
-                                         var subsidiary_info = search.lookupFields({
-                                             type: search.Type.SUBSIDIARY,
-                                             id: subsidiaria_id,
-                                             columns: ['currency']
-                                         });
-     
-                                         log.audit({title: 'subsidiary_info.currency: ', details: subsidiary_info.currency});
-                                         local_currency = search.lookupFields({
-                                             type: search.Type.CURRENCY,
-                                             id: subsidiary_info.currency[0].value,
-                                             columns: ['symbol']
-                                         });
-     
-                                     } else {
-                                         config_currency = configRecObj.getValue({
-                                             fieldId: 'basecurrency'
-                                         });
-     
-                                         local_currency = search.lookupFields({
-                                             type: search.Type.CURRENCY,
-                                             id: config_currency,
-                                             columns: ['symbol']
-                                         });
-                                     }
-                                     log.audit({title: 'local_currency: ', details: local_currency});
-                                     
-                                     //exchange = record.getValue({fieldId: 'exchangerate'});
-                                     datae = 1;
-                                     var sql = "SELECT TOP 2 ";
-                                    sql+=" cr.id, b.symbol as basecurrency, c.symbol as transactioncurrency,  cr.effectivedate, cr.exchangerate";
-                                    sql+=" FROM ";
-                                    sql+="  currencyrate as cr, currency as c, currency b where c.id = transactioncurrency and b.id = basecurrency and b.symbol = '"+local_currency['symbol']+"'";
-                                    sql+=" ORDER BY ";
-                                    sql+=" cr.id DESC";
-                        
-     
-                                    var results = query.runSuiteQL({
-                                        query: sql
-                                    }).asMappedResults();
-     
-                                    log.audit({title: 'results: ', details: results});
-                                    var fechahoy = record.getValue({fieldId: 'trandate'});
-                                    var parsedDateHoy= format.parse({
-                                        value: fechahoy,
-                                        type: format.Type.DATE
-                                 });
-                                 
-                                    var fechaahora = new Date();                                    
-                                    if(fechaahora.getDate()==parsedDateHoy.getDate() && fechaahora.getMonth()==parsedDateHoy.getMonth() && fechaahora.getFullYear()==parsedDateHoy.getFullYear()){
-                                        exchange = results[0].exchangerate;
-                                    }else{
-                                        exchange = results[1].exchangerate;
-                                    }
+                            } else {
+                                //exchange = record.getValue({fieldId: 'exchangerate'});
+                                var config_currency = '';
+                                var local_currency = '';
+
+                                if (SUBSIDIARIES) {
+                                    var subsidiaria_id = record.getValue({ fieldId: 'subsidiary' });
+                                    var subsidiary_info = search.lookupFields({
+                                        type: search.Type.SUBSIDIARY,
+                                        id: subsidiaria_id,
+                                        columns: ['currency']
+                                    });
+
+                                    log.audit({ title: 'subsidiary_info.currency: ', details: subsidiary_info.currency });
+                                    local_currency = search.lookupFields({
+                                        type: search.Type.CURRENCY,
+                                        id: subsidiary_info.currency[0].value,
+                                        columns: ['symbol']
+                                    });
+
+                                } else {
+                                    config_currency = configRecObj.getValue({
+                                        fieldId: 'basecurrency'
+                                    });
+
+                                    local_currency = search.lookupFields({
+                                        type: search.Type.CURRENCY,
+                                        id: config_currency,
+                                        columns: ['symbol']
+                                    });
+                                }
+                                log.audit({ title: 'local_currency: ', details: local_currency });
+
+                                //exchange = record.getValue({fieldId: 'exchangerate'});
+                                datae = 1;
+                                var sql = "SELECT TOP 2 ";
+                                sql += " cr.id, b.symbol as basecurrency, c.symbol as transactioncurrency,  cr.effectivedate, cr.exchangerate";
+                                sql += " FROM ";
+                                sql += "  currencyrate as cr, currency as c, currency b where c.id = transactioncurrency and b.id = basecurrency and b.symbol = '" + local_currency['symbol'] + "'";
+                                sql += " ORDER BY ";
+                                sql += " cr.id DESC";
+
+
+                                var results = query.runSuiteQL({
+                                    query: sql
+                                }).asMappedResults();
+
+                                log.audit({ title: 'results: ', details: results });
+                                var fechahoy = record.getValue({ fieldId: 'trandate' });
+                                var parsedDateHoy = format.parse({
+                                    value: fechahoy,
+                                    type: format.Type.DATE
+                                });
+
+                                var fechaahora = new Date();
+                                if (fechaahora.getDate() == parsedDateHoy.getDate() && fechaahora.getMonth() == parsedDateHoy.getMonth() && fechaahora.getFullYear() == parsedDateHoy.getFullYear()) {
+                                    exchange = results[0].exchangerate;
+                                } else {
+                                    exchange = results[1].exchangerate;
+                                }
                             }
                         }
 
-                        log.audit({title: 'exchange: ', details: exchange});
-                        
-                        
-                        
-
-                        record.setValue({fieldId: 'custbody_efx_fe_ce_exchage', value: exchange});
+                        log.audit({ title: 'exchange: ', details: exchange });
 
 
-                        var numLines = record.getLineCount({sublistId: 'item'});
-                        log.audit({title: 'Item numLines: ', details: numLines});
+
+
+                        record.setValue({ fieldId: 'custbody_efx_fe_ce_exchage', value: exchange });
+
+
+                        var numLines = record.getLineCount({ sublistId: 'item' });
+                        log.audit({ title: 'Item numLines: ', details: numLines });
 
                         var totalValorDolares = 0;
                         for (var l = 0; l < numLines; l++) {
-                            try {                                
-                                var item = record.getSublistValue({sublistId: 'item', fieldId: 'item', line: l}) || '';
+                            try {
+                                var item = record.getSublistValue({ sublistId: 'item', fieldId: 'item', line: l }) || '';
                                 var itemtype = record.getSublistValue({
                                     sublistId: 'item',
                                     fieldId: 'itemtype',
                                     line: l
                                 }) || '';
 
-                                log.audit({title: 'item', details: item});
-                                log.audit({title: 'itemtype', details: itemtype});
+                                log.audit({ title: 'item', details: item });
+                                log.audit({ title: 'itemtype', details: itemtype });
 
                                 //Comercio Exterior
-                                if (custbody_efx_fe_comercio_exterior && (itemtype!='Group' && itemtype!='EndGroup')) {
+                                if (custbody_efx_fe_comercio_exterior && (itemtype != 'Group' && itemtype != 'EndGroup')) {
                                     var quantity = record.getSublistValue({
                                         sublistId: 'item',
                                         fieldId: 'quantity',
@@ -369,7 +369,7 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                         line: l
                                     }) || '';
 
-                                    if(objRecIF){
+                                    if (objRecIF) {
                                         var unit_price = objRecIF.getSublistValue({
                                             sublistId: 'item',
                                             fieldId: 'rate',
@@ -380,7 +380,7 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                             fieldId: 'amount',
                                             line: l
                                         }) || '';
-                                    }else{
+                                    } else {
                                         var unit_price = record.getSublistValue({
                                             sublistId: 'item',
                                             fieldId: 'rate',
@@ -395,27 +395,27 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
                                     var result = quantity;
 
-                                    log.audit({title: 'quantity', details: quantity});
-                                    log.audit({title: 'formula', details: formula});
-                                    log.audit({title: 'unit_price', details: unit_price});
-                                    log.audit({title: 'total_item_price', details: total_item_price});
-                                    log.audit({title: 'result', details: result});
-                                    if(recType == modRecord.Type.ITEM_FULFILLMENT) {
+                                    log.audit({ title: 'quantity', details: quantity });
+                                    log.audit({ title: 'formula', details: formula });
+                                    log.audit({ title: 'unit_price', details: unit_price });
+                                    log.audit({ title: 'total_item_price', details: total_item_price });
+                                    log.audit({ title: 'result', details: result });
+                                    if (recType == modRecord.Type.ITEM_FULFILLMENT) {
                                         if (quantity && formula) {
-                                            var formula_t = formula.replace('*','')
+                                            var formula_t = formula.replace('*', '')
                                             formula = quantity + formula;
                                             log.audit({
                                                 title: 'Item formula: ' + l,
                                                 details: formula
                                             });
                                             result = eval(formula);
-                                            result = quantity/formula_t;
+                                            result = quantity / formula_t;
 
                                             log.audit({
                                                 title: 'Item result: ' + l,
                                                 details: result
                                             });
-                                            var resultup = unit_price*formula_t;
+                                            var resultup = unit_price * formula_t;
                                         }
                                         if (result) {
                                             result = result.toFixed(3);
@@ -426,9 +426,9 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                                 line: l
                                             });
                                         }
-                                    }else {
+                                    } else {
                                         if (quantity && formula) {
-                                            var formula_t = formula.replace('*','')
+                                            var formula_t = formula.replace('*', '')
                                             formula = quantity + formula;
                                             log.audit({
                                                 title: 'Item formula: ' + l,
@@ -453,65 +453,65 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                         }
 
                                     }
-                                    if(recType == modRecord.Type.ITEM_FULFILLMENT) {
+                                    if (recType == modRecord.Type.ITEM_FULFILLMENT) {
                                         var t_cambio = exchange;
-                                    }else{
-                                        var t_cambio = record.getValue({fieldId: 'exchangerate'});
+                                    } else {
+                                        var t_cambio = record.getValue({ fieldId: 'exchangerate' });
                                     }
                                     //
 
-                                    log.audit({title: 'unit_price', details: unit_price});
-                                    log.audit({title: 't_cambio', details: t_cambio});
-                                    log.audit({title: 'datae', details: datae});
-                                    if(moneda!='USD' && moneda!='MXN'){
+                                    log.audit({ title: 'unit_price', details: unit_price });
+                                    log.audit({ title: 't_cambio', details: t_cambio });
+                                    log.audit({ title: 'datae', details: datae });
+                                    if (moneda != 'USD' && moneda != 'MXN') {
 
-                                        var diftipcamb = t_cambio/datae;
-                                        var unitAduana = (unit_price *  diftipcamb)/formula_t;
-                                    }else{
+                                        var diftipcamb = t_cambio / datae;
+                                        var unitAduana = (unit_price * diftipcamb) / formula_t;
+                                    } else {
                                         var unitAduana = unit_price * (t_cambio / datae);
                                     }
 
 
                                     if (!noDollar) {
 
-                                        log.audit({title: 'formula_t', details: formula_t});
-                                        if(recType == modRecord.Type.ITEM_FULFILLMENT) {
+                                        log.audit({ title: 'formula_t', details: formula_t });
+                                        if (recType == modRecord.Type.ITEM_FULFILLMENT) {
                                             var unitAduana = unit_price / datae;
-                                        }else{
+                                        } else {
                                             var unitAduana = unit_price / formula_t;
                                         }
 
                                     }
-                                    log.audit({title: 'unitAduana', details: unitAduana});
-                                    if(recType == modRecord.Type.ITEM_FULFILLMENT) {
-                                        var unitAduana=resultup;
+                                    log.audit({ title: 'unitAduana', details: unitAduana });
+                                    if (recType == modRecord.Type.ITEM_FULFILLMENT) {
+                                        var unitAduana = resultup;
                                     }
 
                                     var valAduana = runtime.getCurrentScript().getParameter({ name: 'custscript_tko_calc_val_aduana' });
-                                         log.audit({title: 'valAduana', details: valAduana});
+                                    log.audit({ title: 'valAduana', details: valAduana });
 
-                                         if (valAduana || valAduana == true || valAduana == 'true' || valAduana == 'T') {
-                                             if (unitAduana) {
-                                                 unitAduana = unitAduana.toFixed(2);
-                                                 record.setSublistValue({
-                                                     sublistId: 'item',
-                                                     fieldId: 'custcol_efx_fe_ce_val_uni_aduana',
-                                                     value: unitAduana,
-                                                     line: l
-                                                 });
-                                             }
-                                         } else {
-                                             log.audit({title: 'valAduana (ELSE)', details: valAduana});
-                                         }
+                                    if (valAduana || valAduana == true || valAduana == 'true' || valAduana == 'T') {
+                                        if (unitAduana) {
+                                            unitAduana = unitAduana.toFixed(2);
+                                            record.setSublistValue({
+                                                sublistId: 'item',
+                                                fieldId: 'custcol_efx_fe_ce_val_uni_aduana',
+                                                value: unitAduana,
+                                                line: l
+                                            });
+                                        }
+                                    } else {
+                                        log.audit({ title: 'valAduana (ELSE)', details: valAduana });
+                                    }
 
                                     var valordedolares = 0;
-                                    log.audit({title: 'moneda-valordolares', details: moneda});
-                                    if (moneda!='USD' && moneda!='MXN') {
+                                    log.audit({ title: 'moneda-valordolares', details: moneda });
+                                    if (moneda != 'USD' && moneda != 'MXN') {
                                         valordedolares = (total_item_price * t_cambio) / datae;
-                                        log.audit({title: 'valordedolares-eur', details: valordedolares});
+                                        log.audit({ title: 'valordedolares-eur', details: valordedolares });
                                     } else {
                                         valordedolares = total_item_price / datae;
-                                        log.audit({title: 'valordedolares-noeur', details: valordedolares});
+                                        log.audit({ title: 'valordedolares-noeur', details: valordedolares });
                                     }
 
                                     valordedolares = valordedolares.toFixed(2);
@@ -535,11 +535,11 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                                 //rec.commitLine({ sublistId: 'item' });
 
                             } catch (error) {
-                                log.audit({title: 'error', detail: JSON.stringify(error)});
+                                log.audit({ title: 'error', detail: JSON.stringify(error) });
                             }
                         }
                         totalValorDolares = totalValorDolares.toFixed(2);
-                        record.setValue({fieldId: 'custbody_efx_fe_ce_totalusd', value: totalValorDolares});
+                        record.setValue({ fieldId: 'custbody_efx_fe_ce_totalusd', value: totalValorDolares });
                         record.setValue({
                             fieldId: 'custbody_efx_fe_dirjson_emisor',
                             value: JSON.stringify(json_direccion)
@@ -558,62 +558,62 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
             }
         }
 
-        function buscarDirecciones(id_cliente,id_subsidiaria,obj_direccion,SUBSIDIARIES,destinatario_id,creadodeff,creadodeffid,tipoTransaccionff){
+        function buscarDirecciones(id_cliente, id_subsidiaria, obj_direccion, SUBSIDIARIES, destinatario_id, creadodeff, creadodeffid, tipoTransaccionff) {
 
-            if(tipoTransaccionff == 'transferorder'){
+            if (tipoTransaccionff == 'transferorder') {
 
-                var rfiscal='';
-                var usocfdi='';
-                var usocfdiid = creadodeff.getValue({fieldId:'custbody_mx_cfdi_usage'});
-                var motivotraslado = creadodeff.getValue({fieldId:'custbody_efx_fe_ce_motivo_traslado'});
-                var tipocambiocab = creadodeff.getValue({fieldId:'exchangerate'});
+                var rfiscal = '';
+                var usocfdi = '';
+                var usocfdiid = creadodeff.getValue({ fieldId: 'custbody_mx_cfdi_usage' });
+                var motivotraslado = creadodeff.getValue({ fieldId: 'custbody_efx_fe_ce_motivo_traslado' });
+                var tipocambiocab = creadodeff.getValue({ fieldId: 'exchangerate' });
                 obj_direccion.cfdi.TipoCambio = tipocambiocab;
 
-                if(usocfdiid){
+                if (usocfdiid) {
                     var usocfdiobj = modRecord.load({
-                        type:'customrecord_mx_sat_cfdi_usage',
-                        id:usocfdiid
+                        type: 'customrecord_mx_sat_cfdi_usage',
+                        id: usocfdiid
                     });
-                    usocfdi = usocfdiobj.getValue({fieldId:'custrecord_mx_sat_cfdi_code'});
+                    usocfdi = usocfdiobj.getValue({ fieldId: 'custrecord_mx_sat_cfdi_code' });
                     obj_direccion.receptor.UsoCFDI = usocfdi;
                 }
 
-                log.audit({title:'id_subsidiaria',details:id_subsidiaria});
-                if(SUBSIDIARIES){
+                log.audit({ title: 'id_subsidiaria', details: id_subsidiaria });
+                if (SUBSIDIARIES) {
                     var obj_subsidiaria = modRecord.load({
                         type: modRecord.Type.SUBSIDIARY,
                         id: id_subsidiaria,
                     });
-                    var rfiscalid = obj_subsidiaria.getValue({fieldId:'custrecord_mx_sat_industry_type'});
-                    log.audit({title:'rfiscalid',details:rfiscalid});
-                    if(rfiscalid) {
+                    var rfiscalid = obj_subsidiaria.getValue({ fieldId: 'custrecord_mx_sat_industry_type' });
+                    log.audit({ title: 'rfiscalid', details: rfiscalid });
+                    if (rfiscalid) {
                         var regfiscalObj = modRecord.load({
                             type: 'customrecord_mx_sat_industry_type',
                             id: rfiscalid
                         });
 
-                        rfiscal = regfiscalObj.getValue({fieldId: 'custrecord_mx_sat_it_code'});
-                        log.audit({title:'rfiscal',details:rfiscal});
+                        rfiscal = regfiscalObj.getValue({ fieldId: 'custrecord_mx_sat_it_code' });
+                        log.audit({ title: 'rfiscal', details: rfiscal });
                     }
-                }else {
+                } else {
                     var obj_subsidiaria = config.load({
                         type: config.Type.COMPANY_INFORMATION
                     });
 
-                    var rfiscalid = obj_subsidiaria.getValue({fieldId:'custrecord_mx_sat_industry_type'});
-                    if(rfiscalid) {
+                    var rfiscalid = obj_subsidiaria.getValue({ fieldId: 'custrecord_mx_sat_industry_type' });
+                    if (rfiscalid) {
                         var regfiscalObj = modRecord.load({
                             type: 'customrecord_mx_sat_industry_type',
                             id: rfiscalid
                         });
 
-                        rfiscal = regfiscalObj.getValue({fieldId: 'custrecord_mx_sat_it_code'});
+                        rfiscal = regfiscalObj.getValue({ fieldId: 'custrecord_mx_sat_it_code' });
                     }
                 }
                 obj_direccion.emisor.RegimenFiscal = rfiscal;
 
-                var ubicacionOrigen = creadodeff.getValue({fieldId: 'location'});
-                var ubicacionDestino = creadodeff.getValue({fieldId: 'transferlocation'});
+                var ubicacionOrigen = creadodeff.getValue({ fieldId: 'location' });
+                var ubicacionDestino = creadodeff.getValue({ fieldId: 'transferlocation' });
 
                 try {
 
@@ -622,69 +622,69 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                         id: ubicacionOrigen
                     });
 
-                    obj_direccion.emisor.Rfc = ubicacionOrigenRec.getValue({fieldId: 'custrecord_efx_fe_ce_rfc'});
-                    obj_direccion.emisor.Nombre = ubicacionOrigenRec.getValue({fieldId: 'name'});
+                    obj_direccion.emisor.Rfc = ubicacionOrigenRec.getValue({ fieldId: 'custrecord_efx_fe_ce_rfc' });
+                    obj_direccion.emisor.Nombre = ubicacionOrigenRec.getValue({ fieldId: 'name' });
 
                     var subrec_dir_sub = ubicacionOrigenRec.getSubrecord({
                         fieldId: 'mainaddress'
                     });
 
-                    obj_direccion.emisor.Calle = subrec_dir_sub.getValue({fieldId: 'custrecord_streetname'});
-                    obj_direccion.emisor.NumeroExterior = subrec_dir_sub.getValue({fieldId: 'custrecord_streetnum'});
-                    obj_direccion.emisor.NumeroInterior = subrec_dir_sub.getValue({fieldId: 'custrecord_unit'});
+                    obj_direccion.emisor.Calle = subrec_dir_sub.getValue({ fieldId: 'custrecord_streetname' });
+                    obj_direccion.emisor.NumeroExterior = subrec_dir_sub.getValue({ fieldId: 'custrecord_streetnum' });
+                    obj_direccion.emisor.NumeroInterior = subrec_dir_sub.getValue({ fieldId: 'custrecord_unit' });
 
                     //cargar colonia
-                    var emisor_colonia_id = subrec_dir_sub.getValue({fieldId: 'custrecord_efx_fe_ce_colonia'});
+                    var emisor_colonia_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_colonia' });
                     if (emisor_colonia_id) {
                         var obj_colonia = modRecord.load({
                             type: 'customrecord_efx_fe_sat_colonia',
                             id: emisor_colonia_id,
                         });
-                        obj_direccion.emisor.Colonia = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                        obj_direccion.emisor.Colonia = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                     }
 
                     //cargar localidad
-                    var emisor_localidad_id = subrec_dir_sub.getValue({fieldId: 'custrecord_efx_fe_ce_localidad'});
+                    var emisor_localidad_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_localidad' });
                     if (emisor_localidad_id) {
                         var obj_localidad = modRecord.load({
                             type: 'customrecord_efx_fe_sat_localidad',
                             id: emisor_localidad_id,
                         });
-                        obj_direccion.emisor.Localidad = obj_localidad.getValue({fieldId: 'custrecord_efx_fe_sl_cod_sat'});
+                        obj_direccion.emisor.Localidad = obj_localidad.getValue({ fieldId: 'custrecord_efx_fe_sl_cod_sat' });
                     }
-                    obj_direccion.emisor.Referencia = subrec_dir_sub.getValue({fieldId: 'custrecord_efx_fe_ce_ref_dir'});
+                    obj_direccion.emisor.Referencia = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_ref_dir' });
                     //cargar municipio
-                    var emisor_municipio_id = subrec_dir_sub.getValue({fieldId: 'custrecord_efx_fe_ce_municipio'});
+                    var emisor_municipio_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_municipio' });
                     if (emisor_municipio_id) {
                         var obj_municipio = modRecord.load({
                             type: 'customrecord_efx_fe_sat_municipio',
                             id: emisor_municipio_id,
                         });
-                        obj_direccion.emisor.Municipio = obj_municipio.getValue({fieldId: 'custrecord_efx_fe_csm_cod_sat'});
+                        obj_direccion.emisor.Municipio = obj_municipio.getValue({ fieldId: 'custrecord_efx_fe_csm_cod_sat' });
                     }
                     //cargar estado
-                    var emisor_estado_id = subrec_dir_sub.getValue({fieldId: 'custrecord_efx_fe_ce_estado'});
+                    var emisor_estado_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_estado' });
                     if (emisor_estado_id) {
                         var obj_estado = modRecord.load({
                             type: 'customrecord_efx_fe_sat_estado',
                             id: emisor_estado_id,
                         });
-                        obj_direccion.emisor.Estado = obj_estado.getValue({fieldId: 'custrecord_efx_fe_se_cod_sat'});
+                        obj_direccion.emisor.Estado = obj_estado.getValue({ fieldId: 'custrecord_efx_fe_se_cod_sat' });
                     }
 
                     //cargar pais
-                    var emisor_pais_id = subrec_dir_sub.getValue({fieldId: 'custrecord_efx_fe_ce_pais'});
+                    var emisor_pais_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_pais' });
                     if (emisor_pais_id) {
                         var obj_pais = modRecord.load({
                             type: 'customrecord_efx_fe_sat_pais',
                             id: emisor_pais_id,
                         });
-                        obj_direccion.emisor.Pais = obj_pais.getValue({fieldId: 'custrecord_efx_fe_sp_cod_sat'});
+                        obj_direccion.emisor.Pais = obj_pais.getValue({ fieldId: 'custrecord_efx_fe_sp_cod_sat' });
                     }
-                    obj_direccion.emisor.CodigoPostal = subrec_dir_sub.getValue({fieldId: 'zip'});
-                    obj_direccion.cfdi.LugarExpedicion = subrec_dir_sub.getValue({fieldId: 'zip'});
+                    obj_direccion.emisor.CodigoPostal = subrec_dir_sub.getValue({ fieldId: 'zip' });
+                    obj_direccion.cfdi.LugarExpedicion = subrec_dir_sub.getValue({ fieldId: 'zip' });
 
-                }catch(ubicacionOrigenLog){
+                } catch (ubicacionOrigenLog) {
                     log.audit({ title: 'ubicacionOrigenLog', details: JSON.stringify(ubicacionOrigenLog) });
                 }
 
@@ -695,98 +695,98 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
                     });
 
-                    if(motivotraslado=='02'){
-                        obj_direccion.receptor.Rfc = obj_cliente.getValue({fieldId: 'custrecord_efx_fe_ce_rfc'});
-                    }else{
+                    if (motivotraslado == '02') {
+                        obj_direccion.receptor.Rfc = obj_cliente.getValue({ fieldId: 'custrecord_efx_fe_ce_rfc' });
+                    } else {
                         obj_direccion.receptor.Rfc = 'XEXX010101000';
                     }
-                    obj_direccion.receptor.Nombre = obj_cliente.getValue({fieldId: 'name'});
+                    obj_direccion.receptor.Nombre = obj_cliente.getValue({ fieldId: 'name' });
 
                     var subrec = obj_cliente.getSubrecord({
                         fieldId: 'mainaddress'
                     });
 
-                    obj_direccion.receptor.Calle = subrec.getValue({fieldId:'custrecord_streetname'});
-                    obj_direccion.receptor.NumeroExterior = subrec.getValue({fieldId:'custrecord_streetnum'});
-                    obj_direccion.receptor.NumeroInterior = subrec.getValue({fieldId:'custrecord_unit'});
+                    obj_direccion.receptor.Calle = subrec.getValue({ fieldId: 'custrecord_streetname' });
+                    obj_direccion.receptor.NumeroExterior = subrec.getValue({ fieldId: 'custrecord_streetnum' });
+                    obj_direccion.receptor.NumeroInterior = subrec.getValue({ fieldId: 'custrecord_unit' });
                     //cargar colonia
-                    var receptor_colonia_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_colonia'});
-                    if(receptor_colonia_id) {
+                    var receptor_colonia_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_colonia' });
+                    if (receptor_colonia_id) {
                         var obj_colonia = modRecord.load({
                             type: 'customrecord_efx_fe_sat_colonia',
                             id: receptor_colonia_id,
                         });
-                        var col_receptor = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                        var col_receptor = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                         if (col_receptor) {
-                            obj_direccion.receptor.Colonia = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                            obj_direccion.receptor.Colonia = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                         } else {
-                            obj_direccion.receptor.Colonia = obj_colonia.getValue({fieldId: 'name'});
+                            obj_direccion.receptor.Colonia = obj_colonia.getValue({ fieldId: 'name' });
                         }
                     }
 
                     //cargar localidad
-                    var receptor_localidad_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_localidad'});
-                    if(receptor_localidad_id) {
+                    var receptor_localidad_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_localidad' });
+                    if (receptor_localidad_id) {
                         var obj_localidad = modRecord.load({
                             type: 'customrecord_efx_fe_sat_localidad',
                             id: receptor_localidad_id,
                         });
-                        var lc_receptor = obj_localidad.getValue({fieldId: 'custrecord_efx_fe_sl_cod_sat'});
+                        var lc_receptor = obj_localidad.getValue({ fieldId: 'custrecord_efx_fe_sl_cod_sat' });
                         if (lc_receptor) {
                             obj_direccion.receptor.Localidad = lc_receptor;
                         } else {
-                            obj_direccion.receptor.Localidad = obj_localidad.getValue({fieldId: 'name'});
+                            obj_direccion.receptor.Localidad = obj_localidad.getValue({ fieldId: 'name' });
                         }
                     }
 
-                    obj_direccion.receptor.Referencia = subrec.getValue({fieldId:'custrecord_efx_fe_ce_ref_dir'});
+                    obj_direccion.receptor.Referencia = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_ref_dir' });
 
                     //cargar municipío
-                    var receptor_municipio_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_municipio'});
-                    if(receptor_municipio_id) {
+                    var receptor_municipio_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_municipio' });
+                    if (receptor_municipio_id) {
                         var obj_municipio = modRecord.load({
                             type: 'customrecord_efx_fe_sat_municipio',
                             id: receptor_municipio_id,
                         });
-                        var mpio_receptor = obj_municipio.getValue({fieldId: 'custrecord_efx_fe_csm_cod_sat'});
+                        var mpio_receptor = obj_municipio.getValue({ fieldId: 'custrecord_efx_fe_csm_cod_sat' });
                         if (mpio_receptor) {
                             obj_direccion.receptor.Municipio = mpio_receptor;
                         } else {
-                            obj_direccion.receptor.Municipio = obj_municipio.getValue({fieldId: 'name'});
+                            obj_direccion.receptor.Municipio = obj_municipio.getValue({ fieldId: 'name' });
                         }
                     }
                     //cargar estado
-                    var receptor_estado_id = subrec.getValue({fieldId: 'custrecord_efx_fe_ce_estado'});
-                    if(receptor_estado_id) {
+                    var receptor_estado_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_estado' });
+                    if (receptor_estado_id) {
                         var obj_estado = modRecord.load({
                             type: 'customrecord_efx_fe_sat_estado',
                             id: receptor_estado_id,
                         });
-                        var edo_receptor = obj_estado.getValue({fieldId:'custrecord_efx_fe_se_cod_sat'});
+                        var edo_receptor = obj_estado.getValue({ fieldId: 'custrecord_efx_fe_se_cod_sat' });
                         if (edo_receptor) {
                             obj_direccion.receptor.Estado = edo_receptor;
                         } else {
-                            obj_direccion.receptor.Estado = obj_estado.getValue({fieldId: 'name'});
+                            obj_direccion.receptor.Estado = obj_estado.getValue({ fieldId: 'name' });
                         }
                     }
 
                     //cargar pais
-                    var receptor_pais_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_pais'});
-                    if(receptor_pais_id) {
+                    var receptor_pais_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_pais' });
+                    if (receptor_pais_id) {
                         var obj_pais = modRecord.load({
                             type: 'customrecord_efx_fe_sat_pais',
                             id: receptor_pais_id,
                         });
-                        obj_direccion.receptor.Pais = obj_pais.getValue({fieldId: 'custrecord_efx_fe_sp_cod_sat'});
+                        obj_direccion.receptor.Pais = obj_pais.getValue({ fieldId: 'custrecord_efx_fe_sp_cod_sat' });
                     }
-                    obj_direccion.receptor.CodigoPostal = subrec.getValue({fieldId:'zip'});
-                    obj_direccion.receptor.Destinatario = subrec.getValue({fieldId:'custrecord_efx_fe_ce_destinatario'});
+                    obj_direccion.receptor.CodigoPostal = subrec.getValue({ fieldId: 'zip' });
+                    obj_direccion.receptor.Destinatario = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_destinatario' });
 
-                }catch(error_buscadireccion_receptor){
+                } catch (error_buscadireccion_receptor) {
                     log.audit({ title: 'error_buscadireccion_receptor', details: JSON.stringify(error_buscadireccion_receptor) });
                 }
 
-                if(destinatario_id) {
+                if (destinatario_id) {
                     try {
                         var obj_destinatario = modRecord.load({
                             type: 'customrecord_efx_fe_ce_addres_destinatar',
@@ -794,80 +794,80 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
                         });
 
-                        obj_direccion.destinatario.Calle = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_calle'});
-                        obj_direccion.destinatario.NumeroExterior = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_numero_exterior'});
-                        obj_direccion.destinatario.NumeroInterior = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_numero_interior'});
+                        obj_direccion.destinatario.Calle = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_calle' });
+                        obj_direccion.destinatario.NumeroExterior = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_numero_exterior' });
+                        obj_direccion.destinatario.NumeroInterior = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_numero_interior' });
 
                         //caragar colonia
-                        var destinatario_colonia_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_colonia'});
-                        if(destinatario_colonia_id) {
+                        var destinatario_colonia_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_colonia' });
+                        if (destinatario_colonia_id) {
                             var obj_colonia = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_colonia',
                                 id: destinatario_colonia_id,
                             });
-                            var col_receptor = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                            var col_receptor = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                             if (col_receptor) {
                                 obj_direccion.destinatario.Colonia = col_receptor;
                             } else {
-                                obj_direccion.destinatario.Colonia = obj_colonia.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Colonia = obj_colonia.getValue({ fieldId: 'name' });
                             }
                         }
 
                         //cargar localidad
-                        var destinatario_localidad_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_localidad'});
-                        if(destinatario_localidad_id) {
+                        var destinatario_localidad_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_localidad' });
+                        if (destinatario_localidad_id) {
                             var obj_localidad = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_localidad',
                                 id: destinatario_localidad_id,
                             });
-                            var lc_receptor = obj_localidad.getValue({fieldId: 'custrecord_efx_fe_sl_cod_sat'});
+                            var lc_receptor = obj_localidad.getValue({ fieldId: 'custrecord_efx_fe_sl_cod_sat' });
                             if (lc_receptor) {
                                 obj_direccion.destinatario.Localidad = lc_receptor;
                             } else {
-                                obj_direccion.destinatario.Localidad = obj_localidad.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Localidad = obj_localidad.getValue({ fieldId: 'name' });
                             }
                         }
 
                         //cargar municipio
-                        var destinatario_municipio_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_municipio'});
-                        if(destinatario_municipio_id) {
+                        var destinatario_municipio_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_municipio' });
+                        if (destinatario_municipio_id) {
                             var obj_municipio = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_municipio',
                                 id: destinatario_municipio_id,
                             });
-                            var mpio_receptor = obj_municipio.getValue({fieldId: 'custrecord_efx_fe_csm_cod_sat'});
+                            var mpio_receptor = obj_municipio.getValue({ fieldId: 'custrecord_efx_fe_csm_cod_sat' });
                             if (mpio_receptor) {
                                 obj_direccion.destinatario.Municipio = mpio_receptor;
                             } else {
-                                obj_direccion.destinatario.Municipio = obj_municipio.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Municipio = obj_municipio.getValue({ fieldId: 'name' });
                             }
                         }
 
                         //cargar estado
-                        var destinatario_estado_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_estado'});
-                        if(destinatario_estado_id) {
+                        var destinatario_estado_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_estado' });
+                        if (destinatario_estado_id) {
                             var obj_estado = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_estado',
                                 id: destinatario_estado_id,
                             });
-                            var edo_receptor = obj_estado.getValue({fieldId: 'custrecord_efx_fe_se_cod_sat'});
+                            var edo_receptor = obj_estado.getValue({ fieldId: 'custrecord_efx_fe_se_cod_sat' });
                             if (edo_receptor) {
                                 obj_direccion.destinatario.Estado = edo_receptor;
                             } else {
-                                obj_direccion.destinatario.Estado = obj_estado.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Estado = obj_estado.getValue({ fieldId: 'name' });
                             }
                         }
                         //cargar pais
 
-                        var destinatario_pais_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_pais'});
-                        if(destinatario_pais_id) {
+                        var destinatario_pais_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_pais' });
+                        if (destinatario_pais_id) {
                             var obj_pais = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_pais',
                                 id: destinatario_pais_id,
                             });
-                            obj_direccion.destinatario.Pais = obj_pais.getValue({fieldId: 'custrecord_efx_fe_sp_cod_sat'});
+                            obj_direccion.destinatario.Pais = obj_pais.getValue({ fieldId: 'custrecord_efx_fe_sp_cod_sat' });
                         }
-                        obj_direccion.destinatario.CodigoPostal = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_codigo_postal'});
+                        obj_direccion.destinatario.CodigoPostal = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_codigo_postal' });
 
 
                     } catch (error_buscadireccion_destinatario) {
@@ -1057,143 +1057,143 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                 log.audit({ title: 'obj_direccion', details: JSON.stringify(obj_direccion) });
 
 
-            }else{
-                if(SUBSIDIARIES){
-                    try{
+            } else {
+                if (SUBSIDIARIES) {
+                    try {
 
                         var obj_subsidiaria = modRecord.load({
                             type: modRecord.Type.SUBSIDIARY,
                             id: id_subsidiaria,
                         });
 
-                        var direccion_sub = obj_subsidiaria.getValue({fieldId:'mainaddress_text'})
+                        var direccion_sub = obj_subsidiaria.getValue({ fieldId: 'mainaddress_text' })
 
                         var subrec_dir_sub = obj_subsidiaria.getSubrecord({
                             fieldId: 'mainaddress'
                         });
 
-                        obj_direccion.emisor.Calle = subrec_dir_sub.getValue({fieldId:'custrecord_streetname'});
-                        obj_direccion.emisor.NumeroExterior = subrec_dir_sub.getValue({fieldId:'custrecord_streetnum'});
-                        obj_direccion.emisor.NumeroInterior = subrec_dir_sub.getValue({fieldId:'custrecord_unit'});
+                        obj_direccion.emisor.Calle = subrec_dir_sub.getValue({ fieldId: 'custrecord_streetname' });
+                        obj_direccion.emisor.NumeroExterior = subrec_dir_sub.getValue({ fieldId: 'custrecord_streetnum' });
+                        obj_direccion.emisor.NumeroInterior = subrec_dir_sub.getValue({ fieldId: 'custrecord_unit' });
                         //cargar colonia
-                        var emisor_colonia_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_colonia'});
-                        if(emisor_colonia_id) {
+                        var emisor_colonia_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_colonia' });
+                        if (emisor_colonia_id) {
                             var obj_colonia = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_colonia',
                                 id: emisor_colonia_id,
                             });
-                            obj_direccion.emisor.Colonia = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                            obj_direccion.emisor.Colonia = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                         }
 
                         //cargar localidad
-                        var emisor_localidad_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_localidad'});
-                        if(emisor_localidad_id) {
+                        var emisor_localidad_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_localidad' });
+                        if (emisor_localidad_id) {
                             var obj_localidad = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_localidad',
                                 id: emisor_localidad_id,
                             });
-                            obj_direccion.emisor.Localidad = obj_localidad.getValue({fieldId: 'custrecord_efx_fe_sl_cod_sat'});
+                            obj_direccion.emisor.Localidad = obj_localidad.getValue({ fieldId: 'custrecord_efx_fe_sl_cod_sat' });
                         }
-                        obj_direccion.emisor.Referencia = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_ref_dir'});
+                        obj_direccion.emisor.Referencia = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_ref_dir' });
                         //cargar municipio
-                        var emisor_municipio_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_municipio'});
-                        if(emisor_municipio_id) {
+                        var emisor_municipio_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_municipio' });
+                        if (emisor_municipio_id) {
                             var obj_municipio = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_municipio',
                                 id: emisor_municipio_id,
                             });
-                            obj_direccion.emisor.Municipio = obj_municipio.getValue({fieldId: 'custrecord_efx_fe_csm_cod_sat'});
+                            obj_direccion.emisor.Municipio = obj_municipio.getValue({ fieldId: 'custrecord_efx_fe_csm_cod_sat' });
                         }
                         //cargar estado
-                        var emisor_estado_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_estado'});
-                        if(emisor_estado_id) {
+                        var emisor_estado_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_estado' });
+                        if (emisor_estado_id) {
                             var obj_estado = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_estado',
                                 id: emisor_estado_id,
                             });
-                            obj_direccion.emisor.Estado = obj_estado.getValue({fieldId: 'custrecord_efx_fe_se_cod_sat'});
+                            obj_direccion.emisor.Estado = obj_estado.getValue({ fieldId: 'custrecord_efx_fe_se_cod_sat' });
                         }
                         //cargar pais
-                        var emisor_pais_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_pais'});
-                        if(emisor_pais_id) {
+                        var emisor_pais_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_pais' });
+                        if (emisor_pais_id) {
                             var obj_pais = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_pais',
                                 id: emisor_pais_id,
                             });
-                            obj_direccion.emisor.Pais = obj_pais.getValue({fieldId: 'custrecord_efx_fe_sp_cod_sat'});
+                            obj_direccion.emisor.Pais = obj_pais.getValue({ fieldId: 'custrecord_efx_fe_sp_cod_sat' });
                         }
-                        obj_direccion.emisor.CodigoPostal = subrec_dir_sub.getValue({fieldId:'zip'});
+                        obj_direccion.emisor.CodigoPostal = subrec_dir_sub.getValue({ fieldId: 'zip' });
 
 
-                    }catch(error_subsidirias){
+                    } catch (error_subsidirias) {
                         log.audit({ title: 'error_subsidirias', details: JSON.stringify(error_subsidirias) });
                     }
-                }else{
-                    try{
+                } else {
+                    try {
                         var obj_subsidiaria = config.load({
                             type: config.Type.COMPANY_INFORMATION
                         });
 
-                        var direccion_sub = obj_subsidiaria.getValue({fieldId:'mainaddress_text'})
+                        var direccion_sub = obj_subsidiaria.getValue({ fieldId: 'mainaddress_text' })
 
                         var subrec_dir_sub = obj_subsidiaria.getSubrecord({
                             fieldId: 'mainaddress'
                         });
 
-                        obj_direccion.emisor.Calle = subrec_dir_sub.getValue({fieldId:'custrecord_streetname'});
-                        obj_direccion.emisor.NumeroExterior = subrec_dir_sub.getValue({fieldId:'custrecord_streetnum'});
-                        obj_direccion.emisor.NumeroInterior = subrec_dir_sub.getValue({fieldId:'custrecord_unit'});
+                        obj_direccion.emisor.Calle = subrec_dir_sub.getValue({ fieldId: 'custrecord_streetname' });
+                        obj_direccion.emisor.NumeroExterior = subrec_dir_sub.getValue({ fieldId: 'custrecord_streetnum' });
+                        obj_direccion.emisor.NumeroInterior = subrec_dir_sub.getValue({ fieldId: 'custrecord_unit' });
                         //cargar colonia
-                        var emisor_colonia_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_colonia'});
-                        if(emisor_colonia_id) {
+                        var emisor_colonia_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_colonia' });
+                        if (emisor_colonia_id) {
                             var obj_colonia = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_colonia',
                                 id: emisor_colonia_id,
                             });
-                            obj_direccion.emisor.Colonia = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                            obj_direccion.emisor.Colonia = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                         }
 
                         //cargar localidad
-                        var emisor_localidad_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_localidad'});
-                        if(emisor_localidad_id) {
+                        var emisor_localidad_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_localidad' });
+                        if (emisor_localidad_id) {
                             var obj_localidad = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_localidad',
                                 id: emisor_localidad_id,
                             });
-                            obj_direccion.emisor.Localidad = obj_localidad.getValue({fieldId: 'custrecord_efx_fe_sl_cod_sat'});
+                            obj_direccion.emisor.Localidad = obj_localidad.getValue({ fieldId: 'custrecord_efx_fe_sl_cod_sat' });
                         }
-                        obj_direccion.emisor.Referencia = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_ref_dir'});
+                        obj_direccion.emisor.Referencia = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_ref_dir' });
                         //cargar municipio
-                        var emisor_municipio_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_municipio'});
-                        if(emisor_municipio_id) {
+                        var emisor_municipio_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_municipio' });
+                        if (emisor_municipio_id) {
                             var obj_municipio = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_municipio',
                                 id: emisor_municipio_id,
                             });
-                            obj_direccion.emisor.Municipio = obj_municipio.getValue({fieldId: 'custrecord_efx_fe_csm_cod_sat'});
+                            obj_direccion.emisor.Municipio = obj_municipio.getValue({ fieldId: 'custrecord_efx_fe_csm_cod_sat' });
                         }
                         //cargar estado
-                        var emisor_estado_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_estado'});
-                        if(emisor_estado_id) {
+                        var emisor_estado_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_estado' });
+                        if (emisor_estado_id) {
                             var obj_estado = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_estado',
                                 id: emisor_estado_id,
                             });
-                            obj_direccion.emisor.Estado = obj_estado.getValue({fieldId: 'custrecord_efx_fe_se_cod_sat'});
+                            obj_direccion.emisor.Estado = obj_estado.getValue({ fieldId: 'custrecord_efx_fe_se_cod_sat' });
                         }
                         //cargar pais
-                        var emisor_pais_id = subrec_dir_sub.getValue({fieldId:'custrecord_efx_fe_ce_pais'});
-                        if(emisor_pais_id) {
+                        var emisor_pais_id = subrec_dir_sub.getValue({ fieldId: 'custrecord_efx_fe_ce_pais' });
+                        if (emisor_pais_id) {
                             var obj_pais = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_pais',
                                 id: emisor_pais_id,
                             });
-                            obj_direccion.emisor.Pais = obj_pais.getValue({fieldId: 'custrecord_efx_fe_sp_cod_sat'});
+                            obj_direccion.emisor.Pais = obj_pais.getValue({ fieldId: 'custrecord_efx_fe_sp_cod_sat' });
                         }
-                        obj_direccion.emisor.CodigoPostal = subrec_dir_sub.getValue({fieldId:'zip'});
+                        obj_direccion.emisor.CodigoPostal = subrec_dir_sub.getValue({ fieldId: 'zip' });
 
 
-                    }catch(error_subsidirias){
+                    } catch (error_subsidirias) {
                         log.audit({ title: 'error_subsidirias', details: JSON.stringify(error_subsidirias) });
                     }
                 }
@@ -1205,7 +1205,7 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
                     });
 
-                    var count = obj_cliente.getLineCount({sublistId: 'addressbook'});
+                    var count = obj_cliente.getLineCount({ sublistId: 'addressbook' });
                     log.audit({ title: 'count', details: JSON.stringify(count) });
 
                     for (var i = 0; i < count; i++) {
@@ -1223,89 +1223,89 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
                             });
 
 
-                            obj_direccion.receptor.Calle = subrec.getValue({fieldId:'custrecord_streetname'});
-                            obj_direccion.receptor.NumeroExterior = subrec.getValue({fieldId:'custrecord_streetnum'});
-                            obj_direccion.receptor.NumeroInterior = subrec.getValue({fieldId:'custrecord_unit'});
+                            obj_direccion.receptor.Calle = subrec.getValue({ fieldId: 'custrecord_streetname' });
+                            obj_direccion.receptor.NumeroExterior = subrec.getValue({ fieldId: 'custrecord_streetnum' });
+                            obj_direccion.receptor.NumeroInterior = subrec.getValue({ fieldId: 'custrecord_unit' });
                             //cargar colonia
-                            var receptor_colonia_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_colonia'});
-                            if(receptor_colonia_id) {
+                            var receptor_colonia_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_colonia' });
+                            if (receptor_colonia_id) {
                                 var obj_colonia = modRecord.load({
                                     type: 'customrecord_efx_fe_sat_colonia',
                                     id: receptor_colonia_id,
                                 });
-                                var col_receptor = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                                var col_receptor = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                                 if (col_receptor) {
-                                    obj_direccion.receptor.Colonia = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                                    obj_direccion.receptor.Colonia = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                                 } else {
-                                    obj_direccion.receptor.Colonia = obj_colonia.getValue({fieldId: 'name'});
+                                    obj_direccion.receptor.Colonia = obj_colonia.getValue({ fieldId: 'name' });
                                 }
                             }
 
                             //cargar localidad
-                            var receptor_localidad_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_localidad'});
-                            if(receptor_localidad_id) {
+                            var receptor_localidad_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_localidad' });
+                            if (receptor_localidad_id) {
                                 var obj_localidad = modRecord.load({
                                     type: 'customrecord_efx_fe_sat_localidad',
                                     id: receptor_localidad_id,
                                 });
-                                var lc_receptor = obj_localidad.getValue({fieldId: 'custrecord_efx_fe_sl_cod_sat'});
+                                var lc_receptor = obj_localidad.getValue({ fieldId: 'custrecord_efx_fe_sl_cod_sat' });
                                 if (lc_receptor) {
                                     obj_direccion.receptor.Localidad = lc_receptor;
                                 } else {
-                                    obj_direccion.receptor.Localidad = obj_localidad.getValue({fieldId: 'name'});
+                                    obj_direccion.receptor.Localidad = obj_localidad.getValue({ fieldId: 'name' });
                                 }
                             }
 
-                            obj_direccion.receptor.Referencia = subrec.getValue({fieldId:'custrecord_efx_fe_ce_ref_dir'});
+                            obj_direccion.receptor.Referencia = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_ref_dir' });
 
                             //cargar municipío
-                            var receptor_municipio_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_municipio'});
-                            if(receptor_municipio_id) {
+                            var receptor_municipio_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_municipio' });
+                            if (receptor_municipio_id) {
                                 var obj_municipio = modRecord.load({
                                     type: 'customrecord_efx_fe_sat_municipio',
                                     id: receptor_municipio_id,
                                 });
-                                var mpio_receptor = obj_municipio.getValue({fieldId: 'custrecord_efx_fe_csm_cod_sat'});
+                                var mpio_receptor = obj_municipio.getValue({ fieldId: 'custrecord_efx_fe_csm_cod_sat' });
                                 if (mpio_receptor) {
                                     obj_direccion.receptor.Municipio = mpio_receptor;
                                 } else {
-                                    obj_direccion.receptor.Municipio = obj_municipio.getValue({fieldId: 'name'});
+                                    obj_direccion.receptor.Municipio = obj_municipio.getValue({ fieldId: 'name' });
                                 }
                             }
                             //cargar estado
-                            var receptor_estado_id = subrec.getValue({fieldId: 'custrecord_efx_fe_ce_estado'});
-                            if(receptor_estado_id) {
+                            var receptor_estado_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_estado' });
+                            if (receptor_estado_id) {
                                 var obj_estado = modRecord.load({
                                     type: 'customrecord_efx_fe_sat_estado',
                                     id: receptor_estado_id,
                                 });
-                                var edo_receptor = obj_estado.getValue({fieldId:'custrecord_efx_fe_se_cod_sat'});
+                                var edo_receptor = obj_estado.getValue({ fieldId: 'custrecord_efx_fe_se_cod_sat' });
                                 if (edo_receptor) {
                                     obj_direccion.receptor.Estado = edo_receptor;
                                 } else {
-                                    obj_direccion.receptor.Estado = obj_estado.getValue({fieldId: 'name'});
+                                    obj_direccion.receptor.Estado = obj_estado.getValue({ fieldId: 'name' });
                                 }
                             }
 
                             //cargar pais
-                            var receptor_pais_id = subrec.getValue({fieldId:'custrecord_efx_fe_ce_pais'});
-                            if(receptor_pais_id) {
+                            var receptor_pais_id = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_pais' });
+                            if (receptor_pais_id) {
                                 var obj_pais = modRecord.load({
                                     type: 'customrecord_efx_fe_sat_pais',
                                     id: receptor_pais_id,
                                 });
-                                obj_direccion.receptor.Pais = obj_pais.getValue({fieldId: 'custrecord_efx_fe_sp_cod_sat'});
+                                obj_direccion.receptor.Pais = obj_pais.getValue({ fieldId: 'custrecord_efx_fe_sp_cod_sat' });
                             }
-                            obj_direccion.receptor.CodigoPostal = subrec.getValue({fieldId:'zip'});
-                            obj_direccion.receptor.Destinatario = subrec.getValue({fieldId:'custrecord_efx_fe_ce_destinatario'});
+                            obj_direccion.receptor.CodigoPostal = subrec.getValue({ fieldId: 'zip' });
+                            obj_direccion.receptor.Destinatario = subrec.getValue({ fieldId: 'custrecord_efx_fe_ce_destinatario' });
 
                         }
                     }
-                }catch(error_buscadireccion_receptor){
+                } catch (error_buscadireccion_receptor) {
                     log.audit({ title: 'error_buscadireccion_receptor', details: JSON.stringify(error_buscadireccion_receptor) });
                 }
 
-                if(destinatario_id) {
+                if (destinatario_id) {
                     try {
                         var obj_destinatario = modRecord.load({
                             type: 'customrecord_efx_fe_ce_addres_destinatar',
@@ -1313,80 +1313,80 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
                         });
 
-                        obj_direccion.destinatario.Calle = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_calle'});
-                        obj_direccion.destinatario.NumeroExterior = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_numero_exterior'});
-                        obj_direccion.destinatario.NumeroInterior = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_numero_interior'});
+                        obj_direccion.destinatario.Calle = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_calle' });
+                        obj_direccion.destinatario.NumeroExterior = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_numero_exterior' });
+                        obj_direccion.destinatario.NumeroInterior = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_numero_interior' });
 
                         //caragar colonia
-                        var destinatario_colonia_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_colonia'});
-                        if(destinatario_colonia_id) {
+                        var destinatario_colonia_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_colonia' });
+                        if (destinatario_colonia_id) {
                             var obj_colonia = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_colonia',
                                 id: destinatario_colonia_id,
                             });
-                            var col_receptor = obj_colonia.getValue({fieldId: 'custrecord_efx_fe_sc_cod_sat'});
+                            var col_receptor = obj_colonia.getValue({ fieldId: 'custrecord_efx_fe_sc_cod_sat' });
                             if (col_receptor) {
                                 obj_direccion.destinatario.Colonia = col_receptor;
                             } else {
-                                obj_direccion.destinatario.Colonia = obj_colonia.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Colonia = obj_colonia.getValue({ fieldId: 'name' });
                             }
                         }
 
                         //cargar localidad
-                        var destinatario_localidad_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_localidad'});
-                        if(destinatario_localidad_id) {
+                        var destinatario_localidad_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_localidad' });
+                        if (destinatario_localidad_id) {
                             var obj_localidad = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_localidad',
                                 id: destinatario_localidad_id,
                             });
-                            var lc_receptor = obj_localidad.getValue({fieldId: 'custrecord_efx_fe_sl_cod_sat'});
+                            var lc_receptor = obj_localidad.getValue({ fieldId: 'custrecord_efx_fe_sl_cod_sat' });
                             if (lc_receptor) {
                                 obj_direccion.destinatario.Localidad = lc_receptor;
                             } else {
-                                obj_direccion.destinatario.Localidad = obj_localidad.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Localidad = obj_localidad.getValue({ fieldId: 'name' });
                             }
                         }
 
                         //cargar municipio
-                        var destinatario_municipio_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_municipio'});
-                        if(destinatario_municipio_id) {
+                        var destinatario_municipio_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_municipio' });
+                        if (destinatario_municipio_id) {
                             var obj_municipio = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_municipio',
                                 id: destinatario_municipio_id,
                             });
-                            var mpio_receptor = obj_municipio.getValue({fieldId: 'custrecord_efx_fe_csm_cod_sat'});
+                            var mpio_receptor = obj_municipio.getValue({ fieldId: 'custrecord_efx_fe_csm_cod_sat' });
                             if (mpio_receptor) {
                                 obj_direccion.destinatario.Municipio = mpio_receptor;
                             } else {
-                                obj_direccion.destinatario.Municipio = obj_municipio.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Municipio = obj_municipio.getValue({ fieldId: 'name' });
                             }
                         }
 
                         //cargar estado
-                        var destinatario_estado_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_estado'});
-                        if(destinatario_estado_id) {
+                        var destinatario_estado_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_estado' });
+                        if (destinatario_estado_id) {
                             var obj_estado = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_estado',
                                 id: destinatario_estado_id,
                             });
-                            var edo_receptor = obj_estado.getValue({fieldId: 'custrecord_efx_fe_se_cod_sat'});
+                            var edo_receptor = obj_estado.getValue({ fieldId: 'custrecord_efx_fe_se_cod_sat' });
                             if (edo_receptor) {
                                 obj_direccion.destinatario.Estado = edo_receptor;
                             } else {
-                                obj_direccion.destinatario.Estado = obj_estado.getValue({fieldId: 'name'});
+                                obj_direccion.destinatario.Estado = obj_estado.getValue({ fieldId: 'name' });
                             }
                         }
                         //cargar pais
 
-                        var destinatario_pais_id = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_pais'});
-                        if(destinatario_pais_id) {
+                        var destinatario_pais_id = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_pais' });
+                        if (destinatario_pais_id) {
                             var obj_pais = modRecord.load({
                                 type: 'customrecord_efx_fe_sat_pais',
                                 id: destinatario_pais_id,
                             });
-                            obj_direccion.destinatario.Pais = obj_pais.getValue({fieldId: 'custrecord_efx_fe_sp_cod_sat'});
+                            obj_direccion.destinatario.Pais = obj_pais.getValue({ fieldId: 'custrecord_efx_fe_sp_cod_sat' });
                         }
-                        obj_direccion.destinatario.CodigoPostal = obj_destinatario.getValue({fieldId: 'custrecord_efx_fe_cedd_codigo_postal'});
+                        obj_direccion.destinatario.CodigoPostal = obj_destinatario.getValue({ fieldId: 'custrecord_efx_fe_cedd_codigo_postal' });
 
 
                     } catch (error_buscadireccion_destinatario) {
@@ -1406,7 +1406,7 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config','N/runtime','N
 
         }
         return {
-            beforeSubmit:beforeSubmit
+            beforeSubmit: beforeSubmit
         }
 
     }
