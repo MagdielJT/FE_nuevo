@@ -225,51 +225,6 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
             } catch (error_bfload) {
                 log.error({ title: 'error_bfload', details: error_bfload });
             }
-
-            // try{
-            //     if (context.type == context.UserEventType.CREATE) {
-            //         var relacionada = record_now.getValue({fieldId:'createdfrom'});
-            //         if (recType == record.Type.CREDIT_MEMO) {
-            //             if(relacionada) {
-            //                 var tiporel = runtime.getCurrentScript().getParameter({name: 'custscript_efx_fe_tiporel_nc'});
-            //                 log.error({title: 'tiporel', details: tiporel});
-            //                 var related_cfdi = record.create({
-            //                     type: 'customrecord_mx_related_cfdi_subl',
-            //                     isDynamic: true
-            //                 });
-            //
-            //                 related_cfdi.setValue({
-            //                     fieldId: 'custrecord_mx_rcs_orig_trans',
-            //                     value: relacionada
-            //                 });
-            //
-            //                 related_cfdi.setValue({
-            //                     fieldId: 'custrecord_mx_rcs_rel_type',
-            //                     value: tiporel
-            //                 });
-            //
-            //                 related_cfdi.setValue({
-            //                     fieldId: 'custrecord_mx_rcs_rel_cfdi',
-            //                     value: record_now.id
-            //                 });
-            //
-            //                 related_cfdi.setValue({
-            //                     fieldId: 'custrecord_mx_rcs_uuid',
-            //                     value: uuid
-            //                 });
-            //
-            //
-            //                 var id_related = related_cfdi.save({
-            //                     enableSourcing: true,
-            //                     ignoreMandatoryFields: true
-            //                 });
-            //             }
-            //
-            //         }
-            //     }
-            // }catch(error_related){
-            //     log.audit({title:'error_related',details:error_related});
-            // }
         }
 
         /**
