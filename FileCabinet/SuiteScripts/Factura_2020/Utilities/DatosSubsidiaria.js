@@ -3,9 +3,9 @@
  * @NScriptType UserEventScript
  * @NModuleScope Public
  */
-define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/config', './moment.js','N/ui/serverWidget', 'N/ui/message', 'N/url', 'N/https'],
+define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/config', './moment.js', 'N/ui/serverWidget', 'N/ui/message', 'N/url', 'N/https'],
 
-    function (record, file, runtime, format, xml, search, config, moment,serverWidget, message, url, https) {
+    function (record, file, runtime, format, xml, search, config, moment, serverWidget, message, url, https) {
 
         /**
          * Function definition to be triggered before record is loaded.
@@ -23,7 +23,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
          * @param context - The context object contains information about the current user and the
          * current record.
          */
-         var accountid = '', messageDetail = '', showMessage = false, isBloqued = false;
+        var accountid = '', messageDetail = '', showMessage = false, isBloqued = false;
         function beforeLoad(context) {
             var record_now = context.newRecord;
             var recType = record_now.type;
@@ -104,7 +104,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     // }
 
                     var ocultagenerarcert = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_gencertificar' });
-                    sendMail(context, record_now, recType, pagot, cartaportecheck, ocultagenerarcert,uuidFactura);
+                    sendMail(context, record_now, recType, pagot, cartaportecheck, ocultagenerarcert, uuidFactura);
                     var regenerarpdf = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_regenerar_pdf' });
                     log.audit({ title: 'regenerarpdf', details: regenerarpdf });
 
@@ -121,8 +121,8 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 if (custscript_efx_fe_anticipo && !uuidFactura && (recType == record.Type.INVOICE || recType == record.Type.CASH_SALE)) {
                     var lineCountItem = record_now.getLineCount({ sublistId: 'item' });
                     var articuloanticipo = '';
-                    if(lineCountItem==1){
-                        for(var a=0;a<lineCountItem;a++){
+                    if (lineCountItem == 1) {
+                        for (var a = 0; a < lineCountItem; a++) {
                             articuloanticipo = record_now.getSublistValue({
                                 sublistId: 'item',
                                 fieldId: 'item',
@@ -130,27 +130,27 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                             });
                         }
 
-                        if(articuloanticipo==custscript_efx_fe_item_ap || articuloanticipo==custscript_efx_fe_item_ap_ex){
+                        if (articuloanticipo == custscript_efx_fe_item_ap || articuloanticipo == custscript_efx_fe_item_ap_ex) {
                             generaAnticipos(context, record_now, recType);
                         }
                     }
 
                     var articuloaplicaranticipo = '';
                     var aplicaAnticiposBoton = false;
-                    for(var a=0;a<lineCountItem;a++){
-                       articuloaplicaranticipo = record_now.getSublistValue({
-                           sublistId: 'item',
-                           fieldId: 'item',
-                           line: a
-                       });
-                       if(articuloaplicaranticipo!=custscript_efx_fe_item_ap && articuloaplicaranticipo!=custscript_efx_fe_item_ap_ex){
-                           aplicaAnticiposBoton = true;
-                       }
-                   }
+                    for (var a = 0; a < lineCountItem; a++) {
+                        articuloaplicaranticipo = record_now.getSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'item',
+                            line: a
+                        });
+                        if (articuloaplicaranticipo != custscript_efx_fe_item_ap && articuloaplicaranticipo != custscript_efx_fe_item_ap_ex) {
+                            aplicaAnticiposBoton = true;
+                        }
+                    }
 
-                   if(aplicaAnticiposBoton){
-                       aplicarAnticipos(context, record_now, recType);
-                   }
+                    if (aplicaAnticiposBoton) {
+                        aplicarAnticipos(context, record_now, recType);
+                    }
                 }
             }
 
@@ -432,11 +432,11 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                             );
                             direccion = subsidiary_record.getValue({ fieldId: 'mainaddress_text' });
                             id_logo = subsidiary_record.getValue({ fieldId: 'logo' });
-                            if(existeSuiteTax){
+                            if (existeSuiteTax) {
                                 rfc_sub = subsidiary_record.getSublistValue({ sublistId: 'taxregistration', fieldId: 'taxregistrationnumber', line: 0 });
-                             }else{
+                            } else {
                                 rfc_sub = subsidiary_record.getValue({ fieldId: 'federalidnumber' });
-                             }
+                            }
                         } else {
                             var configRecObj = config.load({
                                 type: config.Type.COMPANY_INFORMATION
@@ -456,7 +456,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                             id_logo_loc = location_record.getValue({ fieldId: 'logo' });
                             rfc_sub_loc = location_record.getValue({ fieldId: 'custrecord_efx_fe_ce_rfc' });
                             var zonahorariavalue = location_record.getValue({ fieldId: 'custrecord_efx_fe_time_zone' });
-                            if(zonahorariavalue){
+                            if (zonahorariavalue) {
                                 zonahoraria = location_record.getText({ fieldId: 'custrecord_efx_fe_time_zone' });
                             }
                             log.audit({ title: 'direccion_loc', details: direccion_loc });
@@ -712,80 +712,87 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 }
             }
 
-            // if (context.type == context.UserEventType.CREATE && recType != record.Type.SALES_ORDER && recType != record.Type.ITEM_FULFILLMENT) {
-            //     if (recType != record.Type.PURCHASE_ORDER && recType != 'customsale_efx_fe_factura_global') {
-            //         if (recType == record.Type.CUSTOMER_PAYMENT) {
-            //             var id = record_now.getValue('customer');
-            //         } else {
-            //             var id = record_now.getValue('entity');
-            //         }
-            //
-            //
-            //         var cliente = record.load({
-            //             type: record.Type.CUSTOMER,
-            //             id: id,
-            //         });
-            //
-            //         log.audit('cfdi_usage', cliente.getValue('custentity_efx_mx_cfdi_usage'))
-            //
-            //         var usocfdi = cliente.getValue('custentity_efx_mx_cfdi_usage') || '';
-            //         var pagometodo = cliente.getValue('custentity_efx_mx_payment_method') || '';
-            //         var pagoforma = cliente.getValue('custentity_efx_mx_payment_term') || '';
-            //
-            //
-            //         if(usocfdi){
-            //             record_now.setValue({
-            //                 fieldId: 'custbody_mx_cfdi_usage',
-            //                 value: usocfdi
-            //             });
-            //         }
-            //
-            //
-            //         if(pagometodo){
-            //             log.audit('metodo de pago', cliente.getValue('custentity_efx_mx_payment_method'))
-            //             record_now.setValue({
-            //                 fieldId: 'custbody_mx_txn_sat_payment_method',
-            //                 value: pagometodo
-            //             });
-            //         }
-            //
-            //
-            //         if(pagoforma){
-            //             log.audit('forma de pago', cliente.getValue('custentity_efx_mx_payment_term'))
-            //             record_now.setValue({
-            //                 fieldId: 'custbody_mx_txn_sat_payment_term',
-            //                 value: pagoforma
-            //             });
-            //         }
-            //
-            //     }
-            // }
+            if (context.type == context.UserEventType.CREATE && recType != record.Type.SALES_ORDER && recType != record.Type.ITEM_FULFILLMENT) {
+                if (recType != record.Type.PURCHASE_ORDER && recType != 'customsale_efx_fe_factura_global') {
+                    if (recType == record.Type.CUSTOMER_PAYMENT) {
+                        var id = record_now.getValue('customer');
+                    } else {
+                        var id = record_now.getValue('entity');
+                    }
+
+
+                    var cliente = record.load({
+                        type: record.Type.CUSTOMER,
+                        id: id,
+                    });
+
+                    log.audit('cfdi_usage', cliente.getValue('custentity_efx_mx_cfdi_usage'))
+
+                    var usocfdi = cliente.getValue('custentity_efx_mx_cfdi_usage') || '';
+                    var pagometodo = cliente.getValue('custentity_efx_mx_payment_method') || '';
+                    var pagoforma = cliente.getValue('custentity_efx_mx_payment_term') || '';
+
+
+                    if(usocfdi){
+                        if (recType == record.Type.CUSTOMER_PAYMENT) {
+                            record_now.setValue({
+                                fieldId: 'custbody_mx_cfdi_usage',
+                                value: 'CP01 - Pagos'
+                            });
+                        } else {
+                            record_now.setValue({
+                                fieldId: 'custbody_mx_cfdi_usage',
+                                value: usocfdi
+                            });
+                        }
+                    }
+
+
+                    if(pagometodo){
+                        log.audit('metodo de pago', cliente.getValue('custentity_efx_mx_payment_method'))
+                        record_now.setValue({
+                            fieldId: 'custbody_mx_txn_sat_payment_method',
+                            value: pagometodo
+                        });
+                    }
+
+
+                    if(pagoforma){
+                        log.audit('forma de pago', cliente.getValue('custentity_efx_mx_payment_term'))
+                        record_now.setValue({
+                            fieldId: 'custbody_mx_txn_sat_payment_term',
+                            value: pagoforma
+                        });
+                    }
+
+                }
+            }
             if (recType == record.Type.INVOICE || recType == record.Type.CASH_SALE || recType == record.Type.CREDIT_MEMO || recType == record.Type.CUSTOMER_PAYMENT || recType == record.Type.ITEM_FULFILLMENT || recType == record.Type.TRANSFER_ORDER) {
-            agregaPlantillas(context,record_now,recType);
+                agregaPlantillas(context, record_now, recType);
             }
 
 
         }
 
 
-        function agregaPlantillas(context,record_now,recType){
-            try{
+        function agregaPlantillas(context, record_now, recType) {
+            try {
                 var idrecdyn = record_now.id;
                 var recobjdyn = record.load({
-                    type:recType,
-                    id:idrecdyn,
-                    isDynamic:true
+                    type: recType,
+                    id: idrecdyn,
+                    isDynamic: true
                 });
-                var plantillaOptions = recobjdyn.getField({fieldId:'custbody_psg_ei_template'});
-                var metodoOptions = recobjdyn.getField({fieldId:'custbody_psg_ei_sending_method'});
+                var plantillaOptions = recobjdyn.getField({ fieldId: 'custbody_psg_ei_template' });
+                var metodoOptions = recobjdyn.getField({ fieldId: 'custbody_psg_ei_sending_method' });
 
-                log.audit({title:'seloptions',details:plantillaOptions.getSelectOptions().length});
+                log.audit({ title: 'seloptions', details: plantillaOptions.getSelectOptions().length });
                 var datosPlantilla = false;
                 var datosMetodo = false;
-                if(plantillaOptions.getSelectOptions().length > 0){
+                if (plantillaOptions.getSelectOptions().length > 0) {
                     datosPlantilla = true;
                 }
-                if(metodoOptions.getSelectOptions().length > 0){
+                if (metodoOptions.getSelectOptions().length > 0) {
                     datosMetodo = true;
                 }
                 var cfdiversion = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_version' });
@@ -803,78 +810,78 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     });
 
                     if (recType == record.Type.CUSTOMER_PAYMENT) {
-                        var dir_cliente =  clienteObj.getValue({fieldId:'defaultaddress'});
+                        var dir_cliente = clienteObj.getValue({ fieldId: 'defaultaddress' });
 
                         try {
                             record_now.setValue({
                                 fieldId: 'custbody_tko_dir_cliente',
                                 value: dir_cliente,
                             });
-                            log.audit({title: 'dir_cliente', details: dir_cliente});
+                            log.audit({ title: 'dir_cliente', details: dir_cliente });
                         } catch (error) {
-                            log.error({title: 'error al poner direccion de cliente', details: 'probablemente el campo custbody_tko_dir_cliente no existe, favor de crearlo'})
+                            log.error({ title: 'error al poner direccion de cliente', details: 'probablemente el campo custbody_tko_dir_cliente no existe, favor de crearlo' })
                         }
 
                     }
 
-                    var paqueteDCliente = clienteObj.getValue({fieldId:'custentity_psg_ei_entity_edoc_standard'});
-                    var cfdiversionCustomer = clienteObj.getValue({fieldId:'custentity_efx_fe_version'});
+                    var paqueteDCliente = clienteObj.getValue({ fieldId: 'custentity_psg_ei_entity_edoc_standard' });
+                    var cfdiversionCustomer = clienteObj.getValue({ fieldId: 'custentity_efx_fe_version' });
 
-                    if(paqueteDCliente){
+                    if (paqueteDCliente) {
                         var buscaPlantillas = search.create({
-                            type:'customrecord_psg_ei_template',
-                            filters:[
-                                ['isinactive',search.Operator.IS,'F']
-                                ,'AND',
-                                ['custrecord_psg_ei_template_edoc_standard',search.Operator.ANYOF,paqueteDCliente]
+                            type: 'customrecord_psg_ei_template',
+                            filters: [
+                                ['isinactive', search.Operator.IS, 'F']
+                                , 'AND',
+                                ['custrecord_psg_ei_template_edoc_standard', search.Operator.ANYOF, paqueteDCliente]
                             ],
-                            columns:[
-                                search.createColumn({name:'internalid'}),
-                                search.createColumn({name:'name'}),
-                                search.createColumn({name:'custrecord_psg_ei_template_edoc_standard'}),
+                            columns: [
+                                search.createColumn({ name: 'internalid' }),
+                                search.createColumn({ name: 'name' }),
+                                search.createColumn({ name: 'custrecord_psg_ei_template_edoc_standard' }),
                             ]
                         });
-                        buscaPlantillas.run().each(function (result){
+                        buscaPlantillas.run().each(function (result) {
 
-                            var idPlantilla = result.getValue({name: 'internalid'});
-                            var nombrePlantilla = result.getValue({name: 'name'});
-                            var paquetePlantilla = result.getValue({name: 'custrecord_psg_ei_template_edoc_standard'});
+                            var idPlantilla = result.getValue({ name: 'internalid' });
+                            var nombrePlantilla = result.getValue({ name: 'name' });
+                            var paquetePlantilla = result.getValue({ name: 'custrecord_psg_ei_template_edoc_standard' });
 
-                            var invoice40=nombrePlantilla.indexOf("invoice template 4.0") !== -1;
-                            var invoice30=nombrePlantilla.indexOf("invoice template 3.3") !== -1;
-                            var nc40=nombrePlantilla.indexOf("credit memo template 4.0") !== -1;
-                            var nc30=nombrePlantilla.indexOf("credit memo template 3.3") !== -1;
-                            var cashsale40=nombrePlantilla.indexOf("cash sale template 4.0") !== -1;
-                            var cashsale30=nombrePlantilla.indexOf("cash sale template 3.3") !== -1;
-                            var payment40=nombrePlantilla.indexOf("customer payment template 4.0") !== -1;
-                            var payment30=nombrePlantilla.indexOf("customer payment template 3.3") !== -1;
+                            var invoice40 = nombrePlantilla.indexOf("invoice template 4.0") !== -1;
+                            var invoice30 = nombrePlantilla.indexOf("invoice template 3.3") !== -1;
+                            var nc40 = nombrePlantilla.indexOf("credit memo template 4.0") !== -1;
+                            var nc30 = nombrePlantilla.indexOf("credit memo template 3.3") !== -1;
+                            var cashsale40 = nombrePlantilla.indexOf("cash sale template 4.0") !== -1;
+                            var cashsale30 = nombrePlantilla.indexOf("cash sale template 3.3") !== -1;
+                            var payment40 = nombrePlantilla.indexOf("customer payment template 4.0") !== -1;
+                            var payment30 = nombrePlantilla.indexOf("customer payment template 3.3") !== -1;
 
 
-                            if(cfdiversion=='' || !cfdiversion){
-                                if(recType == record.Type.INVOICE && invoice40 && cfdiversionCustomer==2){
-                                    if(datosPlantilla){
+                            if (cfdiversion == '' || !cfdiversion) {
+                                if (recType == record.Type.INVOICE && invoice40 && cfdiversionCustomer == 2) {
+                                    if (datosPlantilla) {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({title: 'idPlantilla 906', details: idPlantilla});
-                                    }else{
+                                        log.audit({ title: 'idPlantilla 906', details: idPlantilla });
+                                    } else {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
                                     }
-                                }else if(recType == record.Type.INVOICE && invoice30 && (cfdiversionCustomer==1 || cfdiversionCustomer=='')){
-                                    if(datosPlantilla){
+                                } else if (recType == record.Type.INVOICE && invoice30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
+                                    if (datosPlantilla) {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({title: 'idPlantilla 921', details: idPlantilla});
-                                    }else{
+                                        log.audit({ title: 'idPlantilla 921', details: idPlantilla });
+                                    } else {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
@@ -883,62 +890,30 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                     }
                                 }
 
-                                if(recType == record.Type.CASH_SALE && cashsale40 && cfdiversionCustomer==2){
-                                    if(datosPlantilla){
+                                if (recType == record.Type.CASH_SALE && cashsale40 && cfdiversionCustomer == 2) {
+                                    if (datosPlantilla) {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({title: 'idPlantilla 938', details: idPlantilla});
-                                    }else{
+                                        log.audit({ title: 'idPlantilla 938', details: idPlantilla });
+                                    } else {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
                                     }
-                                }else if(recType == record.Type.CASH_SALE && cashsale30 && (cfdiversionCustomer==1 || cfdiversionCustomer=='')){
-                                    if(datosPlantilla){
+                                } else if (recType == record.Type.CASH_SALE && cashsale30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
+                                    if (datosPlantilla) {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({title: 'idPlantilla 953', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                }
-
-                                if(recType == record.Type.CREDIT_MEMO && nc40 && cfdiversionCustomer==2){
-                                    if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 970', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                }else if(recType == record.Type.CREDIT_MEMO && nc30 && (cfdiversionCustomer==1 || cfdiversionCustomer=='')){
-                                    if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 985', details: idPlantilla});
-                                    }else{
+                                        log.audit({ title: 'idPlantilla 953', details: idPlantilla });
+                                    } else {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
@@ -947,217 +922,249 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                     }
                                 }
 
-                                if(recType == record.Type.CUSTOMER_PAYMENT && payment40 && cfdiversionCustomer==2){
-                                    if(datosPlantilla){
+                                if (recType == record.Type.CREDIT_MEMO && nc40 && cfdiversionCustomer == 2) {
+                                    if (datosPlantilla) {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({title: 'idPlantilla 1002', details: idPlantilla});
-                                    }else{
+                                        log.audit({ title: 'idPlantilla 970', details: idPlantilla });
+                                    } else {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
                                     }
-                                }else if(recType == record.Type.CUSTOMER_PAYMENT && payment30 && (cfdiversionCustomer==1 || cfdiversionCustomer=='')){
-                                    if(datosPlantilla){
+                                } else if (recType == record.Type.CREDIT_MEMO && nc30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
+                                    if (datosPlantilla) {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({title: 'idPlantilla 1017', details: idPlantilla});
-                                    }else{
+                                        log.audit({ title: 'idPlantilla 985', details: idPlantilla });
+                                    } else {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                    }
-                                }
-                             }else{
-                                if(cfdiversion==1){
-                                    if(recType == record.Type.INVOICE && invoice30){
-                                        if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1035', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                    }
-                                    if(recType == record.Type.CASH_SALE && cashsale30){
-                                        if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1051', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                    }
-                                    if(recType == record.Type.CREDIT_MEMO && nc30){
-                                        if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1067', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                    }
-                                    if(recType == record.Type.CUSTOMER_PAYMENT && payment30){
-                                        if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1083', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                    }
-                                }
-                                if(cfdiversion==2){
-                                    if(recType == record.Type.INVOICE && invoice40){
-                                       if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1101', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                    }
-                                    if(recType == record.Type.CASH_SALE && cashsale40){
-                                        if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1117', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                    }
-                                    if(recType == record.Type.CREDIT_MEMO && nc40){
-                                        if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1133', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
-                                    }
-                                    if(recType == record.Type.CUSTOMER_PAYMENT && payment40){
-                                        if(datosPlantilla){
-                                        record_now.setValue({
-                                            fieldId: 'custbody_psg_ei_template',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                        log.audit({title: 'idPlantilla 1149', details: idPlantilla});
-                                    }else{
-                                        record_now.setValue({
-                                            fieldId: 'custbody_efx_fe_plantilla_docel',
-                                            value: idPlantilla,
-                                            ignoreFieldChange: true
-                                        });
-                                    }
                                     }
                                 }
 
-                             }
+                                if (recType == record.Type.CUSTOMER_PAYMENT && payment40 && cfdiversionCustomer == 2) {
+                                    if (datosPlantilla) {
+                                        record_now.setValue({
+                                            fieldId: 'custbody_psg_ei_template',
+                                            value: idPlantilla,
+                                            ignoreFieldChange: true
+                                        });
+                                        log.audit({ title: 'idPlantilla 1002', details: idPlantilla });
+                                    } else {
+                                        record_now.setValue({
+                                            fieldId: 'custbody_efx_fe_plantilla_docel',
+                                            value: idPlantilla,
+                                            ignoreFieldChange: true
+                                        });
+                                    }
+                                } else if (recType == record.Type.CUSTOMER_PAYMENT && payment30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
+                                    if (datosPlantilla) {
+                                        record_now.setValue({
+                                            fieldId: 'custbody_psg_ei_template',
+                                            value: idPlantilla,
+                                            ignoreFieldChange: true
+                                        });
+                                        log.audit({ title: 'idPlantilla 1017', details: idPlantilla });
+                                    } else {
+                                        record_now.setValue({
+                                            fieldId: 'custbody_efx_fe_plantilla_docel',
+                                            value: idPlantilla,
+                                            ignoreFieldChange: true
+                                        });
+                                    }
+                                }
+                            } else {
+                                if (cfdiversion == 1) {
+                                    if (recType == record.Type.INVOICE && invoice30) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1035', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                    if (recType == record.Type.CASH_SALE && cashsale30) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1051', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                    if (recType == record.Type.CREDIT_MEMO && nc30) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1067', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                    if (recType == record.Type.CUSTOMER_PAYMENT && payment30) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1083', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                }
+                                if (cfdiversion == 2) {
+                                    if (recType == record.Type.INVOICE && invoice40) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1101', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                    if (recType == record.Type.CASH_SALE && cashsale40) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1117', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                    if (recType == record.Type.CREDIT_MEMO && nc40) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1133', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                    if (recType == record.Type.CUSTOMER_PAYMENT && payment40) {
+                                        if (datosPlantilla) {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_psg_ei_template',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                            log.audit({ title: 'idPlantilla 1149', details: idPlantilla });
+                                        } else {
+                                            record_now.setValue({
+                                                fieldId: 'custbody_efx_fe_plantilla_docel',
+                                                value: idPlantilla,
+                                                ignoreFieldChange: true
+                                            });
+                                        }
+                                    }
+                                }
+
+                            }
 
                             return true;
                         });
 
                         var buscaMetodos = search.create({
-                            type:'customrecord_ei_sending_method',
-                            filters:[
-                                ['isinactive',search.Operator.IS,'F']
-                                ,'AND',
-                                ['custrecord_psg_ei_edoc_standard',search.Operator.ANYOF,paqueteDCliente]
+                            type: 'customrecord_ei_sending_method',
+                            filters: [
+                                ['isinactive', search.Operator.IS, 'F']
+                                , 'AND',
+                                ['custrecord_psg_ei_edoc_standard', search.Operator.ANYOF, paqueteDCliente]
                             ],
-                            columns:[
-                                search.createColumn({name:'internalid'}),
+                            columns: [
+                                search.createColumn({ name: 'internalid' }),
                             ]
                         });
-                        buscaMetodos.run().each(function (result){
+                        buscaMetodos.run().each(function (result) {
 
-                            var metodo = result.getValue({name: 'internalid'});
+                            var metodo = result.getValue({ name: 'internalid' });
 
-                            if(datosMetodo){
+                            if (datosMetodo) {
                                 record_now.setValue({
                                     fieldId: 'custbody_psg_ei_sending_method',
                                     value: metodo,
                                     ignoreFieldChange: true
                                 });
-                             }else{
+                            } else {
                                 record_now.setValue({
                                     fieldId: 'custbody_efx_fe_metodo_docel',
                                     value: metodo,
                                     ignoreFieldChange: true
                                 });
-                             }
+                            }
 
 
                             return true;
                         });
                     }
                 }
-            }catch(errorAgregaPlantillas){
-                log.error({title:'errorAgregaPlantillas',details:errorAgregaPlantillas});
+            } catch (errorAgregaPlantillas) {
+                log.error({ title: 'errorAgregaPlantillas', details: errorAgregaPlantillas });
             }
 
         }
 
-        function sendMail(context, record_now, recType, pagot, cartaportecheck, ocultagenerarcert,uuidFactura) {
+        function sendMail(context, record_now, recType, pagot, cartaportecheck, ocultagenerarcert, uuidFactura) {
             var cfdiversion = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_version' });
             var status_cfdi = record_now.getValue({ fieldId: 'custbody_psg_ei_status' });
             var enviar_correos = record_now.getValue({ fieldId: 'custbody_efx_fe_send_cert_docs' });
@@ -1217,24 +1224,24 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 log.audit({ title: 'monto_no_app', details: monto_no_app });
                 // if(monto_no_app==0) {
                 if (ocultagenerarcert) {
-                    if(!uuidFactura){
+                    if (!uuidFactura) {
                         if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
 
                             if (!isBloqued) {
-                            if(cfdiversion==1){
-                                form.addButton({
-                                    id: "custpage_btn_timbrar",
-                                    label: "Generar y Certificar",
-                                    functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
-                                });
-                            }else if(cfdiversion==2 || cfdiversion=='' || !cfdiversion){
-                                form.addButton({
-                                    id: "custpage_btn_timbrar",
-                                    label: "Generar y Certificar",
-                                    functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
-                                });
+                                if (cfdiversion == 1) {
+                                    form.addButton({
+                                        id: "custpage_btn_timbrar",
+                                        label: "Generar y Certificar",
+                                        functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
+                                    });
+                                } else if (cfdiversion == 2 || cfdiversion == '' || !cfdiversion) {
+                                    form.addButton({
+                                        id: "custpage_btn_timbrar",
+                                        label: "Generar y Certificar",
+                                        functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
+                                    });
+                                }
                             }
-                        }
                         }
                     }
                 }
@@ -1243,12 +1250,12 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 if (!certificado) {
                     if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
                         if (!isBloqued) {
-                        form.addButton({
-                            id: "custpage_btn_timbrar_gbl",
-                            label: "Generar y Certificar GBL",
-                            functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
-                        });
-                    }
+                            form.addButton({
+                                id: "custpage_btn_timbrar_gbl",
+                                label: "Generar y Certificar GBL",
+                                functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
+                            });
+                        }
                     }
                 }
             } else if (pagot == 'cartaPorteOC' && cartaportecheck) {
@@ -1286,7 +1293,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 }
             } else {
                 if (ocultagenerarcert) {
-                    log.audit({title:'ocultagenerarcert',details:ocultagenerarcert});
+                    log.audit({ title: 'ocultagenerarcert', details: ocultagenerarcert });
                     var button_send = form.getButton({
                         id: 'custpage_send_ei_button'
                     });
@@ -1310,23 +1317,23 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 }
                 if (!certificado) {
                     if (ocultagenerarcert && recType != record.Type.PURCHASE_ORDER) {
-                        if(!uuidFactura){
+                        if (!uuidFactura) {
                             if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
                                 if (!isBloqued) {
-                                if(cfdiversion==1){
-                                    form.addButton({
-                                        id: "custpage_btn_timbrar",
-                                        label: "Generar y Certificar",
-                                        functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
-                                    });
-                                }else if(cfdiversion==2 || cfdiversion=='' || !cfdiversion){
-                                    form.addButton({
-                                        id: "custpage_btn_timbrar",
-                                        label: "Generar y Certificar",
-                                        functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
-                                    });
+                                    if (cfdiversion == 1) {
+                                        form.addButton({
+                                            id: "custpage_btn_timbrar",
+                                            label: "Generar y Certificar",
+                                            functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
+                                        });
+                                    } else if (cfdiversion == 2 || cfdiversion == '' || !cfdiversion) {
+                                        form.addButton({
+                                            id: "custpage_btn_timbrar",
+                                            label: "Generar y Certificar",
+                                            functionName: "generaCertificaGBL(" + JSON.stringify(tranData) + ")"
+                                        });
+                                    }
                                 }
-                            }
                             }
                         }
                     }
@@ -1510,22 +1517,22 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
 
         }
 
-        function aplicarAnticipos(context, record_now, recType){
+        function aplicarAnticipos(context, record_now, recType) {
             var form = context.form;
             form.clientScriptModulePath = "./EFX_FE_Send_To_Mail_CS.js";
             var tranData = {
                 tranid: record_now.id,
                 trantype: recType,
                 anticipo: true,
-                entity:'',
-                location:'',
-                total:'',
+                entity: '',
+                location: '',
+                total: '',
             };
 
 
-            tranData.entity = record_now.getValue({fieldId:'entity'});
-            tranData.location = record_now.getValue({fieldId:'location'});
-            tranData.total = record_now.getValue({fieldId:'total'});
+            tranData.entity = record_now.getValue({ fieldId: 'entity' });
+            tranData.location = record_now.getValue({ fieldId: 'location' });
+            tranData.total = record_now.getValue({ fieldId: 'total' });
             form.addButton({
                 id: "custpage_btn_aplicar_ap",
                 label: "Aplicar Anticipo",

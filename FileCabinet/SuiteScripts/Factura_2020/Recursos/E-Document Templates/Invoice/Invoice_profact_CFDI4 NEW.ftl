@@ -120,7 +120,11 @@
             <#else>
                 <#assign "CEreceptorNumR" = transaction.custbody_efx_fe_ce_recep_num_reg>
             </#if>
-            <#assign "CEreceptorResidF" = transaction.custbody_efx_fe_ce_rec_residenciaf>
+            <#if transaction.entity.custentity_efx_fe_residenciafiscal?has_content>
+                <#assign "CEreceptorResidF" = transaction.entity.custentity_efx_fe_residenciafiscal>
+            <#else>
+                <#assign "CEreceptorResidF" = transaction.custbody_efx_fe_ce_rec_residenciaf>
+            </#if>
             <#assign xsischemalocation_CE = " http://www.sat.gob.mx/ComercioExterior11 http://www.sat.gob.mx/sitio_internet/cfd/ComercioExterior11/ComercioExterior11.xsd">
         <#elseif ImpLocal == true || ImpLocalobj?has_content>
             <#assign xsischemalocation_imploc = " http://www.sat.gob.mx/implocal http://www.sat.gob.mx/sitio_internet/cfd/implocal/implocal.xsd">
@@ -371,8 +375,10 @@ Descuento="${total_desc_cabecera}">
             <#assign "item" = transaction.item[customItem.line?number]>
             <#assign "taxes" = customItem.taxes>
             <#assign "itemSatCodes" = satCodes.items[customItem.line?number]>
-            <#if customItem.type == "Group"  || customItem.type == "Kit">
+            <#if customItem.type == "Group">
                 <#assign "itemSatUnitCode" = "H87">
+            <#elseif customItem.type == "Kit" || customItem.type == "kit" || customItem.type == "Kt" || customItem.type == "KT" || customItem.type == "kt">
+                <#assign "itemSatUnitCode" = "KT">
             <#else>
                 <#assign "itemSatUnitCode" = (customItem.satUnitCode)!"">
 
