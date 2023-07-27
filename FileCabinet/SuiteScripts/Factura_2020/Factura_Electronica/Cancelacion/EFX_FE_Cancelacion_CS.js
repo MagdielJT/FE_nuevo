@@ -200,7 +200,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         type: mensajes.Type.ERROR
                     });
                     mensaje.show();
-                    location.reload();
+                    // location.reload();
                 }
 
                 if (state && cancelReason) {//document.getElementById('cancelar').value != 0
@@ -253,7 +253,8 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         var codigoCancelacion = cancelReason.split('-');
                         var url_Script = url.resolveScript({
                             scriptId: 'customscript_efx_fe_cancelacion_sl',
-                            deploymentId: 'customdeploy_efx_fe_cancelacion_sl'
+                            deploymentId: 'customdeploy_efx_fe_cancelacion_sl',
+                            returnExternalUrl: true
                         });
 
                         url_Script += '&custparam_tranid=' + tranid;
@@ -265,30 +266,40 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         var headers = {
                             "Content-Type": "application/json"
                         };
-
+                        console.log('url_script',url_Script);
                         https.request.promise({
-                            method: https.Method.GET,
+                            method: https.Method.POST,
                             url: url_Script,
-                            headers: headers
-                        })
-                            .then(function (response) {
-                                log.debug({
+                            headers: headers,
+                            body: {}
+                        }).then(function (response) {
+                                console.log({
                                     title: 'Response',
                                     details: response
                                 });
+                                var myresponse_body = JSON.parse(response.body)
+                                console.log('body: ', myresponse_body);
 
                                 if (response.code == 200) {
                                     myMsg_create.hide();
-                                    var myMsg = mensajes.create({
-                                        title: "Cancelacion",
-                                        message: "El proceso de cancelación concluyó, revise el acuse de cancelación en la subpestaña de CFDI Infomation",
-                                        type: mensajes.Type.CONFIRMATION
-                                    });
-                                    myMsg.show({ duration: 5500 });
-
-                                    console.log('respuesta');
-
-                                    location.reload();
+                                    if (myresponse_body.success == false) {
+                                        var myMsg = mensajes.create({
+                                            title: "Cancelacion",
+                                            message: "Ocurrio un error: " + myresponse_body.error,
+                                            type: mensajes.Type.ERROR
+                                        });
+                                        myMsg.show();
+                                    }else{
+                                        var myMsg = mensajes.create({
+                                            title: "Cancelacion",
+                                            message: "El proceso de cancelación concluyó, revise el acuse de cancelación en la subpestaña de CFDI Infomation",
+                                            type: mensajes.Type.CONFIRMATION
+                                        });
+                                        myMsg.show({ duration: 5500 });
+                                        console.log('respuesta');
+    
+                                        location.reload();
+                                    }
                                 } else if (response.code == 500) {
                                     myMsg_create.hide();
                                     var myMsg = mensajes.create({
@@ -515,7 +526,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                     type: mensajes.Type.INFORMATION
                 });
                 mensajeError.show();
-                location.reload();
+                // location.reload();
             }
         }
 
@@ -694,7 +705,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         type: mensajes.Type.ERROR
                     });
                     mensaje.show();
-                    location.reload();
+                    // location.reload();
                 }
                 if (state && cancelReason) {
                     console.log('entra al if : "if (state && cancelReason)"')
@@ -821,7 +832,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                                         window.open(output, '_blank');
                                         console.log(output);
                                     }
-                                    location.reload();
+                                    // location.reload();
 
                                     //location.reload();
                                 } else if (response.code == 500) {
@@ -975,7 +986,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                     type: mensajes.Type.INFORMATION
                 });
                 mensajeError.show();
-                location.reload();
+                // location.reload();
             }
         }
 
