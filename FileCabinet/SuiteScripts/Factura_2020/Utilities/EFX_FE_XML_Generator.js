@@ -763,7 +763,9 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                         var objPDFtext = JSON.stringify(objPDFjson);
                                         //var objPDF = JSON.parse(objPDFtext.replace(/#text/gi,'texto'));
                                         var objPDFfirst = objPDFtext.replace(/#text/gi, 'texto');
-                                        var objPDF = JSON.parse(objPDFfirst.replace(/&/gi, '&amp;'));
+                                        var objPDFsecond = JSON.parse(objPDFfirst.replace(/&/gi,'&amp;'));
+                                        var objPDFthrird = JSON.parse(objPDFsecond.replace(/</gi,'&lt;'));
+                                        var objPDF = JSON.parse(objPDFthrird.replace(/>/gi,'&gt;'));
                                     } catch (errorObjpdf) {
                                         log.audit({ title: 'errorObjpdf', details: errorObjpdf })
                                     }
