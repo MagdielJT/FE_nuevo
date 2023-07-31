@@ -353,7 +353,7 @@
                                 </#if>
                             </#if>
 
-                            ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"")!""}
+                            ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"transaction.custcol_efx_fe_clave_producto_sat")!"transaction.custcol_efx_fe_clave_producto_sat"}
                             ${getAttrPair("ClaveUnidad",itemSatUnitCode)!""}
                             Descripcion="${item.description?replace("<br />","")}"
                             <#assign impdesglosaieps = 0>
@@ -392,11 +392,11 @@
                             <#if json_descuentos?number gt 0>
                             Descuento="${desglose.descuentoSinImpuesto?number?string["0.00"]}"
 
-                            ObjetoImp="${objimp}">
+                            ObjetoImp="02">
                         <#else>
 
                             Descuento="0.00"
-                            ObjetoImp="${objimp}">
+                            ObjetoImp="02">
 
                         </#if>
 
@@ -533,10 +533,10 @@
                                         <#assign json_descuentos = desglose.descuentoSinImpuesto>
                                         <#if json_descuentos?number gt 0>
                                         Descuento="${desglose.descuentoSinImpuesto?number?string["0.00"]}"
-                                        ObjetoImp="${objimp}">
+                                        ObjetoImp="02">
                                     <#else>
                                         Descuento="0.00"
-                                        ObjetoImp="${objimp}">
+                                        ObjetoImp="02">
 
                                     </#if>
 
@@ -640,12 +640,12 @@
                                     <#if descuentodesgloses gt 0>
                                     Descuento="${descuentodesgloses?string["0.00"]}"
                                     <#assign objimp = item.custcol_mx_txn_line_sat_tax_object?keep_before(" -")>
-                                    ObjetoImp="${objimp}">
+                                    ObjetoImp="02">
                                 <#else>
 
                                     <#assign objimp = item.custcol_mx_txn_line_sat_tax_object?keep_before(" -")>
                                     Descuento="0.00"
-                                    ObjetoImp="${objimp}">
+                                    ObjetoImp="02">
 
                                 </#if>
 
