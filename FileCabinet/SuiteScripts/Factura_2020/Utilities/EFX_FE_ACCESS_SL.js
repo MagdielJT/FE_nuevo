@@ -44,18 +44,24 @@ define(['N/search'],
                             search.createColumn({name:'name'}),
                             search.createColumn({name:'custrecord_efx_fe_access_id'}),
                             search.createColumn({name:'custrecord_efx_fe_access_enabled'}),
+                            search.createColumn({name:'custrecord_efx_fe_validate_message'}),
+                            search.createColumn({name:'custrecord_efx_fe_message'}),
+                            search.createColumn({name:'custrecord_efx_fe_bloqued'})
                         ]
                     });
-                    
+
 
                     buscaRecord.run().each(function (result){
                         objresponse.accountid = result.getValue({name:'custrecord_efx_fe_access_id'});
                         objresponse.enabled = result.getValue({name:'custrecord_efx_fe_access_enabled'});
+                        objresponse.showMessage = result.getValue({name: 'custrecord_efx_fe_validate_message'}||'');
+                        objresponse.messageDetail = result.getValue({name: 'custrecord_efx_fe_message'}||'');
+                        objresponse.isBloqued = result.getValue({name: 'custrecord_efx_fe_bloqued'}||'');
                     });
 
-    
+
                 }
-                
+
 
             }catch(error_access){
                 log.error({title:'error_access',details:error_access});
