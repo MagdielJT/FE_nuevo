@@ -1223,11 +1223,14 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 var monto_no_app = record_now.getValue({ fieldId: 'unapplied' });
                 log.audit({ title: 'monto_no_app', details: monto_no_app });
                 // if(monto_no_app==0) {
+                log.audit({title: 'ocultagenerarcert ~ 1226', details: ocultagenerarcert});
                 if (ocultagenerarcert) {
+                    log.audit({title: 'uuidFactura', details: uuidFactura});
                     if (!uuidFactura) {
+                        log.audit({title: 'status_cfdi', details: status_cfdi});
                         if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
-
-                            if (!habilitado) {
+                            log.audit({title: 'habilitado', details: habilitado});
+                            if (habilitado) {
                                 if (cfdiversion == 1) {
                                     form.addButton({
                                         id: "custpage_btn_timbrar",
@@ -1249,7 +1252,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
             } else if (pagot == 'gbl') {
                 if (!certificado) {
                     if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
-                        if (!habilitado) {
+                        if (habilitado) {
                             form.addButton({
                                 id: "custpage_btn_timbrar_gbl",
                                 label: "Generar y Certificar GBL",
@@ -1315,11 +1318,17 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                         button_cert.isHidden = true;
                     }
                 }
+                log.audit({title: 'certificado', details: certificado});
                 if (!certificado) {
+                    log.audit({title: 'ocultagenerarcert & recType', details:ocultagenerarcert +' & ' + recType});
                     if (ocultagenerarcert && recType != record.Type.PURCHASE_ORDER) {
+                        log.audit({title: 'uuidFactura', details: uuidFactura});
                         if (!uuidFactura) {
+                            log.audit({title: 'status_cfdi', details: status_cfdi});
                             if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
-                                if (!habilitado) {
+                                log.audit({title: 'habilitado', details: habilitado});
+                                if (habilitado) {
+                                    log.audit({title: 'cfdiversion', details: cfdiversion});
                                     if (cfdiversion == 1) {
                                         form.addButton({
                                             id: "custpage_btn_timbrar",
@@ -1570,7 +1579,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     form.removeButton({ id: 'edit' });
 
                 }
-                if (!isBloqued ) {
+                if (showMessage && messageDetail != "" && !isBloqued) {
                     var form = context.form;
                     form.addPageInitMessage({
                         type: message.Type.WARNING,
@@ -1579,15 +1588,16 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     });
                     context.form = form
                 }else{
-                    var form = context.form;
-                    form.addPageInitMessage({
-                        type: message.Type.ERROR,
-                        message: messageDetail,
-
-                    });
-                    context.form = form
+                    if (isBloqued && messageDetail != "") {
+                        var form = context.form;
+                        form.addPageInitMessage({
+                            type: message.Type.ERROR,
+                            message: messageDetail,
+                        });
+                        context.form = form
+                    }
                 }
-                //}
+
             } catch (e) {
                 log.error({ title: 'Error controlMensajesAccesoFacturacion:', details: e });
             }
