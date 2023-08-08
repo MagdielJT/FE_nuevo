@@ -1139,18 +1139,20 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
 
                             var metodo = result.getValue({ name: 'internalid' });
 
-                            if (datosMetodo) {
-                                record_now.setValue({
-                                    fieldId: 'custbody_psg_ei_sending_method',
-                                    value: metodo,
-                                    ignoreFieldChange: true
-                                });
-                            } else {
-                                record_now.setValue({
-                                    fieldId: 'custbody_efx_fe_metodo_docel',
-                                    value: metodo,
-                                    ignoreFieldChange: true
-                                });
+                            if (metodo) {
+                                if (datosMetodo) {
+                                    record_now.setValue({
+                                        fieldId: 'custbody_psg_ei_sending_method',
+                                        value: metodo,
+                                        ignoreFieldChange: true
+                                    });
+                                } else {
+                                    record_now.setValue({
+                                        fieldId: 'custbody_efx_fe_metodo_docel',
+                                        value: metodo,
+                                        ignoreFieldChange: true
+                                    });
+                                }
                             }
 
 
