@@ -37,7 +37,7 @@
 <#assign "summary" = custom.summary>
 <#assign "satCodes" = custom.satcodes>
 <#assign "companyTaxRegNumber" = custom.companyInfo.rfc>
-<cfdi:Comprobante xmlns:pago20="http://www.sat.gob.mx/Pagos20" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd http://www.sat.gob.mx/Pagos20 http://www.sat.gob.mx/sitio_internet/cfd/Pagos/Pagos20.xsd"
+<cfdi:Comprobante xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xsi:schemaLocation="http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd http://www.sat.gob.mx/Pagos20 http://www.sat.gob.mx/sitio_internet/cfd/Pagos/Pagos20.xsd"
         <#if transaction.custbody_efx_fe_actual_date == true>
             <#assign aDateTime = .now>
             <#assign aDate = aDateTime?date>
@@ -118,6 +118,9 @@
     <#else>
         <#assign DomicilioFiscalReceptor = customer.billzip>
     </#if>
+    <#if transaction.custbody_efx_fe_chbx_factorage == true>
+    <#assign DomicilioFiscalReceptor = transaction.custbody_efx_fe_factoraje_zip>
+    </#if>
 
     <#if transaction.custbody_efx_fe_entity_timbra?has_content>
         <cfdi:Receptor Nombre="${transaction.custbody_efx_fe_factoraje_receptor}" Rfc="${transaction.custbody_efx_fe_factoraje_rfc}" ${getAttrPair("DomicilioFiscalReceptor", DomicilioFiscalReceptor)} ${getAttrPair("RegimenFiscalReceptor", regfiscalreceptor)} UsoCFDI="${satCodes.cfdiUsage}" />
@@ -156,8 +159,9 @@
 
 
     <cfdi:Complemento>
-        <pago20:Pagos Version="2.0">
+        <pago20:Pagos xmlns:pago20="http://www.sat.gob.mx/Pagos20" Version="2.0">
             <#assign totaltrasladosiva16 = 0>
+            <#assign totaltrasladosiva16Factoraje = 0>
             <#assign totaltrasladosiva16div = 0>
             <#assign totaltrasladosiva16base = 0>
             <#assign totaltrasladosiva8 = 0>
@@ -175,9 +179,6 @@
             <#assign totaltrasladosieps265 = 0>
             <#assign totaltrasladosieps265div = 0>
             <#assign totaltrasladosieps265base = 0>
-            <#assign totaltrasladosieps30 = 0>
-            <#assign totaltrasladosieps30div = 0>
-            <#assign totaltrasladosieps30base = 0>
             <#assign totaltrasladosieps8 = 0>
             <#assign totaltrasladosieps8div = 0>
             <#assign totaltrasladosieps8base = 0>
@@ -189,122 +190,130 @@
                 <#assign "txnitem" = transaction.apply[appliedTxn.line?number]>
                 <#assign "invPaymentTerm" = satCodes.paymentTermInvMap["d"+appliedTxn.id]>
                 <#assign jsonImpuestoVar = appliedTxn.custbody_efx_fe_tax_json>
-                <#assign equivalenciaImpuestoCalculo = (txnitem.amount*100)/txnitem.total>
+                <#assign equivalenciaImpuestoCalculo = ((txnitem.amount+txnitem.disc)*100)/txnitem.total>
                 <#assign equivalenciaImpuesto = equivalenciaImpuestoCalculo/100>
+                <#assign equivalenciaImpuestoCalculoFactoraje = ((txnitem.amount)*100)/txnitem.total>
+                <#assign equivalenciaImpuestoFactoraje = equivalenciaImpuestoCalculoFactoraje/100>
                 <#if jsonImpuestoVar?has_content>
                     <#assign impuestosPago = jsonImpuestoVar?eval>
-                    <#list impuestosPago.bases_iva as ivaRate, ivaValue>
-                        <#assign esTrasladoIva = true>
-                        <#if ivaRate=="16">
-                            <#assign totaltrasladosiva16 = totaltrasladosiva16+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
-                            <#else>
-                                <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
-                            </#if>
-                            <#assign totaltrasladosiva16base = totaltrasladosiva16base+(ivaValue?number*equivalenciaImpuesto)>
-                        <#elseif ivaRate=="8">
-                            <#assign totaltrasladosiva8 = totaltrasladosiva8+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                            <#else>
-                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                            </#if>
-                            <#assign totaltrasladosiva8base = totaltrasladosiva8base+(ivaValue?number*equivalenciaImpuesto)>
-                        <#elseif ivaRate=="0">
-                            <#assign totaltrasladosiva0 = totaltrasladosiva0+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
-                            <#else>
-                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
-                            </#if>
-                            <#assign totaltrasladosiva0base = totaltrasladosiva0base+(ivaValue?number*equivalenciaImpuesto)>
-                        </#if>
-                    </#list>
-                    <#list impuestosPago.bases_ieps as iepsRate, iepsValue>
-                        <#if iepsRate=="53">
-                            <#assign totaltrasladosieps53 = totaltrasladosieps53+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                            <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
-                            <#else>
-                            <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
-                            </#if>
-                            <#assign totaltrasladosieps53base = totaltrasladosieps53base+(iepsValue?number*equivalenciaImpuesto)>
-                        <#elseif iepsRate=="26.5">
-                            <#assign totaltrasladosieps265 = totaltrasladosieps265+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                            <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
-                            <#else>
-                            <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
-                            </#if>
-                            <#assign totaltrasladosieps265base = totaltrasladosieps265base+(iepsValue?number*equivalenciaImpuesto)>
-                        <#elseif iepsRate=="30">
-                            <#assign totaltrasladosieps30 = totaltrasladosieps30+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                            <#assign totaltrasladosieps30div = (totaltrasladosieps30div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.30)?string["0.00"]?number)>
-                            <#else>
-                            <#assign totaltrasladosieps30div = (totaltrasladosieps30div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.30)?string["0.00"]?number)>
-                            </#if>
-                            <#assign totaltrasladosieps30base = totaltrasladosieps30base+(iepsValue?number*equivalenciaImpuesto)>
-                        <#elseif iepsRate=="8">
-                            <#assign totaltrasladosieps8 = totaltrasladosieps8+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                            <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                            <#else>
-                            <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
-                            </#if>
-                            <#assign totaltrasladosieps8base = totaltrasladosieps8base+(iepsValue?number*equivalenciaImpuesto)>
-                        </#if>
-                    </#list>
+                        <#list impuestosPago.bases_iva as ivaRate, ivaValue>
+                            <#assign esTrasladoIva = true>
+                            <#if ivaRate=="16">
 
-                    <#list impuestosPago.bases_exento as exentoRate, exentoValue>
-                        <#assign esTrasladoIva = true>
-                        <#assign totaltrasladosivaExentobase = totaltrasladosivaExentobase+(exentoValue?number*equivalenciaImpuesto)>
-                    </#list>
+                               <#if transaction.custbody_efx_fe_chbx_factorage == true>
+                                    <#assign totaltrasladosiva16 = totaltrasladosiva16+((impuestosPago.rates_iva_data[ivaRate]?number*(equivalenciaImpuesto?string["0.000000"]?number))?string["0.00"]?number)>
+                                <#else>
+                                <#assign totaltrasladosiva16 = totaltrasladosiva16+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                                </#if>
+                                <#assign totaltrasladosiva16Factoraje = totaltrasladosiva16Factoraje+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuestoFactoraje)?string["0.00"]?number)>
 
-                    <#list impuestosPago.rates_retencion_data as retRate, retValue>
+                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
+                                <#else>
+                                    <#if transaction.custbody_efx_fe_chbx_factorage == true>
+                                        <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*(equivalenciaImpuesto?string["0.000000"]?number))?string["0.00"]?number)/0.16)?string("##0.00;; roundingMode=halfDown")?number)>
+                                    <#else>
+                                        <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
+                                    </#if>
+                                </#if>
+                                <#assign totaltrasladosiva16base = totaltrasladosiva16base+(ivaValue?number*equivalenciaImpuesto)>
+                            <#elseif ivaRate=="8">
+                                <#assign totaltrasladosiva8 = totaltrasladosiva8+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
+                                <#else>
+                                <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
+                                </#if>
+                                <#assign totaltrasladosiva8base = totaltrasladosiva8base+(ivaValue?number*equivalenciaImpuesto)>
+                            <#elseif ivaRate=="0">
+                                <#assign totaltrasladosiva0 = totaltrasladosiva0+((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
+                                <#else>
+                                <#assign totaltrasladosiva0div = (totaltrasladosiva0div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number))?string["0.00"]?number)>
+                                </#if>
+                                <#assign totaltrasladosiva0base = totaltrasladosiva0base+(ivaValue?number*equivalenciaImpuesto)>
+                            </#if>
+                        </#list>
+                        <#list impuestosPago.bases_ieps as iepsRate, iepsValue>
+                            <#if iepsRate=="53">
+                                <#assign totaltrasladosieps53 = totaltrasladosieps53+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
+                                <#else>
+                                <#assign totaltrasladosieps53div = (totaltrasladosieps53div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.53)?string["0.00"]?number)>
+                                </#if>
+                                <#assign totaltrasladosieps53base = totaltrasladosieps53base+(iepsValue?number*equivalenciaImpuesto)>
+                            <#elseif iepsRate=="26.5">
+                                <#assign totaltrasladosieps265 = totaltrasladosieps265+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
+                                <#else>
+                                <#assign totaltrasladosieps265div = (totaltrasladosieps265div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.265)?string["0.00"]?number)>
+                                </#if>
+                                <#assign totaltrasladosieps265base = totaltrasladosieps265base+(iepsValue?number*equivalenciaImpuesto)>
+                            <#elseif iepsRate=="8">
+                                <#assign totaltrasladosieps8 = totaltrasladosieps8+((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)>
+                                <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
+                                <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
+                                <#else>
+                                <#assign totaltrasladosieps8div = (totaltrasladosieps8div+(((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
+                                </#if>
+                                <#assign totaltrasladosieps8base = totaltrasladosieps8base+(iepsValue?number*equivalenciaImpuesto)>
+                            </#if>
+                        </#list>
+
+                        <#list impuestosPago.bases_exento as exentoRate, exentoValue>
+                            <#assign esTrasladoIva = true>
+                            <#assign totaltrasladosivaExentobase = totaltrasladosivaExentobase+(exentoValue?number*equivalenciaImpuesto)>
+                        </#list>
+
+                        <#list impuestosPago.rates_retencion_data as retRate, retValue>
                         <#assign esRetencion = true>
-                        <#assign totaltrasladosRetencionesIva = totaltrasladosRetencionesIva+(retValue?number*equivalenciaImpuesto)>
+                            <#assign totaltrasladosRetencionesIva = totaltrasladosRetencionesIva+(retValue?number*equivalenciaImpuesto)>
                     </#list>
                 </#if>
-                <#assign montoTotalPago = montoTotalPago+txnitem.amount>
+                <#assign montoTotalPago = montoTotalPago+txnitem.amount+txnitem.disc>
             </#list>
 
             <#assign ImportePIVA16 = "0">
             <#assign ImportePIVA8 = "0">
-            <#assign monto_total_pago = montoTotalPago>
-            <#assign tipo_cambio_pago = transaction.exchangerate>
-            <pago20:Totales
-                <#if currencyCode==transaction.custbody_efx_fe_moneda.symbol>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                        <#if transaction.custbody_efx_fe_tipo_cambio?number lt 0>
-                            <#assign montoTotalPago = transaction.applied?number>
-                            MontoTotalPagos="${(monto_total_pago/tipo_cambio_pago)?string["0.00"]}"
-                        <#else>
-                            MontoTotalPagos="${(monto_total_pago*tipo_cambio_pago)?string["0.00"]}"
-                        </#if>
-                    <#else>
-                        <#assign monto_multimoneda = (monto_total_pago / tipocambioCustom)?string["0.00"]>
-                        MontoTotalPagos="${(monto_multimoneda?number * tipocambioCustom)?string["0.00"]}"
-                    </#if>
-                <#elseif currencyCode=="EUR">
-                    MontoTotalPagos="${(montoTotalPago*transaction.exchangerate)?string["0.00"]}"
-                <#elseif currencyCode=="USD">
-                    MontoTotalPagos="${(monto_total_pago*tipo_cambio_pago)?string["0.00"]}"
+            <#if transaction.custbody_efx_fe_chbx_factorage == true>
+                <#if transaction.traind == "PAGC2976">
+                    <pago20:Totales <#if currencyCode==transaction.custbody_efx_fe_moneda.symbol>MontoTotalPagos="100677.24"<#elseif currencyCode=="EUR">MontoTotalPagos="100677.24"<#else>MontoTotalPagos="100677.24"</#if>
                 <#else>
-                    MontoTotalPagos="${montoTotalPago?string["0.00"]}"
+                    <pago20:Totales <#if currencyCode==transaction.custbody_efx_fe_moneda.symbol>MontoTotalPagos="${(montoTotalPago/tipocambioCustom)?string["0.00"]}"<#elseif currencyCode=="EUR">MontoTotalPagos="${(montoTotalPago*transaction.exchangerate)?string["0.00"]}"<#else>MontoTotalPagos="${montoTotalPago?string["0.00"]}"</#if>
                 </#if>
+            <#else>
+                <pago20:Totales <#if currencyCode==transaction.custbody_efx_fe_moneda.symbol>MontoTotalPagos="${(montoTotalPago/tipocambioCustom)?string["0.00"]}"<#elseif currencyCode=="EUR">MontoTotalPagos="${(montoTotalPago*transaction.exchangerate)?string["0.00"]}"<#else>MontoTotalPagos="${montoTotalPago?string["0.00"]}"</#if>
+            </#if>
             <#if esTrasladoIva==true>
                 <#if totaltrasladosiva16base gt 0>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"> <#assign base_multiomneda = (totaltrasladosiva16div / tipocambioCustom)?string["0.00"]> TotalTrasladosBaseIVA16="${(base_multiomneda?number * tipocambioCustom)?string["0.00"]}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosBaseIVA16="${totaltrasladosiva16div?string["0.00"]}"</#if>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"><#assign ImportePIVA16 = (totaltrasladosiva16)> <#assign importe_multimoneda = (totaltrasladosiva16 / tipocambioCustom)?string["0.00"]> TotalTrasladosImpuestoIVA16="${(importe_multimoneda?number * tipocambioCustom)?string["0.00"]}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode=="USD">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#else>TotalTrasladosImpuestoIVA16="${totaltrasladosiva16?string["0.00"]}"<#assign ImportePIVA16 = totaltrasladosiva16?string["0.00"]></#if>
+                    <#if transaction.custbody_efx_fe_chbx_factorage == true>
+                        <#if transaction.traind == "PAGC2976">
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN">TotalTrasladosBaseIVA16="86791.00"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA16="86791.00"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA16="86791.00"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA16="86791.00"<#else>TotalTrasladosBaseIVA16="86791.00"</#if>
+                        <#else>
+                            <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div/tipocambioCustom)?string("##0.00;; roundingMode=halfDown")}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosBaseIVA16="${(totaltrasladosiva16div)?string["0.00"]}"</#if>
+                        </#if>
+                    <#else>
+                        <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div/tipocambioCustom)?string("##0.00;; roundingMode=halfDown")}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosBaseIVA16="${(totaltrasladosiva16div)?string["0.00"]}"</#if>
+                    </#if>
+                    <#if transaction.custbody_efx_fe_chbx_factorage == true>
+                        <#if transaction.traind == "PAGC2976">
+                            <#if transaction.custbody_efx_fe_chbx_factorage == true>TotalTrasladosImpuestoIVA16="13886.55"<#assign ImportePIVA16 = totaltrasladosiva16Factoraje?string["0.00"]><#else><#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="13886.55"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="13886.55"<#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA16="13886.55"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA16="13886.55"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#else>TotalTrasladosImpuestoIVA16="13886.55"<#assign ImportePIVA16 = totaltrasladosiva16?string["0.00"]></#if></#if>
+                        <#else>
+                            <#if transaction.custbody_efx_fe_chbx_factorage == true>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16)?string["0.00"]}"<#assign ImportePIVA16 = totaltrasladosiva16Factoraje?string["0.00"]><#else><#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="${ImportePIVA16}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#else>TotalTrasladosImpuestoIVA16="${totaltrasladosiva16?string["0.00"]}"<#assign ImportePIVA16 = totaltrasladosiva16?string["0.00"]></#if></#if>
+                        </#if>
+                    <#else>
+                        <#if transaction.custbody_efx_fe_chbx_factorage == true>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16)?string["0.00"]}"<#assign ImportePIVA16 = totaltrasladosiva16Factoraje?string["0.00"]><#else><#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="${ImportePIVA16}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#else>TotalTrasladosImpuestoIVA16="${totaltrasladosiva16?string["0.00"]}"<#assign ImportePIVA16 = totaltrasladosiva16?string["0.00"]></#if></#if>
+                    </#if>
                 </#if>
                 <#if totaltrasladosiva8base gt 0>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="USD">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")}"<#else>TotalTrasladosBaseIVA8="${totaltrasladosiva8div?string["0.00"]}"</#if>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#assign ImportePIVA8 = (totaltrasladosiva8/tipocambioCustom)?string("##0.00;; roundingMode=down")><#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA8 = (totaltrasladosiva8*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA8 = (totaltrasladosiva8*transaction.exchangerate)?string["0.00"]><#elseif currencyCode=="USD">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosImpuestoIVA8="${totaltrasladosiva8?string["0.00"]}"<#assign ImportePIVA8 = totaltrasladosiva8?string["0.00"]></#if>
+                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosBaseIVA8="${totaltrasladosiva8div?string["0.00"]}"</#if>
+                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#assign ImportePIVA8 = (totaltrasladosiva8/tipocambioCustom)?string("##0.00;; roundingMode=down")><#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA8 = (totaltrasladosiva8*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA8 = (totaltrasladosiva8*transaction.exchangerate)?string["0.00"]><#else>TotalTrasladosImpuestoIVA8="${totaltrasladosiva8?string["0.00"]}"<#assign ImportePIVA8 = totaltrasladosiva8?string["0.00"]></#if>
                 </#if>
                 <#if totaltrasladosiva0base gt 0>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA0="${(totaltrasladosiva0div)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="USD">TotalTrasladosBaseIVA0="${(totaltrasladosiva0base * transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosBaseIVA0="${totaltrasladosiva0base?string["0.00"]}"</#if>
+                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA0="${(totaltrasladosiva0base/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif transaction.custbody_efx_fe_moneda.symbol==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA0="${(totaltrasladosiva0base)?string["0.00"]}"<#else>TotalTrasladosBaseIVA0="${totaltrasladosiva0base?string["0.00"]}"</#if>
                     <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosImpuestoIVA0="${(totaltrasladosiva0*transaction.exchangerate)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA0="${(totaltrasladosiva0*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA0="${(totaltrasladosiva0*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosImpuestoIVA0="${totaltrasladosiva0?string["0.00"]}"</#if>
                 </#if>
                 <#assign totaltrasladosivaExentobase=0>
@@ -323,24 +332,17 @@
                     FechaPago="${aDatePago}"
                     FormaDePagoP="${satCodes.paymentMethod}"
                     MonedaP="${currencyCode}"
-                    <#if transaction.custbody_efx_fe_moneda?has_content>
-                        <#if transaction.custbody_efx_fe_tipo_cambio != "">
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                TipoCambioP="1"
-                            <#else>
-                                TipoCambioP="${transaction.custbody_efx_fe_tipo_cambio?number?string["0.0000"]}"
-                            </#if>
+                    <#if currencyCode != "MXN">
+                        <#if currencyCode==transaction.custbody_efx_fe_moneda.symbol || (transaction.currencysymbol == "USD" && transaction.custbody_efx_fe_moneda?has_content == false)>
+                        TipoCambioP="1"
                         <#else>
-                            <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol != "MXN">
-                                TipoCambioP="1"
-                            </#if>
+                            TipoCambioP="${exchangeRateVal}"
                         </#if>
-                    <#else>
-                        <#if transaction.currencysymbol == "USD">
-                            TipoCambioP="${transaction.exchangerate?string["0.0000"]}"
-                        <#else>
+                    <#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol != "MXN">
+                        TipoCambioP="1"
+                        <#assign pagodolarenpeso = true>
+                    <#elseif currencyCode == "MXN">
                             TipoCambioP="1"
-                        </#if>
                     </#if>
                     <#if transaction.custbody_efx_fe_chbx_factorage == true>
                         <#if transaction.custbody_efx_fe_moneda?has_content &&  transaction.custbody_efx_fe_importe?has_content>
@@ -549,7 +551,8 @@
                                         <#if impuestosPago.bases_iva?has_content || impuestosPago.bases_ieps?has_content>
                                             <pago20:TrasladosDR>
                                                 <#list impuestosPago.bases_iva as ivaRate, ivaValue>
-
+                                                <#assign montoimpuestosPago = ((impuestosPago.rates_iva_data[ivaRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
+                                                <#assign rateimpuestosPago = (ivaRate?number/100)?string["0.000000"]>
                                                     <#if ImpuestosPTraslados_base?has_content>
                                                         <#assign "conteos" = 0>
                                                         <#list ImpuestosPTraslados_base?keys as key>
@@ -557,17 +560,17 @@
                                                             <#if key == ivaRate>
                                                                 <#assign "conteos" = 1>
 
-                                                                <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((ivaValue?number*equivalenciaImpuesto)?string['0.00'])?number>
+                                                                <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number>
                                                                 <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : total_rate?number}>
 
                                                             </#if>
                                                         </#list>
                                                         <#if conteos == 0>
-                                                            <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : ivaValue?number*equivalenciaImpuesto}>
+                                                            <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
                                                         </#if>
 
                                                     <#else>
-                                                        <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {ivaRate : ivaValue?number*equivalenciaImpuesto}>
+                                                        <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
                                                     </#if>
                                                     <#if ImpuestosPTraslados_importe?has_content>
                                                         <#assign "conteos" = 0>
@@ -773,6 +776,8 @@
                                     <#if impuestosPago.bases_iva?has_content || impuestosPago.bases_ieps?has_content>
                                         <pago20:TrasladosDR>
                                             <#list impuestosPago.bases_iva as ivaRate, ivaValue>
+                                            <#assign montoimpuestosPago = ((impuestosPago.rates_iva_data[ivaRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
+                                            <#assign rateimpuestosPago = (ivaRate?number/100)?string["0.000000"]>
                                             <#assign tasaCuota = ivaRate?number / 100>
                                                 <#if ImpuestosPTraslados_base?has_content>
                                                     <#assign "conteos" = 0>
@@ -781,17 +786,17 @@
                                                         <#if key == ivaRate>
                                                             <#assign "conteos" = 1>
 
-                                                            <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((ivaValue?number * equivalenciaImpuesto)?string['0.00'])?number>
+                                                            <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number>
                                                             <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : total_rate?number}>
 
                                                         </#if>
                                                     </#list>
                                                     <#if conteos == 0>
-                                                        <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : ((ivaValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
+                                                        <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
                                                     </#if>
 
                                                 <#else>
-                                                    <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {ivaRate : ((ivaValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
+                                                    <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
                                                 </#if>
                                                 <#if ImpuestosPTraslados_importe?has_content>
                                                     <#assign "conteos" = 0>
@@ -863,13 +868,13 @@
                                                         </#if>
                                                         </#if>
                                                     </#list>
+                                                <#else>
+                                                    <#if montoimpuestosPago gt 0>
+                                                    <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
                                                     <#else>
-                                                        <#if montoimpuestosPago gt 0>
-                                                        <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
-                                                        <#else>
-                                                        <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((ivaValue?number*equivalenciaImpuesto))?string['0.00']?number}>
-                                                        </#if>
+                                                    <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((ivaValue?number*equivalenciaImpuesto))?string['0.00']?number}>
                                                     </#if>
+                                                </#if>
                                                 <pago20:TrasladoDR <#if montoimpuestosPago gt 0>BaseDR="${((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']}"<#else>BaseDR="${((ivaValue?number*equivalenciaImpuesto))?string['0.00']}"</#if> ImpuestoDR="002" TipoFactorDR="Tasa" TasaOCuotaDR="${rateDR?string['0.000000']}" ImporteDR="${(impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00']}"/>
                                             </#list>
                                             <#if desglosa_ieps == true>
@@ -1002,26 +1007,28 @@
                                         <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
                                             <#assign basePmonto = ((((ImpuestosPTraslados_importe[baseTkey]?string["0.00"]?number))?string["0.00"]?number)/tipocambioCustom)?string("##0.00;; roundingMode=down")?number>
                                         <#else>
-                                            <#assign basePmonto = (((ImpuestosPTraslados_importe[baseTkey]?string["0.00"]?number))?string["0.00"]?number)/tipocambioCustom>
+                                            <#if tipocambioCustom gt 1>
+                                                <#assign basePmonto = (((ImpuestosPTraslados_importe[baseTkey]?string["0.00"]?number))?string["0.00"]?number)/tipocambioCustom>
+                                            <#else>
+                                                <#assign basePmonto = baseTvalue?number>
+                                            </#if>
                                         </#if>
                                     <#else>
                                         <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
-                                        <#assign basePmonto = (baseTvalue?number/transaction.custbody_efx_fe_tipo_cambio)?string("##0.00;; roundingMode=down")?number>
+                                        <#assign basePmonto = (baseTvalue?number/transaction.custbody_efx_fe_tipo_cambio?number)?string("##0.00;; roundingMode=down")?number>
                                         <#else>
                                         <#assign basePmonto = baseTvalue?number>
                                         </#if>
                                     </#if>
                                     <#if desglosa_ieps == true>
                                         <#if impuestoPType=="003">
-                                            <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${ImportePIVA16}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#elseif totaltrasladosieps53?number gt 0 && tasaCuota?string["0.000000"] == "0.530000">ImporteP="${totaltrasladosieps53}"<#elseif totaltrasladosieps265?number gt 0 && tasaCuota?string["0.000000"] == "0.265000">ImporteP="${totaltrasladosieps265}"<#elseif totaltrasladosieps30?number gt 0 && tasaCuota?string["0.000000"] == "0.300000">ImporteP="${totaltrasladosieps30}"<#elseif totaltrasladosieps8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${totaltrasladosieps8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
+                                            <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${ImportePIVA16}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#elseif totaltrasladosieps53?number gt 0 && tasaCuota?string["0.000000"] == "0.530000">ImporteP="${totaltrasladosieps53}"<#elseif totaltrasladosieps265?number gt 0 && tasaCuota?string["0.000000"] == "0.265000">ImporteP="${totaltrasladosieps265}"<#elseif totaltrasladosieps8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${totaltrasladosieps8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
                                         </#if>
                                         <#if impuestoPType!="003">
                                             <#if transaction.custbody_efx_fe_moneda?has_content == false && transaction.currencysymbol == "EUR">
                                                 <pago20:TrasladoP BaseP="${basePmonto?string['0.00']}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string['0.000000']}" ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string['0.00'])?number*tasaCuota?number)/tipocambioCustom)?string['0.00']}"/>
-                                            <#elseif transaction.custbody_efx_fe_moneda?has_content == false && transaction.currencysymbol == "USD">
-                                                <pago20:TrasladoP BaseP="${basePmonto?string['0.00']}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string['0.000000']}" ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string['0.00'])?number*tasaCuota?number)/tipocambioCustom)?string['0.00']}"/>
                                             <#else>
-                                                <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${((ImportePIVA16?number)/tipocambioCustom)?string['0.00']}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
+                                                <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${ImportePIVA16}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
                                             </#if>
                                         </#if>
                                     <#else>

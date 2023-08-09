@@ -314,7 +314,7 @@ Descuento="${total_desc_cabecera}">
         <#else>
             <#assign DomicilioFiscalReceptor = customCompanyInfo.zip>
         </#if>
-        
+
         <#else>
             <#assign DomicilioFiscalReceptor = transaction.billzip>
     </#if>
@@ -348,7 +348,7 @@ Descuento="${total_desc_cabecera}">
 <#else>
 <cfdi:Receptor Rfc=<#outputformat "plainText">"${customer.custentity_mx_rfc}"</#outputformat>
  Nombre=<#outputformat "XML">"${customer.custentity_mx_sat_registered_name}"</#outputformat>
-</#if>                
+</#if>
                 ${getAttrPair("DomicilioFiscalReceptor", DomicilioFiscalReceptor)}
 <#if ComercioE == true>
                     ${getAttrPair("ResidenciaFiscal", CEreceptorResidF)}
@@ -376,7 +376,7 @@ Descuento="${total_desc_cabecera}">
                 <#assign detallesinv = true>
             </#if>
             <#assign objimp = item.custcol_mx_txn_line_sat_tax_object?keep_before(" -")>
-            
+
             <#if customItem.type != "Discount" && customItem.type != "Description" && customItem.quantity?number gt 0>
                 <#assign desglose_json = item.custcol_efx_fe_tax_json>
                 <#assign desglose = desglose_json?eval>
@@ -411,11 +411,20 @@ Descuento="${total_desc_cabecera}">
                                 <#if ComercioE == false>
                                     NoIdentificacion="${item.custcol_efx_fe_upc_code}"
                                 </#if>
+                            <#else>
+                                    NoIdentificacion="${item.item}"
                             </#if>
 
                             ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"")!""}
                             ${getAttrPair("ClaveUnidad",itemSatUnitCode)!""}
-                            Descripcion=<#outputformat "XML">"${item.description?replace("<br />","")}"</#outputformat>
+                            <#if item.custcol_efx_invdet_json?has_content>
+                                <#assign jsonMU = item.custcol_efx_invdet_json + item.custcol_efx_invdet_json2 + item.custcol_efx_invdet_json3 + item.custcol_efx_invdet_json4 + item.custcol_efx_invdet_json5>
+                                <#assign obj_auto = jsonMU?eval>
+
+                                Descripcion=<#outputformat "XML">"${item.description?replace("<br />","")} <#list obj_auto as auto_json> Chasis: ${auto_json.inventorynumber}, Motor: ${auto_json.num_motor}, Nci: ${auto_json.repuve}, Pedimento: <#if auto_json.inventorynumber?starts_with("3MU")>ENSAMBLE EN MEXICO, <#else>${auto_json.num_pedimento}, </#if>FechaEntrada: ${auto_json.fecha_entrada_pedimento}</#list>"</#outputformat>
+                            <#else>
+                                Descripcion=<#outputformat "XML">"${item.description?replace("<br />","")}"</#outputformat>
+                            </#if>
                             <#assign impdesglosaieps = 0>
                             <#if desglosa_ieps == true>
                                 Importe="${customItem.amount?number?string["0.00"]}"
@@ -765,6 +774,7 @@ Descuento="${total_desc_cabecera}">
                     </#if>
                 </#if>
             </#if>
+
         </#list>
 
         <#if transaction.shippingcost?length gt 0>
@@ -835,12 +845,12 @@ Descuento="${total_desc_cabecera}">
         </#if>
     </#if>
 
-    <#assign exentoContador = 0>        
+    <#assign exentoContador = 0>
     <#if tieneobjimp gt 0>
         <#if desglosa_ieps == true>
             <#if (desglose_cab.ieps_total != "0.00" || desglose_cab.iva_total != "0.00" || tieneExento == true) && desglose_cab.retencion_total != "0.00">
                 <#assign exentoContador = exentoContador+1>
-            
+
                 <cfdi:Impuestos TotalImpuestosRetenidos="${(desglose_cab.retencion_total?number)?string["0.00"]}" TotalImpuestosTrasladados="${total_impuestos_t?string["0.00"]}">
             <#elseif desglose_cab.retencion_total != "0.00">
                 <#assign exentoContador = exentoContador+1>
@@ -849,7 +859,7 @@ Descuento="${total_desc_cabecera}">
                 <#assign exentoContador = exentoContador+1>
                 <cfdi:Impuestos TotalImpuestosTrasladados="${total_impuestos_t?string["0.00"]}">
             </#if>
-        <#else>        
+        <#else>
             <#assign total_impuestos_t = total_impuestos_t+impuestoLineashipp?number>
             <#if (desglose_cab.ieps_total != "0.00" || desglose_cab.iva_total != "0.00" || tieneExento == true) && desglose_cab.retencion_total != "0.00">
                 <#assign exentoContador = exentoContador+1>
@@ -889,7 +899,7 @@ Descuento="${total_desc_cabecera}">
                     <#assign json_ieps_base = desglose_cab.bases_ieps>
                     <#assign json_exento_base = desglose_cab.bases_exento>
 
-                    <#list json_exento as exento_rate, exento_total>                                                                               
+                    <#list json_exento as exento_rate, exento_total>
                         <#if desglosa_ieps == true>
                             <cfdi:Traslado Base="${json_exento_base[exento_rate]}" Impuesto="002" TipoFactor="Exento" />
                         </#if>
@@ -1392,5 +1402,5 @@ Descuento="${total_desc_cabecera}">
             </cfdi:Addenda>
         </#if>
 
-   
+
 </cfdi:Comprobante>

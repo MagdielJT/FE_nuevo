@@ -130,19 +130,10 @@
         xsi:schemaLocation="${schemaLocation}"
 
 
-        <#if transaction.custbody_efx_fe_actual_date == true>
-            <#assign aDateTime = .now>
-            <#assign aDate = aDateTime?date>
-            Fecha="${aDate?string("yyyy-MM-dd")}T${aDate?string("HH:mm:ss")}"
-        <#else>
-            <#if transaction.custbody_efx_fe_actual_hour?has_content>
-                Fecha="${transaction.trandate?string.iso_nz}T${transaction.custbody_efx_fe_actual_hour}"
-            <#else>
-                <#assign aDateTime = .now>
-                <#assign aDate = aDateTime?date>
-                Fecha="${transaction.trandate?string.iso_nz}T${aDate?string("HH:mm:ss")}"
-            </#if>
-        </#if>
+        <#assign aDateTime = .now>
+        <#assign aDate = aDateTime?date>
+        Fecha="${aDate?string("yyyy-MM-dd")}T${aDate?string("HH:mm:ss")}"
+
 
 
 
@@ -223,24 +214,27 @@
             <#assign subtotal_envio = desglose_cab.subtotal?number + envio_total?number>
             <#assign total_envio = desglose_cab.total?number + envio_total?number + impuesto_envio_total>
             <#if desglosa_ieps == true>
-                SubTotal="${subtotal_envio?string["0.00"]}"
+                SubTotal="48.00"
+                Descuento="4.8"
             <#else>
                 <#assign sub_conieps = subtotal_envio + total_ieps>
                 SubTotal="${sub_conieps?string["0.00"]}"
             </#if>
-            Total="${(total_envio-totallocalesimp)?string["0.00"]}"
+            Total="43.20"
         <#else>
 
             <#assign subtotal_xml = desglose_cab.subtotal?string["0.00"]>
             <#if desglosa_ieps == true>
-                SubTotal="${desglose_cab.subtotal?number?string["0.00"]}"
+                SubTotal="48.00"
+                Descuento="4.8"
             <#else>
                 <#assign sub_conieps = desglose_cab.subtotal?number + total_ieps>
                 <#assign total_xml = desglose_cab.total?number>
-                SubTotal="${((total_xml - total_ivasubtotal)+total_desc_cabecera)?string["0.00"]}"
+                SubTotal="48.00"
+                Descuento="4.8"
             </#if>
             <#assign total_xml = (desglose_cab.total?number-totallocalesimp)?string["0.00"]>
-            Total="${total_xml}"
+            Total="43.20"
         </#if>
 
 
@@ -248,14 +242,13 @@
         TipoDeComprobante="${satCodes.proofType}"
         <#assign exportacion = transaction.custbody_mx_cfdi_sat_export_type?keep_before(' -')>
         Exportacion="${exportacion}"
-        Version="4.0"
-
+        Version="4.0">
 
         <#if total_desc_cabecera gt 0>
-        Descuento="${total_desc_cabecera}">
+        Descuento="0.00">
     <#else>
         <#if transaction.discountitem?has_content>
-            Descuento="${transaction.discounttotal}">
+            Descuento="0.00">
         <#else>
             Descuento="0.00">
         </#if>
@@ -313,365 +306,24 @@
     <#assign total_impuestos_t_ivas = 0>
     <cfdi:Conceptos>
         <#list custom.items as customItem>
-
             <#assign "item" = transaction.item[customItem.line?number]>
-            <#assign "taxes" = customItem.taxes>
-            <#assign "itemSatCodes" = satCodes.items[customItem.line?number]>
-            <#if customItem.type == "Group"  || customItem.type == "Kit">
-                <#assign "itemSatUnitCode" = "H87">
-            <#else>
-                <#assign "itemSatUnitCode" = (customItem.satUnitCode)!"">
+            <#if item.itemtype != "Discount" && item.quantity gt 0>
+                <cfdi:Concepto
+                    Cantidad="${item.quantity?string["0.000000"]}"
+                    ClaveProdServ="${item.custcol_efx_fe_clave_producto_sat}"
+                    ClaveUnidad="E48"
+                    Descripcion="${item.description?replace("<br />","")}"
+                    Importe="${item.amount?string["0.00"]}"
+                    ValorUnitario="24.00"
+                    Descuento="2.40"
+                    ObjetoImp="02">
 
-            </#if>
-            <#assign objimp = item.custcol_mx_txn_line_sat_tax_object?keep_before(" -")>
-            <#if customItem.type != "Discount">
-                <#assign desglose_json = item.custcol_efx_fe_tax_json>
-                <#assign desglose = desglose_json?eval>
-            </#if>
-
-            <#assign descripciongrupo = "">
-            <#assign prodservgrupo = "">
-            <#if item.itemtype == "Group">
-                <#assign descripciongrupo = item.description>
-                <#assign prodservgrupo = itemSatCodes.itemCode>
-            </#if>
-
-            <#if item.item != articulo_timbrado>
-                <#if item.itemtype != "Group" && item.itemtype != "EndGroup" && item.itemtype != "Discount">
-                    <cfdi:Concepto
-                            Cantidad="${item.quantity?string["0.000000"]}"
-                            <#if ComercioE == true>
-                                <#if item.custcol_efx_fe_upc_code?has_content>
-                                    NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                <#else>
-                                    NoIdentificacion="${item.item}"
-                                </#if>
-                            </#if>
-                            <#if item.custcol_efx_fe_upc_code?has_content>
-                                <#if ComercioE == false>
-                                    NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                </#if>
-                            </#if>
-
-                            ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"transaction.custcol_efx_fe_clave_producto_sat")!"transaction.custcol_efx_fe_clave_producto_sat"}
-                            ${getAttrPair("ClaveUnidad",itemSatUnitCode)!""}
-                            Descripcion="${item.description?replace("<br />","")}"
-                            <#assign impdesglosaieps = 0>
-                            <#if desglosa_ieps == true>
-                                Importe="${customItem.amount?number?string["0.00"]}"
-                                <#if customItem.rate != "">
-                                    ValorUnitario="${customItem.rate?number?string["0.00"]}"
-                                <#else>
-                                    <#assign rate_faltante = customItem.amount?number / item.quantity?number>
-                                    ValorUnitario="${rate_faltante?string["0.00"]}"
-                                </#if>
-                            <#else>
-                                <#if desglose.ieps.name?has_content>
-                                    <#assign imp_ieps_linea = desglose.ieps.importe?number>
-                                    <#assign imp_linea_sindesglose =  customItem.amount?number + imp_ieps_linea>
-                                    <#assign impdesglosaieps = imp_linea_sindesglose>
-                                    <#assign valu_linea_sindesglose =  imp_linea_sindesglose/item.quantity>
-                                    Importe="${imp_linea_sindesglose?string["0.00"]}"
-                                    <#if valu_linea_sindesglose?has_content>
-                                        ValorUnitario="${valu_linea_sindesglose?string["0.00"]}"
-                                    <#else>
-                                        <#assign rate_faltante = imp_linea_sindesglose / item.quantity>
-                                        ValorUnitario="${rate_faltante?string["0.00"]}"
-                                    </#if>
-                                <#else>
-                                    Importe="${customItem.amount?number?string["0.00"]}"
-                                    <#if customItem.rate != "">
-                                        ValorUnitario="${customItem.rate?number?string["0.00"]}"
-                                    <#else>
-                                        <#assign rate_faltante = customItem.amount?number / item.quantity?number>
-                                        ValorUnitario="${rate_faltante?string["0.00"]}"
-                                    </#if>
-                                </#if>
-                            </#if>
-                            <#assign json_descuentos = desglose.descuentoSinImpuesto>
-                            <#if json_descuentos?number gt 0>
-                            Descuento="${desglose.descuentoSinImpuesto?number?string["0.00"]}"
-
-                            ObjetoImp="02">
-                        <#else>
-
-                            Descuento="0.00"
-                            ObjetoImp="02">
-
-                        </#if>
-
-                        <#if customItem.amount?number != desglose.descuentoSinImpuesto?number>
-                            <cfdi:Impuestos>
-                                <#if desglose.iva.name?has_content || desglose.ieps.name?has_content || desglose.exento.name?has_content>
-                                    <cfdi:Traslados>
-
-                                        <#if desglosa_ieps == true>
-                                            <#if desglose.ieps.name?has_content>
-                                                <#assign tiene_impuesto = tiene_impuesto + 1>
-                                                <cfdi:Traslado Base="${desglose.ieps.base_importe?number?string["0.00"]}" Importe="${desglose.ieps.importe?number?string["0.00"]}" Impuesto="003" TasaOCuota="${desglose.ieps.rate_div?number?string["0.000000"]}" TipoFactor="Tasa" />
-                                            </#if>
-                                        </#if>
-
-                                        <#if desglose.iva.name?has_content>
-
-                                            <#assign iva_enfixed = desglose.iva.importe?number?string["0.00"]>
-                                            <#assign total_impuestos_t_ivas = total_impuestos_t_ivas + iva_enfixed?number>
-                                            <#assign tiene_impuesto = tiene_impuesto + 1>
-                                            <cfdi:Traslado Base="${desglose.iva.base_importe?number?string["0.00"]}" Importe="${desglose.iva.importe?number?string["0.00"]}" Impuesto="002" TasaOCuota="${desglose.iva.rate_div?number?string["0.000000"]}" TipoFactor="Tasa" />
-                                        </#if>
-
-
-                                        <#if desglose.exento.name?has_content>
-                                            <cfdi:Traslado Base="${desglose.exento.base_importe?number?string["0.00"]}" Impuesto="002" TipoFactor="Exento" />
-                                        </#if>
-
-                                    </cfdi:Traslados>
-                                </#if>
-
-
-                                <#if desglose.retenciones.name?has_content>
-                                    <cfdi:Retenciones>
-                                        <#assign tiene_impuesto = tiene_impuesto + 1>
-                                        <cfdi:Retencion Base="${desglose.retenciones.base_importe?number?string["0.00"]}" Importe="${(desglose.retenciones.importe?number)?string["0.00"]}" Impuesto="002" TasaOCuota="${desglose.retenciones.rate_div?number?string["0.000000"]}" TipoFactor="Tasa" />
-
-                                    </cfdi:Retenciones>
-                                </#if>
-                            </cfdi:Impuestos>
-                        </#if>
-
-                        ${getNodePair("cfdi:InformacionAduanera", "NumeroPedimento" ,item.custcol_mx_txn_line_sat_cust_req_num)}
-                        ${getNodePair("cfdi:CuentaPredial", "Numero" ,item.custcol_mx_txn_line_sat_cadastre_id)}
-                        <#if customItem.parts?has_content>
-                            <#list customItem.parts as part>
-                                <#assign "partItem" = transaction.item[part.line?number]>
-                                <#assign "partSatCodes" = satCodes.items[part.line?number]>
-                                <cfdi:Parte Cantidad="${partItem.quantity?string["0.0"]}" ClaveProdServ="${partSatCodes.itemCode}" Descripcion="${partItem.description}" Importe="${part.amount?number?string["0.00"]}" ValorUnitario="${part.rate?number?string["0.00"]}"/>
-                            </#list>
-                        </#if>
-
-                        <#if transaction.custbody_efx_fe_complemento_educativo == true>
-                            <cfdi:ComplementoConcepto>
-                                <iedu:instEducativas version="1.0" ${getAttrPair("nombreAlumno",(item.custcol_efx_fe_com_edu_nom_alumn)!"")!""} ${getAttrPair("CURP",(item.custcol_efx_fe_com_edu_curp)!"")!""} ${getAttrPair("nivelEducativo",(item.custcol_efx_fe_com_edu_nivel_edu)!"")!""} ${getAttrPair("autRVOE",(item.custcol_efx_fe_com_edu_clave_autrvoe)!"")!""}/>
-                            </cfdi:ComplementoConcepto>
-                        </#if>
-                    </cfdi:Concepto>
-                <#else>
-                    <#if customItem.parts?has_content>
-                        <#assign tasadesgloses = 0>
-                        <#assign importedesgloses = 0>
-                        <#assign cantidaddesgloses = 0>
-                        <#assign descuentodesgloses = 0>
-                        <#assign ivaImporte = 0>
-                        <#assign ivaTasa = ''>
-                        <#list customItem.parts as customItem>
-                            <#assign "item" = transaction.item[customItem.line?number]>
-                            <#assign "itemSatCodes" = satCodes.items[customItem.line?number]>
-                            <#if customItem.type != "Discount">
-                                <#assign desglose_json = item.custcol_efx_fe_tax_json>
-                                <#assign desglose = desglose_json?eval>
-                            </#if>
-                            <#if desglose.iva.name?has_content>
-                                <#assign ivaImporte = ivaImporte + desglose.iva.importe?number>
-                                <#assign ivaTasa = desglose.iva.rate_div?number?string["0.000000"]>
-                            </#if>
-                            <#assign tasadesgloses = tasadesgloses + customItem.rate?number>
-                            <#assign importedesgloses = importedesgloses + customItem.amount?number>
-                            <#assign cantidaddesgloses = cantidaddesgloses + item.quantity>
-                            <#assign descuentodesgloses = descuentodesgloses + desglose.descuentoSinImpuesto?number>
-                            <#assign objimp = item.custcol_mx_txn_line_sat_tax_object?keep_before(" -")>
-                            <#if transaction.custbody_efx_fe_desglosa_ga == true>
-                                <cfdi:Concepto
-                                        Cantidad="${item.quantity?string["0.000000"]}"
-                                        <#if ComercioE == true>
-                                            <#if item.custcol_efx_fe_upc_code?has_content>
-                                                NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                            <#else>
-                                                NoIdentificacion="${item.item}"
-                                            </#if>
-                                        </#if>
-                                        <#if item.custcol_efx_fe_upc_code?has_content>
-                                            <#if ComercioE == false>
-                                                NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                            </#if>
-                                        </#if>
-
-                                        ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"")!""}
-                                        ${getAttrPair("ClaveUnidad",itemSatUnitCode)!""}
-                                        Descripcion="${item.description?replace("<br />","")}"
-                                        <#assign impdesglosaieps = 0>
-                                        <#if desglosa_ieps == true>
-                                            Importe="${customItem.amount?number?string["0.00"]}"
-                                            <#if customItem.rate != "">
-                                                ValorUnitario="${customItem.rate?number?string["0.00"]}"
-                                            <#else>
-                                                <#assign rate_faltante = customItem.amount?number / item.quantity?number>
-                                                ValorUnitario="${rate_faltante?string["0.00"]}"
-                                            </#if>
-                                        <#else>
-                                            <#if desglose.ieps.name?has_content>
-                                                <#assign imp_ieps_linea = desglose.ieps.importe?number>
-                                                <#assign imp_linea_sindesglose =  customItem.amount?number + imp_ieps_linea>
-                                                <#assign impdesglosaieps = imp_linea_sindesglose>
-                                                <#assign valu_linea_sindesglose =  imp_linea_sindesglose/item.quantity>
-                                                Importe="${imp_linea_sindesglose?string["0.00"]}"
-                                                <#if valu_linea_sindesglose?has_content>
-                                                    ValorUnitario="${valu_linea_sindesglose?string["0.00"]}"
-                                                <#else>
-                                                    <#assign rate_faltante = imp_linea_sindesglose / item.quantity>
-                                                    ValorUnitario="${rate_faltante?string["0.00"]}"
-                                                </#if>
-                                            <#else>
-                                                Importe="${customItem.amount?number?string["0.00"]}"
-                                                <#if customItem.rate != "">
-                                                    ValorUnitario="${customItem.rate?number?string["0.00"]}"
-                                                <#else>
-                                                    <#assign rate_faltante = customItem.amount?number / item.quantity?number>
-                                                    ValorUnitario="${rate_faltante?string["0.00"]}"
-                                                </#if>
-                                            </#if>
-                                        </#if>
-                                        <#assign json_descuentos = desglose.descuentoSinImpuesto>
-                                        <#if json_descuentos?number gt 0>
-                                        Descuento="${desglose.descuentoSinImpuesto?number?string["0.00"]}"
-                                        ObjetoImp="02">
-                                    <#else>
-                                        Descuento="0.00"
-                                        ObjetoImp="02">
-
-                                    </#if>
-
-                                    <#if customItem.amount?number != desglose.descuentoSinImpuesto?number>
-                                        <cfdi:Impuestos>
-                                            <#if desglose.iva.name?has_content || desglose.ieps.name?has_content || desglose.exento.name?has_content>
-                                                <cfdi:Traslados>
-
-                                                    <#if desglosa_ieps == true>
-                                                        <#if desglose.ieps.name?has_content>
-                                                            <#assign tiene_impuesto = tiene_impuesto + 1>
-                                                            <cfdi:Traslado Base="${desglose.ieps.base_importe?number?string["0.00"]}" Importe="${desglose.ieps.importe?number?string["0.00"]}" Impuesto="003" TasaOCuota="${desglose.ieps.rate_div?number?string["0.000000"]}" TipoFactor="Tasa" />
-                                                        </#if>
-                                                    </#if>
-
-                                                    <#if desglose.iva.name?has_content>
-
-                                                        <#assign iva_enfixed = desglose.iva.importe?number?string["0.00"]>
-                                                        <#assign total_impuestos_t_ivas = total_impuestos_t_ivas + iva_enfixed?number>
-                                                        <#assign tiene_impuesto = tiene_impuesto + 1>
-                                                        <cfdi:Traslado Base="${desglose.iva.base_importe?number?string["0.00"]}" Importe="${desglose.iva.importe?number?string["0.00"]}" Impuesto="002" TasaOCuota="${desglose.iva.rate_div?number?string["0.000000"]}" TipoFactor="Tasa" />
-                                                    </#if>
-
-
-                                                    <#if desglose.exento.name?has_content>
-                                                        <cfdi:Traslado Base="${desglose.exento.base_importe?number?string["0.00"]}" Impuesto="002" TipoFactor="Exento" />
-                                                    </#if>
-
-                                                </cfdi:Traslados>
-                                            </#if>
-
-
-                                            <#if desglose.retenciones.name?has_content>
-                                                <cfdi:Retenciones>
-                                                    <#assign tiene_impuesto = tiene_impuesto + 1>
-                                                    <cfdi:Retencion Base="${desglose.retenciones.base_importe?number?string["0.00"]}" Importe="${(desglose.retenciones.importe?number)?string["0.00"]}" Impuesto="002" TasaOCuota="${desglose.retenciones.rate_div?number?string["0.000000"]}" TipoFactor="Tasa" />
-
-                                                </cfdi:Retenciones>
-                                            </#if>
-                                        </cfdi:Impuestos>
-                                    </#if>
-
-                                    ${getNodePair("cfdi:InformacionAduanera", "NumeroPedimento" ,item.custcol_mx_txn_line_sat_cust_req_num)}
-                                    ${getNodePair("cfdi:CuentaPredial", "Numero" ,item.custcol_mx_txn_line_sat_cadastre_id)}
-                                    <#if customItem.parts?has_content>
-                                        <#list customItem.parts as part>
-                                            <#assign "partItem" = transaction.item[part.line?number]>
-                                            <#assign "partSatCodes" = satCodes.items[part.line?number]>
-                                            <cfdi:Parte Cantidad="${partItem.quantity?string["0.0"]}" ClaveProdServ="${partSatCodes.itemCode}" Descripcion="${partItem.description}" Importe="${part.amount?number?string["0.00"]}" ValorUnitario="${part.rate?number?string["0.00"]}"/>
-                                        </#list>
-                                    </#if>
-
-                                    <#if transaction.custbody_efx_fe_complemento_educativo == true>
-                                        <cfdi:ComplementoConcepto>
-                                            <iedu:instEducativas version="1.0" ${getAttrPair("nombreAlumno",(item.custcol_efx_fe_com_edu_nom_alumn)!"")!""} ${getAttrPair("CURP",(item.custcol_efx_fe_com_edu_curp)!"")!""} ${getAttrPair("nivelEducativo",(item.custcol_efx_fe_com_edu_nivel_edu)!"")!""} ${getAttrPair("autRVOE",(item.custcol_efx_fe_com_edu_clave_autrvoe)!"")!""}/>
-                                        </cfdi:ComplementoConcepto>
-                                    </#if>
-                                </cfdi:Concepto>
-
-                            </#if>
-                        </#list>
-                        <#if transaction.custbody_efx_fe_desglosa_ga == false>
-                            <cfdi:Concepto
-                                    Cantidad="1.000000"
-                                    <#if ComercioE == true>
-                                        <#if item.custcol_efx_fe_upc_code?has_content>
-                                            NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                        <#else>
-                                            NoIdentificacion="${item.item}"
-                                        </#if>
-                                    </#if>
-                                    <#if item.custcol_efx_fe_upc_code?has_content>
-                                        <#if ComercioE == false>
-                                            NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                        </#if>
-                                    </#if>
-
-                                    <#assign unidadgroup = "E48">
-                                    ${getAttrPair("ClaveProdServ",prodservgrupo)!""}
-                                    ${getAttrPair("ClaveUnidad",unidadgroup)!""}
-                                    Descripcion="${descripciongrupo?replace("<br />","")}"
-                                    <#assign impdesglosaieps = 0>
-                                    <#if desglosa_ieps == true>
-                                        Importe="${importedesgloses?string["0.00"]}"
-                                        <#if customItem.rate != "">
-                                            ValorUnitario="${importedesgloses?string["0.00"]}"
-                                        <#else>
-                                            <#assign rate_faltante = customItem.amount?number / item.quantity?number>
-                                            ValorUnitario="${importedesgloses?string["0.00"]}"
-                                        </#if>
-                                    <#else>
-                                        Importe="${importedesgloses?string["0.00"]}"
-                                        <#if customItem.rate != "">
-                                            ValorUnitario="${importedesgloses?string["0.00"]}"
-                                        <#else>
-                                            <#assign rate_faltante = customItem.amount?number / item.quantity?number>
-                                            ValorUnitario="${importedesgloses?string["0.00"]}"
-                                        </#if>
-                                    </#if>
-
-                                    <#if descuentodesgloses gt 0>
-                                    Descuento="${descuentodesgloses?string["0.00"]}"
-                                    <#assign objimp = item.custcol_mx_txn_line_sat_tax_object?keep_before(" -")>
-                                    ObjetoImp="02">
-                                <#else>
-
-                                    <#assign objimp = item.custcol_mx_txn_line_sat_tax_object?keep_before(" -")>
-                                    Descuento="0.00"
-                                    ObjetoImp="02">
-
-                                </#if>
-
-
-                                <cfdi:Impuestos>
-
-                                    <cfdi:Traslados>
-
-                                        <#assign tiene_impuesto = tiene_impuesto + 1>
-                                        <cfdi:Traslado Base="${importedesgloses?string["0.00"]}" Importe="${ivaImporte?string["0.00"]}" Impuesto="002" TasaOCuota="${ivaTasa?number?string["0.000000"]}" TipoFactor="Tasa" />
-
-
-                                    </cfdi:Traslados>
-
-                                </cfdi:Impuestos>
-
-
-                                ${getNodePair("cfdi:InformacionAduanera", "NumeroPedimento" ,item.custcol_mx_txn_line_sat_cust_req_num)}
-                                ${getNodePair("cfdi:CuentaPredial", "Numero" ,item.custcol_mx_txn_line_sat_cadastre_id)}
-
-
-
-                            </cfdi:Concepto>
-                        </#if>
-                    </#if>
-                </#if>
+                <cfdi:Impuestos>
+                        <cfdi:Traslados>
+                            <cfdi:Traslado Base="${item.amount?string["0.00"]}" Importe="0.00" Impuesto="002" TasaOCuota="0.000000" TipoFactor="Tasa" />
+                        </cfdi:Traslados>
+                    </cfdi:Impuestos>
+                </cfdi:Concepto>
             </#if>
         </#list>
 
@@ -708,6 +360,11 @@
         </#if>
     </cfdi:Conceptos>
 
+    <cfdi:Impuestos TotalImpuestosTrasladados="0.00">
+        <cfdi:Traslados>
+            <cfdi:Traslado Base="48.00" Importe="0.00" Impuesto="002" TasaOCuota="0.000000" TipoFactor="Tasa" />
+        </cfdi:Traslados>
+    </cfdi:Impuestos>
     <#assign json_ivas = desglose_cab.rates_iva_data>
 
     <#list json_ivas as Iva_rate, Iva_total>

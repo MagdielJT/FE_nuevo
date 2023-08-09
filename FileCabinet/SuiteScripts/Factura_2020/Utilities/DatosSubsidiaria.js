@@ -23,7 +23,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
          * @param context - The context object contains information about the current user and the
          * current record.
          */
-        var accountid = '', messageDetail = '', showMessage = false, isBloqued = false;
+        var accountid = '', messageDetail = '', showMessage = false, habilitado = false;
         function beforeLoad(context) {
             var record_now = context.newRecord;
             var recType = record_now.type;
@@ -737,7 +737,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                         if (recType == record.Type.CUSTOMER_PAYMENT) {
                             record_now.setValue({
                                 fieldId: 'custbody_mx_cfdi_usage',
-                                value: 'CP01 - Pagos'
+                                value: 24
                             });
                         } else {
                             record_now.setValue({
@@ -1223,11 +1223,14 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 var monto_no_app = record_now.getValue({ fieldId: 'unapplied' });
                 log.audit({ title: 'monto_no_app', details: monto_no_app });
                 // if(monto_no_app==0) {
+                log.audit({title: 'ocultagenerarcert ~ 1226', details: ocultagenerarcert});
                 if (ocultagenerarcert) {
+                    log.audit({title: 'uuidFactura', details: uuidFactura});
                     if (!uuidFactura) {
+                        log.audit({title: 'status_cfdi', details: status_cfdi});
                         if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
-
-                            if (!isBloqued) {
+                            log.audit({title: 'habilitado', details: habilitado});
+                            if (habilitado) {
                                 if (cfdiversion == 1) {
                                     form.addButton({
                                         id: "custpage_btn_timbrar",
@@ -1249,7 +1252,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
             } else if (pagot == 'gbl') {
                 if (!certificado) {
                     if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
-                        if (!isBloqued) {
+                        if (habilitado) {
                             form.addButton({
                                 id: "custpage_btn_timbrar_gbl",
                                 label: "Generar y Certificar GBL",
@@ -1315,11 +1318,17 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                         button_cert.isHidden = true;
                     }
                 }
+                log.audit({title: 'certificado', details: certificado});
                 if (!certificado) {
+                    log.audit({title: 'ocultagenerarcert & recType', details:ocultagenerarcert +' & ' + recType});
                     if (ocultagenerarcert && recType != record.Type.PURCHASE_ORDER) {
+                        log.audit({title: 'uuidFactura', details: uuidFactura});
                         if (!uuidFactura) {
+                            log.audit({title: 'status_cfdi', details: status_cfdi});
                             if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
-                                if (!isBloqued) {
+                                log.audit({title: 'habilitado', details: habilitado});
+                                if (habilitado) {
+                                    log.audit({title: 'cfdiversion', details: cfdiversion});
                                     if (cfdiversion == 1) {
                                         form.addButton({
                                             id: "custpage_btn_timbrar",
@@ -1557,11 +1566,12 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 var respuesta = JSON.parse(response.body);
 
                 //Parametros obtenidos para validacion del acceso
-                isBloqued = respuesta.isBloqued;
+                habilitado = respuesta.enabled;
                 showMessage = respuesta.showMessage;
                 messageDetail = respuesta.messageDetail;
+                isBloqued = respuesta.isBloqued;
                 log.audit({ title: 'Respuesta:', details: respuesta });
-                if (isBloqued) {
+                if (!habilitado ) {
                     form.removeButton({ id: 'submitter' });
                     form.removeButton({ id: 'saveemail' });
                     form.removeButton({ id: 'submitnew' });
@@ -1569,16 +1579,25 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     form.removeButton({ id: 'edit' });
 
                 }
-                if (showMessage) {
+                if (showMessage && messageDetail != "" && !isBloqued) {
                     var form = context.form;
                     form.addPageInitMessage({
-                        type: message.Type.ERROR,
+                        type: message.Type.WARNING,
                         message: messageDetail,
 
                     });
                     context.form = form
+                }else{
+                    if (isBloqued && messageDetail != "") {
+                        var form = context.form;
+                        form.addPageInitMessage({
+                            type: message.Type.ERROR,
+                            message: messageDetail,
+                        });
+                        context.form = form
+                    }
                 }
-                //}
+
             } catch (e) {
                 log.error({ title: 'Error controlMensajesAccesoFacturacion:', details: e });
             }
