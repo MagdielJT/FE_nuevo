@@ -441,6 +441,7 @@ function(search,record,https,urlMod,file,runtime) {
                         if(relacionLinea==data_reduce.internalid.value){
                             record_gbl.setSublistValue({sublistId:'item',fieldId:'custcol_efx_fe_gbl_ncrelated',line:i,value:id_registro_cmemo});
                             record_gbl.save();
+                            break;
                         }
                     }
 
