@@ -40,16 +40,16 @@ define(['N/record', '../../../Lib/fb_tp_const_lib.js', 'N/search', 'N/ui/dialog'
                     var recObj = scriptContext.currentRecord;
                     var mensaje = runtime.getCurrentScript().getParameter({name: SCRIPTS.RAZON_SOCIAL.PARAMETERS.MESSAGE});
                     var razon_social = recObj.getValue({ fieldId: CUSTOMER.FIELDS.RAZON_SOCIAL }).toLowerCase();
-                    console.log('razon social', razon_social );
+                    // console.log('razon social', razon_social );
                     razon = razon_social.replaceAll('.', '');
-                    console.log('razon sin puntos: ', razon );
+                    // console.log('razon sin puntos: ', razon );
                     var sociedades_mercantiles = getSociedadMercantil();
-                    console.log('datos de la busqueda: ', sociedades_mercantiles)
+                    // console.log('datos de la busqueda: ', sociedades_mercantiles)
                     for (let posicion = 0; posicion < sociedades_mercantiles.length; posicion++) {
                         var soci = sociedades_mercantiles[posicion].toLowerCase()
                         soci = soci.replaceAll('.', '');
                         // console.log('sin puntos: ', soci);
-                        console.log('validacion: ', razon_social + ' contiene: ' + soci)
+                        // console.log('validacion: ', razon_social + ' contiene: ' + soci)
                         if (razon.includes(soci)) {
                             dialog.alert({
                                 title: '¡WARNING!',
