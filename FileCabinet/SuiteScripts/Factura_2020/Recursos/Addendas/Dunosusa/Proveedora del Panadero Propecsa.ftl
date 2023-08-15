@@ -1,5 +1,5 @@
 <#setting locale = "es_MX">
-<Addenda>
+<cfdi:Addenda>
     <#assign fechaTransaccion = transaction.trandate?date>
     <#assign fechaOrdenCompra = transaction.custbody_efx_dunosusa_fecha_ordenc?date>
     <requestForPayment type="SimpleInvoiceType" contentVersion="1.3.1" documentStructureVersion="AMC7.1" documentStatus="ORIGINAL" DeliveryDate="${fechaTransaccion?iso_utc?replace("-","")}">
@@ -120,4 +120,4 @@
             <Amount>${transaction.total?string["0.00"]}</Amount>
         </payableAmount>
     </requestForPayment>
-</Addenda>
+</cfdi:Addenda>
