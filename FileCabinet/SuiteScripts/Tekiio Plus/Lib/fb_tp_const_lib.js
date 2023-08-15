@@ -24,6 +24,11 @@ define([], () => {
     SCRIPTS.SEND_DATA.ID_SCRIPT = 'customscript_fb_tp_send_data_sl'
     SCRIPTS.SEND_DATA.ID_DESPLOY = 'customdeploy_fb_tp_send_data_sl'
 
+    SCRIPTS.TC_BANXICO = {}
+    SCRIPTS.TC_BANXICO.PARAMETERS = {}
+    SCRIPTS.TC_BANXICO.BASE_CURRENCY = 'custscript_fb_tp_basecurrency'
+    SCRIPTS.TC_BANXICO.TRANSACTION_CURRENCY = 'custscript_fb_tp_transcurrency'
+
     const BOTONES = {}
     BOTONES.VALIDAR_DATOS_CLIENTE = {}
     BOTONES.VALIDAR_DATOS_CLIENTE.ID = 'custpage_fb_tp_btn_val_datos'
@@ -61,6 +66,21 @@ define([], () => {
     REGISTROS.CATALOGO_MENSAJES.CAMPOS.CODIGO = 'custrecord_fb_tp_code'
     REGISTROS.CATALOGO_MENSAJES.CAMPOS.MENSAJE = 'custrecord_fb_tp_message'
 
+    REGISTROS.TC_NETSUITE = {}
+    REGISTROS.TC_NETSUITE.TYPE = 'currencyrate'
+    REGISTROS.TC_NETSUITE.CAMPOS = {}
+    REGISTROS.TC_NETSUITE.CAMPOS.BASE_CURRENCY = 'basecurrency'
+    REGISTROS.TC_NETSUITE.CAMPOS.TRANSACTION_CURRENCY = 'transactioncurrency'
+    REGISTROS.TC_NETSUITE.CAMPOS.EXCHANGE_RATE = 'exchangerate'
+    REGISTROS.TC_NETSUITE.CAMPOS.EFFECTIVE_DATE = 'effectivedate'
+    REGISTROS.TC_NETSUITE.CAMPOS.PREV_DEFFECTIVE = 'prevdeffective'
 
-    return { CUSTOMER, SCRIPTS, BOTONES, LISTAS, BUSQUEDAS, PAC_DATA, REGISTROS }
+
+    const DATOS_BANXICO = {}
+    DATOS_BANXICO.URL_API = 'https://www.banxico.org.mx/SieAPIRest/service/v1/series/${idSerie}/datos/oportuno?token=${TOKEN}'
+    DATOS_BANXICO.SERIE = 'SP68257'
+    DATOS_BANXICO.TOKEN = 'd7e1a91d2719314a78a98854b0adee989ec83441d8c088908a1fdccf4af5ddd9'
+
+
+    return { CUSTOMER, SCRIPTS, BOTONES, LISTAS, BUSQUEDAS, PAC_DATA, REGISTROS, DATOS_BANXICO }
 })
