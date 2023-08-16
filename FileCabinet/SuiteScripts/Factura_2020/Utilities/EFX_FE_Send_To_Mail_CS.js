@@ -206,12 +206,12 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                         type: mensajes.Type.INFORMATION
                     });
                     myMsg_create.show();
-                
-                
+
+
 
                 var tranid = tranData.tranid || '';
                 var trantype = tranData.trantype || '';
-                
+
                 //GENERAR DOCUMENTO
                 var suiteletURL = url.resolveScript({
                     scriptId: "customscript_ei_generation_service_su",
@@ -230,6 +230,7 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                     url: suiteletURL
                 })
                     .then(function (response) {
+                        console.log('holis');
 
                         var body = JSON.parse(response.body)
                         console.log(body);
@@ -277,10 +278,8 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                                 url: suiteletURL
                             })
                                 .then(function (response) {
-                                    log.debug({
-                                        title: 'Response',
-                                        details: response
-                                    });
+                                    // console.log('respuesta: ', response);
+                                    console.log('HOLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
 
                                     var body = JSON.parse(response.body)
 
@@ -408,10 +407,10 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
         }
 
         function generaCertificaGBL(tranData){
-            console.log('En ejecucion',enEjecucion);
+            console.log('En ejecucion GBL',enEjecucion);
             if(enEjecucion==false) {
                 enEjecucion=true;
-                console.log('En ejecucion',enEjecucion);
+                console.log('En ejecucion GBL',enEjecucion);
                 var envia_correo_auto = runtime.getCurrentScript().getParameter({name: 'custscript_efx_fe_autosendmail'});
                 var anticipo = tranData.anticipo || false;
 
@@ -455,9 +454,12 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                     .then(function (response) {
 
                         var body = JSON.parse(response.body)
-                        console.log(body);
-
+                        console.log('Respuesta: ', body);
+                        // console.log('error_deatils', body.error_details);
                         console.log('success ', body.success);
+                        // console.log('body.mensaje', body.mensaje);
+                        var mensaje = 'Ocurrio un error durante su generación <br><br>' + body.mensaje;
+                        console.log('mensaje a mostrar:', mensaje);
 
                         if (body.success) {
                             try {
@@ -616,7 +618,7 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                                 myMsg_create.hide();
                                 var myMsg = mensajes.create({
                                     title: "Generación",
-                                    message: "Ocurrio un error durante su generación",
+                                    message: mensaje,
                                     type: mensajes.Type.ERROR
                                 });
                                 myMsg.show();
@@ -634,19 +636,19 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
 
         }
 
-        function openSL_Anticipo(tranData) {                            
-    
+        function openSL_Anticipo(tranData) {
+
             var url_Script = url.resolveScript({
                 scriptId: 'customscript_efx_fe_antpag_sl',
                 deploymentId: 'customdeploy_efx_fe_antpag_sl'
             });
-    
+
             url_Script += '&custparam_total=' + tranData.total;
             url_Script += '&custparam_entity=' + tranData.entity;
             url_Script += '&custparam_location=' + tranData.location;
             url_Script += '&custparam_tranid=' + tranData.tranid;
             url_Script += '&custparam_trantype=' + tranData.trantype;
-           
+
             window.open(url_Script, '_blank');
         }
 
