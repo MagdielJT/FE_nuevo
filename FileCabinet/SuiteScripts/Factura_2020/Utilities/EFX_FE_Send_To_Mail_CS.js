@@ -23,7 +23,6 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
 
         var enEjecucion = false;
         function pageInit(scriptContext) {
-
         }
 
         function sendToMail(tranData) {
@@ -433,6 +432,36 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
 
                 var tranid = tranData.tranid || '';
                 var trantype = tranData.trantype || '';
+
+                // OBTENER DATOS NECESARIO PARA MENSAJES
+                if (trantype == 'customerpayment') {
+                    var cliente = 'customer'
+                } else {
+                    var cliente = 'entity'
+                }
+                // datos en la transaccion
+                var datos_transaction = search.lookupFields({
+                    type: trantype,
+                    id: tranid,
+                    columns: [cliente,'custbody_mx_cfdi_usage', 'custbody_mx_txn_sat_payment_method', 'custbody_mx_txn_sat_payment_term', 'custbody_mx_cfdi_sat_export_type', 'custbody_psg_ei_template', 'custbody_psg_ei_sending_method', 'custbody_edoc_gen_trans_pdf']
+                });
+                console.log('datos_transaccion', datos_transaction);
+                console.log('cliente', datos_transaction.entity[0].value);
+
+                var id_cliente = datos_transaction.entity[0].value;
+                // datos en el cliente
+                var datos_cliente = search.lookupFields({
+                    type: 'customer',
+                    id: id_cliente,
+                    columns: ['custentity_mx_sat_registered_name', 'custentity_mx_rfc', 'custentity_mx_sat_industry_type']
+                });
+                console.log('datos_cliente', datos_cliente);
+
+                var rfc = datos_cliente.custentity_mx_rfc;
+                console.log('rfc', rfc);
+                var razon_social = datos_cliente.custentity_mx_sat_registered_name;
+                console.log('razon_social', razon_social);
+
                 //GENERAR DOCUMENTO
 
                 var suiteletURL = url.resolveScript({
@@ -447,6 +476,7 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                 console.log(suiteletURL);
 
 
+
                 https.request.promise({
                     method: https.Method.GET,
                     url: suiteletURL
@@ -458,7 +488,18 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                         // console.log('error_deatils', body.error_details);
                         console.log('success ', body.success);
                         // console.log('body.mensaje', body.mensaje);
-                        var mensaje = 'Ocurrio un error durante su generación <br><br>' + body.mensaje;
+                        var mensaje_body_split = (body.mensaje).split(' - ');
+                        console.log('mensaje_body_split', mensaje_body_split);
+                        var message = getMessage(mensaje_body_split[0]);
+                        console.log('message', message.data);
+                        var mensaje_a_mostrar = message.data;
+                        mensaje_a_mostrar = mensaje_a_mostrar.replace('${RFC}', rfc);
+                        mensaje_a_mostrar = mensaje_a_mostrar.replace('${RAZON_SOCIAL}', razon_social);
+                        /*mensaje_a_mostrar = mensaje_a_mostrar.replace('${LUGAR_EXPEDICION}', domi_fisc);
+                        mensaje_a_mostrar = mensaje_a_mostrar.replace('${DOMICILIO_FISCAL}', domi_fisc);
+                        mensaje_a_mostrar = mensaje_a_mostrar.replace('${REGIMEN_FISCAL}', reg_fisc);
+                        mensaje_a_mostrar = mensaje_a_mostrar.replace('${USO_CFDI_CLIENTE}', uso_cfdi_cliente); */
+                        var mensaje = 'Ocurrio un error durante su generación <br><br>' + mensaje_a_mostrar;
                         console.log('mensaje a mostrar:', mensaje);
 
                         if (body.success) {
@@ -652,13 +693,52 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
             window.open(url_Script, '_blank');
         }
 
+        function getMessage(codigo) {
+            var response = {
+                success: false,
+                error: '',
+                data: ''
+            }
+            try {
+                var searchMessage = search.create({
+                    type: 'customrecord_fb_tp_messages_list',
+                    filters:
+                        [
+                            ['custrecord_fb_tp_code', search.Operator.IS, codigo]
+                        ],
+                    columns:
+                        [
+                            search.createColumn({name: 'custrecord_fb_tp_code'}),
+                            search.createColumn({name: 'custrecord_fb_tp_message'})
+                        ]
+                });
+                var searchResultCount = searchMessage.runPaged().count;
+                if (searchResultCount > 0 ) {
+                    searchMessage.run().each(function (result) {
+                        response.data = result.getValue({name: 'custrecord_fb_tp_message'})
+                        return true;
+                    });
+                    response.success = true;
+                }else{
+                    response.success = false;
+                    response.error = "No se encontraron datos";
+                }
+            } catch (error) {
+                log.error({title:'ERROR ongetMessage ', details:error});
+                response.success = false;
+                response.error = error;
+            }
+            return response
+        }
+
         return {
             pageInit: pageInit,
             sendToMail:sendToMail,
             generaCertifica:generaCertifica,
             generaCertificaGBL:generaCertificaGBL,
             regeneraPDF:regeneraPDF,
-            openSL_Anticipo:openSL_Anticipo
+            openSL_Anticipo:openSL_Anticipo,
+            getMessage:getMessage
         };
 
     });

@@ -75,6 +75,16 @@ define([], () => {
     REGISTROS.TC_NETSUITE.CAMPOS.EFFECTIVE_DATE = 'effectivedate'
     REGISTROS.TC_NETSUITE.CAMPOS.PREV_DEFFECTIVE = 'prevdeffective'
 
+    REGISTROS.INVOICE = {}
+    REGISTROS.INVOICE.CAMPOS = {}
+    REGISTROS.INVOICE.CAMPOS.USO_CFDI = 'custbody_mx_cfdi_usage'
+    REGISTROS.INVOICE.CAMPOS.FORMA_PAGO = 'custbody_mx_txn_sat_payment_method'
+    REGISTROS.INVOICE.CAMPOS.METODO_PAGO = 'custbody_mx_txn_sat_payment_term'
+    REGISTROS.INVOICE.CAMPOS.TIPO_EXPORTACION = 'custbody_mx_cfdi_sat_export_type'
+    REGISTROS.INVOICE.CAMPOS.PLANTILLA_XML = 'custbody_psg_ei_template'
+    REGISTROS.INVOICE.CAMPOS.METODO_ENVIO = 'custbody_psg_ei_sending_method'
+    REGISTROS.INVOICE.CAMPOS.GENERA_PDF = 'custbody_edoc_gen_trans_pdf'
+
 
     const DATOS_BANXICO = {}
     DATOS_BANXICO.URL_API = 'https://www.banxico.org.mx/SieAPIRest/service/v1/series/${idSerie}/datos/oportuno?token=${TOKEN}'
