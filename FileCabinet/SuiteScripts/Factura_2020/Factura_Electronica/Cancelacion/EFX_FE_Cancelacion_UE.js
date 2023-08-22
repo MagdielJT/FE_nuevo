@@ -8,7 +8,7 @@ define(['N/record'],
  * @param{record} record
  */
 function(record) {
-   
+
     /**
      * Function definition to be triggered before record is loaded.
      *
@@ -72,23 +72,26 @@ function(record) {
                         var entidad = record_cancel.getValue(
                             {fieldId: 'customer'}
                         );
+                        log.audit({title: 'entidad', details: entidad});
                     }else{
                         var entidad = record_cancel.getValue(
                             {fieldId: 'entity'}
                         );
+                        log.audit({title: 'entidad', details: entidad});
                     }
-                    
+
                     var fechatransaccion = record_cancel.getValue(
                         {fieldId: 'trandate'}
                     );
+                    log.audit({title: 'fecha', details: fechatransaccion});
                     var tranData = {
                         tranid: record_cancel.id,
                         trantype: record_cancel.type,
                         entityid:entidad,
                         trandate:fechatransaccion
                     };
-
                     log.audit({title: 'tranData', details: JSON.stringify(tranData)});
+
                     form.addButton({
                         id: "custpage_btn_cancel_cfdi",
                         label: "Cancelar CFDI",
@@ -152,5 +155,5 @@ function(record) {
         beforeLoad: beforeLoad,
 
     };
-    
+
 });

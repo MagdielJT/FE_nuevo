@@ -176,7 +176,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                     uuid_sustitucion = document.getElementById('listFact').value; //! cambiar para que se almacene el uuid de la factura que se seleccione
                     console.log(cancelReason);
                     console.log('uudi de sustitucion: ',uuid_sustitucion);
-                    state = true;
+                    // state = true;
                 } else if (document.getElementById('cancelar').value == 2) {
                     cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
                     console.log(cancelReason);
@@ -450,7 +450,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                     for (var x = 0; x < facturasArray.length; x++) {
                         // console.log('validacion', facturasArray[x].id + '!=' + tranid);
                         if (facturasArray[x].id != tranid) {
-                            facturasString += '<option value="' + facturasArray[x].uuid + '" >' + facturasArray[x].numero + '</option>'
+                            facturasString += '<option value="' + facturasArray[x].id + '" >' + facturasArray[x].numero + '</option>'
                         }
 
                     }

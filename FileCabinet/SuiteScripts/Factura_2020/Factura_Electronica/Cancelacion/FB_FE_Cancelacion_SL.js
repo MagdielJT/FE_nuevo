@@ -1,12 +1,13 @@
 /**
  * @NApiVersion 2.1
  * @NScriptType Suitelet
+ * @NModuleScope SameAccount
  * @name FB_FE_Cancelacion_SL
  * @version 1.0
  * @author Dylan Mendoza <dylan.mendoza@freebug.mx>
  * @summary Script encargado de cancelar facturas
  * @copyright Tekiio México 2023
- * 
+ *
  * Client              -> Tekiio
  * Last modification   -> 17/07/2023
  * Modified by         -> Dylan Mendoza <dylan.mendoza@freebug.mx>
@@ -14,7 +15,6 @@
  */
 define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/config', 'N/search', 'N/xml', 'N/file', 'N/render','N/format','N/url','N/redirect','N/transaction','N/https','N/task'],
     function (log, ui, record, runtime, http, config, search, xml, file, render, format,urlmod,redirect,transaction,https,task) {
-
         function cancel_cfdi(context) {
             var scriptObj = runtime.getCurrentScript();
             try {
@@ -236,12 +236,17 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
             const response = {success: false, error: '', data: ''};
             try {
                 log.debug({title:'Datos param', details:{tranid: tranid, trantype: trantype, data: data}});
+                let uuidKey = Object.keys(data.uuid);
+                let uuidAcuse = data.uuid[uuidKey[0]];
+                log.debug({ title:'uuidAcuse', details:uuidAcuse });
+                let responseCode = getAcuseCode(uuidAcuse);
+                log.debug({ title:'responseCode', details:responseCode });
                 var rec = record.submitFields({
                     type: trantype,
                     id: tranid,
                     values: {
                        'custbody_efx_fe_cfdi_cancelled' : true,
-                       'custbody_efx_fe_acuse_cancel' : data.acuse
+                       'custbody_efx_fe_acuse_cancel' : responseCode.result
                     }
                 });
                 response.success = true;
@@ -284,6 +289,101 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
             objPacConection.userValidador = conectionObj.getValue({fieldId:'custrecord_efx_fe_mtd_env_uservalid'});
 
             return objPacConection;
+        }
+
+        function getAcuseCode(code) {
+            const response = {success: false, error: '', result: ''};
+            try {
+                // Lista de codigos de respuesta de cancelación del PAC SW https://developers.sw.com.mx/knowledge-base/cancelacion-cfdi/
+                const codesPAC = [
+                    {   'code':'201',
+                        'message':'Solicitud de cancelación exitosa',
+                        'description': 'Se considera una solicitud de cancelación exitosa, sin embargo esto no asegura su cancelación'
+                    },
+                    {   'code':'202',
+                        'message':'Folio Fiscal Previamente Cancelado',
+                        'description': 'Se considera solicitud de cancelación previamente enviada. Estatus Cancelado ante el SAT.'
+                    },
+                    {   'code':'203',
+                        'message':'Folio Fiscal No Correspondiente al Emisor',
+                        'description': ''
+                    },
+                    {   'code':'204',
+                        'message':'Folio Fiscal No Aplicable a Cancelación',
+                        'description': ''
+                    },
+                    {   'code':'205',
+                        'message':'Folio Fiscal No Aplicable a Cancelación',
+                        'description': 'El sat da una prorroga de 48 hrs para que el comprobante aparezca con estatus Vigente posterior al envió por parte del Proveedor de Certificación de CFDI. Puede que algunos comprobantes no aparezcan al momento, es necesario esperar por lo menos 48 hrs.'
+                    },
+                    {   'code':'206',
+                        'message':'UUID no corresponde a un CFDI del Sector Primario',
+                        'description': ''
+                    },
+                    {   'code':'207',
+                        'message':'No se especificó el motivo de cancelación o el motivo no es valido',
+                        'description': 'El UUID sustitución no existe, está cancelado o tiene una fecha de emisión anterior a la fecha de emisión del comprobante original.'
+                    },
+                    {   'code':'208',
+                        'message':'Folio Sustitución invalido',
+                        'description': ''
+                    },
+                    {   'code':'209',
+                        'message':'Folio Sustitución no requerido',
+                        'description': ''
+                    },
+                    {   'code':'210',
+                        'message':'La fecha de solicitud de cancelación es mayor a la fecha de declaración',
+                        'description': ''
+                    },
+                    {   'code':'211',
+                        'message':'La fecha de solicitud de cancelación límite para factura global',
+                        'description': ''
+                    },
+                    {   'code':'212',
+                        'message':'Relación no valida o inexistente',
+                        'description': ''
+                    },
+                    {   'code':'300',
+                        'message':'Usuario No Válido',
+                        'description': ''
+                    },
+                    {   'code':'301',
+                        'message':'XML Mal Formado',
+                        'description': 'Este código de error se regresa cuando el request posee información invalida, ejemplo: un RFC de receptor no válido.'
+                    },
+                    {   'code':'302',
+                        'message':'Sello Mal Formado',
+                        'description': ''
+                    },
+                    {   'code':'304',
+                        'message':'Certificado Revocado o Caduco',
+                        'description': 'El certificado puede ser inválido por múltiples razones como son el tipo, la vigencia, etc.'
+                    },
+                    {   'code':'305',
+                        'message':'Certificado Inválido',
+                        'description': 'El certificado puede ser inválido por múltiples razones como son el tipo, la vigencia, etc.'
+                    },
+                    {   'code':'309',
+                        'message':'Certificado Inválido',
+                        'description': 'El certificado puede ser inválido por múltiples razones como son el tipo, la vigencia, etc.'
+                    },
+                    {   'code':'310',
+                        'message':'CSD Inválido',
+                        'description': 'El certificado puede ser inválido por múltiples razones como son el tipo, la vigencia, etc.'
+                    }
+                ];
+                let msgResult = codesPAC.find(element =>{return element.code == code});
+                if (msgResult) {
+                    response.success = true;
+                    response.result = msgResult.message;
+                }
+            } catch (error) {
+                log.error({ title:'getAcuseCode', details:error });
+                response.success = false;
+                response.error = error;
+            }
+            return response;
         }
 
         return {
