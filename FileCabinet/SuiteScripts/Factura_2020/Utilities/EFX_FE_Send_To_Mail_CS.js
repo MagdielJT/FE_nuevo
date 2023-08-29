@@ -435,18 +435,24 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
 
                 // OBTENER DATOS NECESARIO PARA MENSAJES
                 if (trantype == 'customerpayment') {
-                    var cliente = 'customer'
+                    // var cliente = 'customer'
+                    // var cliente = 'customer'
+                    // console.log('cliente: ', cliente);
+                    var datos_transaction = search.lookupFields({
+                        type: trantype,
+                        id: tranid,
+                        columns: ['customer', 'custbody_mx_cfdi_usage', 'custbody_mx_txn_sat_payment_method', 'custbody_mx_txn_sat_payment_term', 'custbody_mx_cfdi_sat_export_type', 'custbody_psg_ei_template', 'custbody_psg_ei_sending_method', 'custbody_edoc_gen_trans_pdf']
+                    });
                 } else {
-                    var cliente = 'entity'
+                    // var cliente = 'entity'
+                    var datos_transaction = search.lookupFields({
+                        type: trantype,
+                        id: tranid,
+                        columns: ['entity', 'custbody_mx_cfdi_usage', 'custbody_mx_txn_sat_payment_method', 'custbody_mx_txn_sat_payment_term', 'custbody_mx_cfdi_sat_export_type', 'custbody_psg_ei_template', 'custbody_psg_ei_sending_method', 'custbody_edoc_gen_trans_pdf']
+                    });
                 }
-                // datos en la transaccion
-                var datos_transaction = search.lookupFields({
-                    type: trantype,
-                    id: tranid,
-                    columns: [cliente,'custbody_mx_cfdi_usage', 'custbody_mx_txn_sat_payment_method', 'custbody_mx_txn_sat_payment_term', 'custbody_mx_cfdi_sat_export_type', 'custbody_psg_ei_template', 'custbody_psg_ei_sending_method', 'custbody_edoc_gen_trans_pdf']
-                });
-                console.log('datos_transaccion', datos_transaction);
-                console.log('cliente', datos_transaction.entity[0].value);
+                /* console.log('datos_transaccion', datos_transaction);
+                console.log('cliente', datos_transaction.entity[0].value); */
 
                 var id_cliente = datos_transaction.entity[0].value;
                 // datos en el cliente

@@ -34,7 +34,7 @@ function(runtime, constLib, mensajes, url, https, dialog) {
         console.log(uso_cfdi_cliente); */
 
         var id_pac = runtime.getCurrentScript().getParameter({name: PAC_DATA.PAC_ID});
-        // console.log('id pac: ', id_pac);
+        console.log('id pac: ', id_pac);
 
         // Mandar datos al suitelet
         var suiteletURL = url.resolveScript({

@@ -34,6 +34,9 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message'],
             var tranid = tranData.tranid || '';
             var trantype = tranData.trantype || '';
             var uuid = tranData.uuid || '';
+            var subsi = tranData.subsi || '';
+            var rfc_receptor = tranData.rfc_receptor || '';
+            var total_comprobante = tranData.total_comprobante || '';
             var url_Script = url.resolveScript({
                 scriptId: 'customscript_efx_fe_cfdistatus_sl',
                 deploymentId: 'customdeploy_efx_fe_cfdistatus_sl'
@@ -43,6 +46,9 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message'],
             url_Script += '&custparam_uuid=' + uuid;
             url_Script += '&custparam_tranid=' + tranid;
             url_Script += '&custparam_trantype=' + trantype;
+            url_Script += '&custparam_subsi=' + subsi;
+            url_Script += '&custparam_rfc_receptor=' + rfc_receptor;
+            url_Script += '&custparam_total_comprobante=' + total_comprobante;
 
             var headers = {
                 "Content-Type": "application/json"

@@ -165,7 +165,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                 var urlToken = url + '/security/authenticate';
                 // log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
                 // pass = 'AAA111';
-                pass = 'mQ*wP^e52K34';
+                pass = 'Fr33Bug2023#';
                 var headers = {
                     "user": user,
                     "password": pass

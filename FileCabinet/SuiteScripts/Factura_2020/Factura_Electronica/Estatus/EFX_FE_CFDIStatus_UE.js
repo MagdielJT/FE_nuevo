@@ -24,17 +24,23 @@ define(['N/record'],
             if (context.type == context.UserEventType.VIEW) {
                 var form = context.form;
                 form.clientScriptModulePath = "./EFX_FE_CFDIStatus_CS.js";
-                var record_cancel = context.newRecord;
+                var obj_record = context.newRecord;
 
-                var uuid = record_cancel.getValue({fieldId: 'custbody_mx_cfdi_uuid'}) || '';
+                var uuid = obj_record.getValue({fieldId: 'custbody_mx_cfdi_uuid'}) || '';
+                var subsi = obj_record.getValue({fieldId: 'subsidiary'}) || '';
+                var rfc_receptor = obj_record.getValue({fieldId: 'custbody_mx_customer_rfc'}) || '';
+                var total_comprobante = obj_record.getValue({fieldId: 'total'}) || '';
                 log.audit({title: 'uuid', details: JSON.stringify(uuid)});
 
 
                 if ((recType == record.Type.CASH_SALE || recType == record.Type.INVOICE || recType == record.Type.CUSTOMER_PAYMENT || recType == record.Type.CREDIT_MEMO || recType == 'customsale_efx_fe_factura_global') && uuid) {
                     var tranData = {
-                        tranid: record_cancel.id,
-                        trantype: record_cancel.type,
-                        uuid: uuid
+                        tranid: obj_record.id,
+                        trantype: obj_record.type,
+                        uuid: uuid,
+                        subsi: subsi,
+                        rfc_receptor: rfc_receptor,
+                        total_comprobante: total_comprobante
                     };
                     form.addButton({
                         id: "custpage_btn_consulta_estatus_sat",

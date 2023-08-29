@@ -231,7 +231,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                     var tranid = tranData.tranid;
                     var trantype = tranData.trantype;
                     var idGlb = false;
-                    try {
+                    /* try {
 
                         var rec = record.load({
                             type: trantype,
@@ -241,7 +241,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         //idGlb = rec.getValue({ fieldId: 'custbody_efx_fe_factura_global' }) || '';
                     } catch (error) {
                         log.error({ title: 'error', details: JSON.stringify(error) });
-                    }
+                    } */
                     var respuesta = true;
 
                     if (idGlb) {
@@ -279,6 +279,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                             });
                             var myresponse_body = JSON.parse(response.body)
                             console.log('body: ', myresponse_body);
+                            console.log('respuesta: ', response);
 
                             if (response.code == 200) {
                                 myMsg_create.hide();

@@ -47,11 +47,11 @@ define(['N/https', '../../../Lib/fb_tp_data_structure.js', 'N/runtime', '../../.
                 var datos_pac = search.lookupFields({
                     type: PAC_DATA.RECORD_TYPE,
                     id: id_pac,
-                    columns: [PAC_DATA.URL_PRUEBA, PAC_DATA.USUARIO_INTEGRADOR]
+                    columns: [PAC_DATA.URL_PRUEBA, PAC_DATA.USUARIO_INTEGRADOR, PAC_DATA.PRUEBAS, PAC_DATA.URL_PROD, PAC_DATA.USUARIO_INTEGRADOR_PROD]
                 });
                 log.audit({ title: 'datos_pac', details: datos_pac });
 
-                var token_result = getTokenSW(datos_pac[PAC_DATA.URL_PRUEBA], datos_pac[PAC_DATA.USUARIO_INTEGRADOR]);
+                var token_result = getTokenSW(datos_pac[PAC_DATA.URL_PRUEBA], datos_pac[PAC_DATA.USUARIO_INTEGRADOR], datos_pac[PAC_DATA.PRUEBAS], datos_pac[PAC_DATA.URL_PROD], datos_pac[PAC_DATA.USUARIO_INTEGRADOR_PROD]);
                 log.audit({ title: 'resultado_token', details: token_result });
 
                 if (token_result.success == false) {
@@ -90,7 +90,26 @@ define(['N/https', '../../../Lib/fb_tp_data_structure.js', 'N/runtime', '../../.
                     headers: headers,
                     body: JSON.stringify(cuerpo)
                 });
-                log.audit({ title: 'respuesta de mandar a validar', details: response });
+
+                /* var test_file = file.create({
+                    name: 'obj_transaccion.json',
+                    fileType: file.Type.PLAINTEXT,
+                    contents: JSON.stringify(response),
+                    folder: 7703
+                });
+                var id_archivo = test_file.save();
+                log.audit({title: 'id_archivo', details: id_archivo});
+
+                var body = JSON.parse(response.body);
+                var test_file_2 = file.create({
+                    name: 'body.json',
+                    fileType: file.Type.JSON,
+                    contents: response.body,
+                    folder: 7703
+                });
+                var id_archivo_2 = test_file_2.save();
+                log.audit({title: 'id_archivo_2', details: id_archivo_2});
+                log.audit({ title: 'respuesta de mandar a validar', details: response }); */
 
                 var body_respuesta = JSON.parse(response.body);
                 log.audit({title: 'respuesta_body', details: body_respuesta});
@@ -146,22 +165,34 @@ define(['N/https', '../../../Lib/fb_tp_data_structure.js', 'N/runtime', '../../.
             }
         }
 
-        function getTokenSW(url, user) {
+        function getTokenSW(url, user, pruebas, url_prod, user_prod) {
             const { PAC_DATA } = constLib
             var dataReturn = { success: false, error: '', token: '' }
             try {
-                var urlToken = url + '/security/authenticate';
-                // console.log({title:'getTokenDat', details:{url: urlToken, user: user, pass: PAC_DATA.PSW}});
-                var headers = {
-                    "user": user,
-                    "password": PAC_DATA.PSW
-                };
+                if (pruebas) {
+                    var urlToken = url + '/security/authenticate';
+                    var headers = {
+                        "user": user,
+                        "password": PAC_DATA.PSW
+                    };
+                    log.audit({title: 'user', details: user});
+                    log.audit({title: 'psw', details: PAC_DATA.PSW});
+                } else {
+                    var urlToken = url_prod + '/security/authenticate';
+                    var headers = {
+                        "user": user_prod,
+                        "password": PAC_DATA.PSW
+                    };
+                    log.audit({title: 'user', details: user_prod});
+                    log.audit({title: 'psw', details: PAC_DATA.PSW});
+                }
+                log.audit({title: 'urlToken', details: urlToken});
                 var response = https.post({
                     url: urlToken,
                     headers: headers,
                     body: {}
                 });
-                // log.debug({title:'response', details:response});
+                log.debug({title:'response', details:response});
                 if (response.code == 200) {
                     var token = JSON.parse(response.body);
                     // log.debug({title:'token', details:token});

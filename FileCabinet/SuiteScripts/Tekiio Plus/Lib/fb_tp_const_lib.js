@@ -45,11 +45,15 @@ define([], () => {
 
 
     const PAC_DATA = {}
-    PAC_DATA.PAC_ID = 'custscript_fb_tp_datos_pac'
+    PAC_DATA.PAC_ID = 'custscript_efx_fe_connect_pac_data'
+    // PAC_DATA.PAC_ID = 'custscript_fb_tp_datos_pac'
     PAC_DATA.RECORD_TYPE = 'customrecord_efx_fe_mtd_envio'
+    PAC_DATA.PRUEBAS = 'custrecord_efx_fe_mtd_env_test'
     PAC_DATA.URL_PRUEBA = 'custrecord_efx_fe_mtd_env_urltest'
     PAC_DATA.USUARIO_INTEGRADOR = 'custrecord_efx_fe_mtd_env_usertest'
-    PAC_DATA.PSW = 'mQ*wP^e52K34'
+    PAC_DATA.URL_PROD = 'custrecord_efx_fe_mtd_env_url'
+    PAC_DATA.USUARIO_INTEGRADOR_PROD = 'custrecord_efx_fe_mtd_env_user'
+    PAC_DATA.PSW = 'Fr33Bug2023#'
 
     PAC_DATA.CODIGOS ={}
     PAC_DATA.CODIGOS.ERROR_NO_CLASIFICADO = 'CFDI40999'

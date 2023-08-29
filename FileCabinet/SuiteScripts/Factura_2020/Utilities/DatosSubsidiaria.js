@@ -716,6 +716,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 if (recType != record.Type.PURCHASE_ORDER && recType != 'customsale_efx_fe_factura_global') {
                     if (recType == record.Type.CUSTOMER_PAYMENT) {
                         var id = record_now.getValue('customer');
+                        log.audit({title: '~719~customer: ', details: id});
                     } else {
                         var id = record_now.getValue('entity');
                     }
@@ -800,6 +801,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
 
                     if (recType == record.Type.CUSTOMER_PAYMENT) {
                         var idCliente = record_now.getValue('customer');
+                        log.audit({title: '~804~customer: ', details: idCliente});
                     } else {
                         var idCliente = record_now.getValue('entity');
                     }
