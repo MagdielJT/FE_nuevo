@@ -108,7 +108,8 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 trantype: '',
                 error_details: '',
                 error_texto: '',
-                error_objeto: ''
+                error_objeto: '',
+                mensaje: ''
             }
 
             if (enabled == true) {
@@ -730,6 +731,8 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                 var PAC_Service = scriptObj.getParameter({ name: 'custscript_fb_is_smarterweb' });
                                 log.debug({title:'PAC_Service on request', details:PAC_Service});
                                 var xmlResultData = timbraDocumento(content, id_transaccion, user_pac, url_pac, idCompensacion, PAC_Service, pass_pac);
+                                log.audit({title: 'xmlResultData', details: xmlResultData});
+                                log.audit({title: 'mensaje para el client', details: xmlResultData.mensaje});
                                 if (xmlResultData.success == true) {
                                     var xmlDocument_receipt = xmlResultData.xmlDocument
                                 }else{
@@ -1381,32 +1384,32 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                     type: 'customrecord_psg_ei_audit_trail',
                                     isDynamic: true
                                 });
-    
+
                                 log_record.setValue({
                                     fieldId: 'custrecord_psg_ei_audit_transaction',
                                     value: id_transaccion
                                 });
-    
+
                                 log_record.setValue({
                                     fieldId: 'custrecord_psg_ei_audit_entity',
                                     value: id_cliente_tran
                                 });
-    
+
                                 log_record.setValue({
                                     fieldId: 'custrecord_psg_ei_audit_event',
                                     value: 5
                                 });
-    
+
                                 log_record.setValue({
                                     fieldId: 'custrecord_psg_ei_audit_owner',
                                     value: idPropietario
                                 });
-    
+
                                 log_record.setValue({
                                     fieldId: 'custrecord_psg_ei_audit_details',
                                     value: mensaje_generacion
                                 });
-    
+
                                 var log_id = log_record.save({
                                     enableSourcing: true,
                                     ignoreMandatoryFields: true
@@ -2369,7 +2372,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
         }
 
         function timbraDocumento(xmlDocument, id, user_pac, url_pac, idCompensacion, PAC_Service, pass_pac) {
-            var dataReturn = {success: false, error: '', xmlDocument: ''};
+            var dataReturn = {success: false, error: '', xmlDocument: '', mensaje: ''};
             try {
                 log.audit({title:'PAC_Service timbra docu',details:PAC_Service});
                 var xmlStrX64 = encode.convert({
@@ -2399,7 +2402,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                     log.audit({title:'cuerpo',details:cuerpo});
                     url_pruebas = url_pruebas + '/cfdi33/issue/json/v4/b64';
                     log.audit({title:'url timbrado', details:url_pruebas});
-                    var response = http.post({
+                    var response = https.post({
                         url: url_pruebas,
                         headers: headers,
                         body: JSON.stringify(cuerpo)
@@ -2464,6 +2467,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                         }
                         dataReturn.success = false;
                         dataReturn.error = msg;
+                        dataReturn.mensaje = responseBody.message;
                         return dataReturn
                     }
                 }else{ // se utiliza Profact
@@ -2533,12 +2537,12 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 var urlToken = url + '/security/authenticate';
                 log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
                 // pass = 'AAA111';
-                pass = 'mQ*wP^e52K34';
+                pass = 'Fr33Bug2023#';
                 var headers = {
                     "user": user,
                     "password": pass
                 };
-                var response = http.post({
+                var response = https.post({
                     url: urlToken,
                     headers: headers,
                     body: {}
@@ -2674,7 +2678,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 var infoFechaTimbradoResSat = '';
                 var existError = false;
                 var xml_ObtieneCFDI = '';
-    
+
                 //Se obtiene el status del contenido, si es 0 fue satisfactorio el timbrado, si es 25 el uuid ya existia
                 if (parseInt(anyType[1].textContent, 10) == 0) {//0 Response Successfully
                     if (anyType[3].textContent != '') {
@@ -2682,30 +2686,30 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                         //se obtiene el xml timbrado
                         xmlSatTEXT = anyType[3].textContent;
                         xmlSat = xml.Parser.fromString({ text: xmlSatTEXT });
-    
+
                         //Se obtienen las turas de los atributos del xml timbrado
                         var TimbreFiscalDigital = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante//cfdi:Complemento//tfd:TimbreFiscalDigital' });
-    
+
                         infoUUID = TimbreFiscalDigital[0].getAttributeNode({ name: 'UUID' });
-    
+
                         infoSelloCFD = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloCFD' });
-    
+
                         infoSelloSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'SelloSAT' });
-    
+
                         infoFechaTimbradoResSat = TimbreFiscalDigital[0].getAttributeNode({ name: 'FechaTimbrado' });
-    
+
                         noCertificadoSAT = TimbreFiscalDigital[0].getAttributeNode({ name: 'NoCertificadoSAT' });
-    
+
                         var nodosSuperior = xml.XPath.select({ node: xmlSat, xpath: 'cfdi:Comprobante' });
-    
+
                         noCertificadoContribuyenteResSat = nodosSuperior[0].getAttributeNode({ name: 'NoCertificado' });
-    
+
                         LugarExpedicionResSat = nodosSuperior[0].getAttributeNode({ name: 'LugarExpedicion' });
-    
+
                         Serie = nodosSuperior[0].getAttributeNode({ name: 'Serie' });
-    
+
                         FolioResSat = nodosSuperior[0].getAttributeNode({ name: 'Folio' });
-    
+
                         if (tipo_transaccion == 'customerpayment') {
                             if (cfdiversionCustomer == 1) {
                                 var nodosCfdiRelacionado = xml.XPath.select({
@@ -2730,8 +2734,8 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                     });
                                 }
                             }
-    
-    
+
+
                             for (var node = 0; node < nodosCfdiRelacionado.length; node++) {
                                 var uuidEncontrado = nodosCfdiRelacionado[0].getAttributeNode({
                                     name: 'IdDocumento'
@@ -2745,7 +2749,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                 node: xmlSat,
                                 xpath: 'cfdi:Comprobante//cfdi:CfdiRelacionados//cfdi:CfdiRelacionado'
                             });
-    
+
                             for (var node = 0; node < nodosCfdiRelacionado.length; node++) {
                                 var uuidEncontrado = nodosCfdiRelacionado[0].getAttributeNode({
                                     name: 'UUID'
@@ -2755,14 +2759,14 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                 }
                             }
                         }
-    
+
                     }
                     else {
                         existError = true;
                         errorTitle = anyType[7].textContent;
                         errorDetails = anyType[2].textContent + ' /n ' + anyType[8].textContent;
                     }
-    
+
                     // var ochoSat = '';
                     //
                     // ochoSat = infoSelloCFD.value.substring((infoSelloCFD.value.length - 8), infoSelloCFD.value.length);
@@ -2776,7 +2780,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 if (serie_obj) {
                     serie_obj = Serie.value;
                 }
-    
+
                 var folio_obj = FolioResSat;
                 if (folio_obj) {
                     folio_obj = FolioResSat.value;

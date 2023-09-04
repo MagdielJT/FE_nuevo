@@ -108,7 +108,8 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 trantype: '',
                 error_details: '',
                 error_texto: '',
-                error_objeto: ''
+                error_objeto: '',
+                mensaje: ''
             }
 
             if (enabled == true) {
@@ -1345,6 +1346,11 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                     respuesta.trantype = tipo_transaccion;
                                     respuesta.error_details = objRespuesta.certData.errorTitle + ': ' + objRespuesta.certData.errorDetails;
                                     respuesta.error_texto = objRespuesta.certData.errorTitle;
+                                    var respuesta_CS = objRespuesta.certData.errorDetails.split(' /n ');
+                                    log.audit({title: 'string dividido, objeto', details: respuesta_CS[1]});
+                                    var obje_res = JSON.parse(respuesta_CS[1]);
+                                    log.audit({title: 'mensaje', details: obje_res[0].Value});
+                                    respuesta.mensaje = obje_res[0].Value;
                                     respuesta.error_objeto = objRespuesta.certData.errorDetails;
                                 }
 

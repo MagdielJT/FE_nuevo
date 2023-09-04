@@ -3,13 +3,13 @@
  * @NScriptType ClientScript
  * @NModuleScope Public
  */
-define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentRecord', 'N/ui/dialog', 'N/search','../../Utilities/moment.js'],
+define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentRecord', 'N/ui/dialog', 'N/search', '../../Utilities/moment.js'],
     /**
      * @param{http} http
      * @param{https} https
      * @param{record} record
      */
-    function (http, https, record, url, mensajes, currentRecord, dialog, search,moment) {
+    function (http, https, record, url, mensajes, currentRecord, dialog, search, moment) {
 
         /**
          * Function to be executed after page is initialized.
@@ -170,17 +170,17 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
 
                 state = false; //bandera
                 var canselReasonText = document.getElementById('cancelar');
-                var uuidRelacionada = '';
+                var uuid_sustitucion = '';
                 if (document.getElementById('cancelar').value == 1) {
                     cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
-                    uuidRelacionada = document.getElementById('listFact').value;
+                    uuid_sustitucion = document.getElementById('listFact').value; //! cambiar para que se almacene el uuid de la factura que se seleccione
                     console.log(cancelReason);
-                    console.log(uuidRelacionada);
+                    console.log('uudi de sustitucion: ',uuid_sustitucion);
                     state = true;
                 } else if (document.getElementById('cancelar').value == 2) {
                     cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
                     console.log(cancelReason);
-                    console.log(uuidRelacionada);
+                    console.log(uuid_sustitucion);
                     state = true;
                 } else if (document.getElementById('cancelar').value == 3) {
                     cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
@@ -207,21 +207,21 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                     data.innerHTML = "";
                     var cR = currentRecord.get();
 
-                    try{
-                    var id = record.submitFields({
-                        type: cR.type,//cambiarlo por cR.type
-                        id: cR.id,
-                        values: {
-                            custbody_efx_fe_cancelreason: cancelReason
-                        },
-                        options: {
-                            enableSourcing: false,
-                            ignoreMandatoryFields : true
-                        }
-                    });
-                }catch(error_motivo){
-                    console.log('error_motivo',error_motivo);
-                }
+                    try {
+                        var id = record.submitFields({
+                            type: cR.type,//cambiarlo por cR.type
+                            id: cR.id,
+                            values: {
+                                custbody_efx_fe_cancelreason: cancelReason
+                            },
+                            options: {
+                                enableSourcing: false,
+                                ignoreMandatoryFields: true
+                            }
+                        });
+                    } catch (error_motivo) {
+                        console.log('error_motivo', error_motivo);
+                    }
                     var myMsg_create = mensajes.create({
                         title: "Cancelacion",
                         message: "Se está cancelando su CFDI...",
@@ -231,7 +231,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                     var tranid = tranData.tranid;
                     var trantype = tranData.trantype;
                     var idGlb = false;
-                    try {
+                    /* try {
 
                         var rec = record.load({
                             type: trantype,
@@ -241,7 +241,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         //idGlb = rec.getValue({ fieldId: 'custbody_efx_fe_factura_global' }) || '';
                     } catch (error) {
                         log.error({ title: 'error', details: JSON.stringify(error) });
-                    }
+                    } */
                     var respuesta = true;
 
                     if (idGlb) {
@@ -261,64 +261,65 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         url_Script += '&custparam_trantype=' + trantype;
                         url_Script += '&custparam_sutituye=' + 'F';
                         url_Script += '&custparam_motivocancelacion=' + codigoCancelacion; //custbody_efx_fe_cancelreason
-                        url_Script += '&custparam_uuidrelacionado=' + uuidRelacionada; //custbody_efx_fe_cancelreason
+                        url_Script += '&custparam_uuidrelacionado=' + uuid_sustitucion; //custbody_efx_fe_cancelreason
 
                         var headers = {
                             "Content-Type": "application/json"
                         };
-                        console.log('url_script',url_Script);
+                        console.log('url_script', url_Script);
                         https.request.promise({
                             method: https.Method.POST,
                             url: url_Script,
                             headers: headers,
                             body: {}
                         }).then(function (response) {
-                                console.log({
-                                    title: 'Response',
-                                    details: response
-                                });
-                                var myresponse_body = JSON.parse(response.body)
-                                console.log('body: ', myresponse_body);
+                            console.log({
+                                title: 'Response',
+                                details: response
+                            });
+                            var myresponse_body = JSON.parse(response.body)
+                            console.log('body: ', myresponse_body);
+                            console.log('respuesta: ', response);
 
-                                if (response.code == 200) {
-                                    myMsg_create.hide();
-                                    if (myresponse_body.success == false) {
-                                        var myMsg = mensajes.create({
-                                            title: "Cancelacion",
-                                            message: "Ocurrio un error: " + myresponse_body.error,
-                                            type: mensajes.Type.ERROR
-                                        });
-                                        myMsg.show();
-                                    }else{
-                                        var myMsg = mensajes.create({
-                                            title: "Cancelacion",
-                                            message: "El proceso de cancelación concluyó, revise el acuse de cancelación en la subpestaña de CFDI Infomation",
-                                            type: mensajes.Type.CONFIRMATION
-                                        });
-                                        myMsg.show({ duration: 5500 });
-                                        console.log('respuesta');
-    
-                                        location.reload();
-                                    }
-                                } else if (response.code == 500) {
-                                    myMsg_create.hide();
+                            if (response.code == 200) {
+                                myMsg_create.hide();
+                                if (myresponse_body.success == false) {
                                     var myMsg = mensajes.create({
                                         title: "Cancelacion",
-                                        message: "Ocurrio un error, verifique su conexión.",
+                                        message: "Ocurrio un error: " + myresponse_body.error,
                                         type: mensajes.Type.ERROR
                                     });
                                     myMsg.show();
                                 } else {
-                                    myMsg_create.hide();
                                     var myMsg = mensajes.create({
                                         title: "Cancelacion",
-                                        message: "Ocurrio un error, verifique si su CFDI puede cancelarse.",
-                                        type: mensajes.Type.ERROR
+                                        message: "El proceso de cancelación concluyó, revise el acuse de cancelación en la subpestaña de CFDI Infomation",
+                                        type: mensajes.Type.CONFIRMATION
                                     });
-                                    myMsg.show();
-                                }
+                                    myMsg.show({ duration: 5500 });
+                                    console.log('respuesta');
 
-                            })
+                                    location.reload();
+                                }
+                            } else if (response.code == 500) {
+                                myMsg_create.hide();
+                                var myMsg = mensajes.create({
+                                    title: "Cancelacion",
+                                    message: "Ocurrio un error, verifique su conexión.",
+                                    type: mensajes.Type.ERROR
+                                });
+                                myMsg.show();
+                            } else {
+                                myMsg_create.hide();
+                                var myMsg = mensajes.create({
+                                    title: "Cancelacion",
+                                    message: "Ocurrio un error, verifique si su CFDI puede cancelarse.",
+                                    type: mensajes.Type.ERROR
+                                });
+                                myMsg.show();
+                            }
+
+                        })
                             .catch(function onRejected(reason) {
                                 log.debug({
                                     title: 'Invalid Request: ',
@@ -336,13 +337,14 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                 var update = document.createElement('div');//se crea lo que se necesita
 
                 var rawDateString = (tranData.trandate).split('T');
-                var fechafinText = rawDateString[0];            
+                var fechafinText = rawDateString[0];
                 var responseDate = moment(fechafinText).format('DD/MM/YYYY');
                 console.log('responseDate: ', responseDate);
 
+                //? Escenario de sustitucion
                 if (dato == 1 && !flag) {
                     var facturasArray = new Array();
-                    if(tranData.trantype=='customerpayment'){
+                    if (tranData.trantype == 'customerpayment') {
                         console.log('tranData.trantype: ', tranData.trantype);
                         console.log('tranData.entityid: ', tranData.entityid);
                         var buscaFactura = search.create({
@@ -355,8 +357,8 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                                 ['custbody_mx_cfdi_uuid', search.Operator.ISNOTEMPTY, '']
                                 , 'AND',
                                 ['entity', search.Operator.ANYOF, tranData.entityid]
-                                ,'AND',
-                                ["trandate",search.Operator.ONORAFTER,responseDate]
+                                , 'AND',
+                                ["trandate", search.Operator.ONORAFTER, responseDate]
                             ],
                             columns: [
                                 search.createColumn({ name: 'internalid' }),
@@ -365,7 +367,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                             ]
                         });
                         console.log('pasasearch ');
-                    }else if(tranData.trantype=='creditmemo'){
+                    } else if (tranData.trantype == 'creditmemo') {
                         var buscaFactura = search.create({
                             type: search.Type.TRANSACTION,
                             filters: [
@@ -376,8 +378,8 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                                 ['custbody_mx_cfdi_uuid', search.Operator.ISNOTEMPTY, '']
                                 , 'AND',
                                 ['entity', search.Operator.ANYOF, tranData.entityid]
-                                ,'AND',
-                                ["trandate",search.Operator.ONORAFTER,responseDate]
+                                , 'AND',
+                                ["trandate", search.Operator.ONORAFTER, responseDate]
                             ],
                             columns: [
                                 search.createColumn({ name: 'internalid' }),
@@ -385,7 +387,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                                 search.createColumn({ name: 'custbody_mx_cfdi_uuid' }),
                             ]
                         });
-                    }else if(tranData.trantype=='itemfulfillment'){
+                    } else if (tranData.trantype == 'itemfulfillment') {
                         var buscaFactura = search.create({
                             type: search.Type.TRANSACTION,
                             filters: [
@@ -396,8 +398,8 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                                 ['custbody_mx_cfdi_uuid', search.Operator.ISNOTEMPTY, '']
                                 , 'AND',
                                 ['entity', search.Operator.ANYOF, tranData.entityid]
-                                ,'AND',
-                                ["trandate",search.Operator.ONORAFTER,responseDate]
+                                , 'AND',
+                                ["trandate", search.Operator.ONORAFTER, responseDate]
                             ],
                             columns: [
                                 search.createColumn({ name: 'internalid' }),
@@ -405,7 +407,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                                 search.createColumn({ name: 'custbody_mx_cfdi_uuid' }),
                             ]
                         });
-                    }else{
+                    } else {
                         var buscaFactura = search.create({
                             type: search.Type.TRANSACTION,
                             filters: [
@@ -416,8 +418,8 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                                 ['custbody_mx_cfdi_uuid', search.Operator.ISNOTEMPTY, '']
                                 , 'AND',
                                 ['entity', search.Operator.ANYOF, tranData.entityid]
-                                ,'AND',
-                                ["trandate",search.Operator.ONORAFTER,responseDate]
+                                , 'AND',
+                                ["trandate", search.Operator.ONORAFTER, responseDate]
                             ],
                             columns: [
                                 search.createColumn({ name: 'internalid' }),
@@ -426,33 +428,36 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                             ]
                         });
                     }
-                    
-                    
-                    try{
-                    buscaFactura.run().each(function (result) {
-                        var objFacturas = {
-                            id: "",
-                            numero: ""
-                        };
-                        console.log('el dato es: ',objFacturas);
-                        objFacturas.id = result.getValue({ name: 'custbody_mx_cfdi_uuid' }) || 0;
-                        objFacturas.numero = result.getValue({ name: 'tranid' }) || 0;
-                        console.log('el dato es: ');
-                        console.log('el dato es: ',objFacturas);
-                        facturasArray.push(objFacturas);
-                        return true;
-                    });
-                }catch(error_busqueda){
-                    console.log('error_busqueda: ',error_busqueda);
-                }
+
+                    try {
+                        buscaFactura.run().each(function (result) {
+                            var objFacturas = {
+                                uuid: "",
+                                numero: "",
+                                id: ""
+                            };
+                            objFacturas.uuid = result.getValue({ name: 'custbody_mx_cfdi_uuid' }) || 0;
+                            objFacturas.numero = result.getValue({ name: 'tranid' }) || 0;
+                            objFacturas.id = result.getValue({ name: 'internalid' }) || 0;
+                            // console.log(objFacturas);
+                            facturasArray.push(objFacturas);
+                            return true;
+                        });
+                    } catch (error_busqueda) {
+                        console.log('error_busqueda: ', error_busqueda);
+                    }
                     var facturasString = "";
+                    var tranid = tranData.tranid;
                     for (var x = 0; x < facturasArray.length; x++) {
-                        facturasString += '<option value="' + facturasArray[x].id + '" >' + facturasArray[x].numero + '</option>'
+                        // console.log('validacion', facturasArray[x].id + '!=' + tranid);
+                        if (facturasArray[x].id != tranid) {
+                            facturasString += '<option value="' + facturasArray[x].uuid + '" >' + facturasArray[x].numero + '</option>'
+                        }
 
                     }
                     flag = true;
-                    console.log('el dato es: ', dato);
-                    console.log('aqui debe de hacer que aparezca lo que se pide')
+                    // console.log('el dato es: ', dato);
+                    // console.log('aqui debe de hacer que aparezca lo que se pide')
                     update.innerHTML = //se agrega a la variable lo de abajo
 
                         "<style>" +
@@ -530,466 +535,6 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
             }
         }
 
-        function cancel_subs_CFDI(tranData) {
-            var motivoCancel = new Array();
-            var buscaMotivo = search.create({
-                type: 'customrecord_efx_fe_motivocancelacion',
-                filters: [
-                    ['isinactive', search.Operator.IS, 'F']
-                ],
-                columns: [
-                    search.createColumn({ name: 'internalid' }),
-                    search.createColumn({ name: 'name' }),
-                ]
-            });
-            buscaMotivo.run().each(function (result) {
-                motivoCancel.push(result.getValue({ name: 'name' }) || 0);
-                return true;
-            });
-            var data = document.createElement('cancel-screen');
-
-            var message = '';
-            message += '<select id="cancelar">';
-            message += '    <option value="0" disabled selected hidden>Seleccione una opción.</option>';
-            for (var i = 0; i < motivoCancel.length; i++) {
-                message += '    <option value="' + (i + 1) + '">' + motivoCancel[i] + '</option>';
-            }
-            message += '</select>';
-
-
-            // Inner HTML
-            // Estilos del mensaje + divs del mensaje completo
-            data.innerHTML =
-                '<style media=all type=text/css>' +
-                '#fondo {' +
-                'background-color: rgba(230,230,230,0.4);' +
-                'height: 100%;' +
-                'width:  100%;' +
-                'display: flex;' +
-                'justify-content: center;' +
-                'align-items: center;' +
-                'position: fixed;' +
-                'margin: auto;' +
-                'z-index: 999;' +
-                'top: 0;' +
-                '} ' +
-                '.mensajito {' +
-                'z-index: 1000;' +
-                'font-family: Myriad Pro,Helvetica,sans-serif;' +
-                'background-color: white;' +
-                'width: 30%;' +//alto
-                'overflow: hidden;' +
-                'filter: drop-shadow(0 0 0.1rem black);' +
-                'height: 30%;' +//ancho
-                'position: fixed;' +
-                //'border-radius: 2px;' +
-                'top: 40%;' +
-                '} ' +
-                '.cabecera {' +
-                'font-family: Myriad Pro,Helvetica,sans-serif;' +
-                'background-color: #607799;' +
-                'color: white;' +
-                'padding: 4px 6px;' +
-                'font-weight: bold;' +
-                'font-size: 15px;' +
-                '} ' +
-                '.contenido {' +
-                'padding: 10px;' +
-                '} ' +
-                'p {' +
-                'font-size: 14px;' +
-                'color: #616161;' +
-                '} ' +
-                '.botones {' +
-                'font-family: Myriad Pro,Helvetica,sans-serif;' +
-                'display: flex;' +
-                'justify-content: space-around;' +
-                //'margin-top: 20%;'+
-                '} ' +
-                '.btn1 {' +
-                'font-weight: bold;' +
-                'background-color: #E9E9E9;' +
-                'color: black;' +
-                'min-height: 28px;' +
-                'text-align: center;' +
-                'padding: 0px 13px;' +
-                'font-size: 14px;' +
-                //'border: 2px solid #008CBA;'+
-                'border-radius: 3px;' +
-                'cursor: pointer;' +
-                '} ' +
-                '.btn1:hover {' +
-                'background-color: #D8D8D8;' +
-                '} ' +
-                '.btn2 {' +
-                'font-weight: bold;' +
-                'background-color: #E9E9E9;' +
-                'color: black;' +
-                'min-height: 28px;' +
-                'text-align: center;' +
-                'padding: 0px 13px;' +
-                'font-size: 14px;' +
-                //'border: 2px solid #008CBA;'+
-                'border-radius: 3px;' +
-                'cursor: pointer;' +
-                '} ' +
-                '.btn2:hover {' +
-                'background-color: #D8D8D8;' +
-                '} ' +
-                '</style>' +
-                "<div id='fondo'>" + //fondo
-                "<div class='mensajito'>" +
-                "<div class='cabecera'>" +
-                "Motivo de Cancelación" +
-                "</div>" +
-                "<div class='contenido'>" +
-                "<p>Por favor selecciona un motivo de cancelación.</p>" +
-                "<br>" +
-                message +
-                "<br>" +
-                "</div>" +
-                "<br>" +
-                "<div id='option'>" +
-                "" +
-                "</div>" +
-                "<br>" +
-                "<div class='botones'>" +
-                "<input id='enviar' type='button' class='btn1' value='Ok'></input>" +//mandar dato
-                "<input id='cancel' type='button' class='btn2' value='Cancel'></input>" +
-                "</div>" +
-                "</div>" +
-                "</div>";
-
-            document.body.appendChild(data);
-            document.getElementById('enviar').addEventListener('click', goodSubs, false);//aqui está el dato de la lista
-            document.getElementById('cancel').addEventListener('click', failSubs, false);
-
-            document.getElementById('cancelar').addEventListener('click', test, false);
-            var flag = false;
-
-            function goodSubs() {
-                console.log('entra a función para cancelación/sustitución');
-
-                state = false; //bandera
-                var canselReasonText = document.getElementById('cancelar');
-                var uuidRelacionada = '';
-                if (document.getElementById('cancelar').value == 1) {
-                    cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
-                    uuidRelacionada = document.getElementById('listFact').value;
-                    console.log(cancelReason);
-                    console.log('entra al else if, opcion 1')
-                    console.log(uuidRelacionada);
-                } else if (document.getElementById('cancelar').value == 2) {
-                    cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
-                    console.log(cancelReason);
-                    console.log('entra al else if, opcion 2')
-                    state = true;
-                } else if (document.getElementById('cancelar').value == 3) {
-                    cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
-                    console.log(cancelReason);
-                    console.log('entra al else if, opcion 3')
-                    state = true;
-                } else if (document.getElementById('cancelar').value == 4) {
-                    cancelReason = canselReasonText.options[canselReasonText.selectedIndex].text;
-                    console.log('entra al else if, opcion 4')
-                    console.log(cancelReason);
-                    state = true;
-                } else {
-                    console.log('no trae valor shido')
-                    cancelReason = "null";
-                    // state = false; //bandera
-                    data.innerHTML = "";
-                    var mensaje = mensajes.create({
-                        title: "Error",
-                        message: "Debe seleccionar un motivo de cancelación, Intente de nuevo...",
-                        type: mensajes.Type.ERROR
-                    });
-                    mensaje.show();
-                    // location.reload();
-                }
-                if (state && cancelReason) {
-                    console.log('entra al if : "if (state && cancelReason)"')
-                    data.innerHTML = "";
-                    var cR = currentRecord.get();
-
-                    try{
-                        var id = record.submitFields({
-                            type: cR.type,
-                            id: cR.id,
-                            values: {
-                                custbody_efx_fe_cancelreason: cancelReason
-                            },
-                            options: {
-                                enableSourcing: false,
-                                ignoreMandatoryFields : true
-                            }
-                        });
-                    }catch(error_motivo){
-                        console.log('error_motivo',error_motivo);
-                    }
-                    
-                    //proceso para ver si es sutitución
-                    var solosustituye = tranData.solosustituye;
-                    console.log('var solosustituye: ', solosustituye)
-                    if (solosustituye == 'T') {
-                        console.log('entra en el if de solosustituye')
-                        var myMsg_create = mensajes.create({
-                            title: "Sustitución",
-                            message: "Se está sustituyendo su Transacción...",
-                            type: mensajes.Type.INFORMATION
-                        });
-                    } else {//no es sustitucion, hará cancelación
-                        console.log('entra en el else de solosustituye')
-                        var myMsg_create = mensajes.create({
-                            title: "Cancelacion",
-                            message: "Se está cancelando su CFDI...",
-                            type: mensajes.Type.INFORMATION
-                        });
-                    }
-                    myMsg_create.show();
-                    var tranid = tranData.tranid;
-                    var trantype = tranData.trantype;
-
-                    var idGlb = false;
-                    try {
-
-                        var rec = record.load({
-                            type: trantype,
-                            id: tranid
-                        });
-
-                        //idGlb = rec.getValue({ fieldId: 'custbody_efx_fe_factura_global' }) || '';
-                    } catch (error) {
-                        log.error({ title: 'error', details: JSON.stringify(error) });
-                    }
-                    var respuesta = true;
-
-                    if (idGlb) {
-                        respuesta = confirm("Desea cancelar una factura global?");
-                    }
-
-                    if (respuesta == true && state == true) {
-
-                        var codigoCancelacion = cancelReason.split('-');
-                        var url_Script = url.resolveScript({
-                            scriptId: 'customscript_efx_fe_cancelacion_sl',
-                            deploymentId: 'customdeploy_efx_fe_cancelacion_sl'
-                        });
-
-                        url_Script += '&custparam_tranid=' + tranid;
-                        url_Script += '&custparam_trantype=' + trantype;
-                        url_Script += '&custparam_sutituye=' + 'T';
-                        url_Script += '&custparam_motivocancelacion=' + codigoCancelacion; //custbody_efx_fe_cancelreason
-                        url_Script += '&custparam_uuidrelacionado=' + uuidRelacionada;
-                        if (solosustituye == 'T') {//si es sust, lo manda
-                            url_Script += '&custparam_solosutituye=' + 'T';
-                        }
-
-                        var headers = {
-                            "Content-Type": "application/json"
-                        };
-
-                        https.request.promise({
-                            method: https.Method.GET,
-                            url: url_Script,
-                            headers: headers
-                        })
-                            .then(function (response) {
-                                log.debug({
-                                    title: 'Response',
-                                    details: response
-                                });
-
-                                if (response.code == 200) {//si cargó bien, ya sustituyó
-                                    myMsg_create.hide();
-                                    if (solosustituye == 'T') {
-                                        var myMsg = mensajes.create({
-                                            title: "Sustitución",
-                                            message: "Su transaccion se sustituyó correctamente",
-                                            type: mensajes.Type.CONFIRMATION
-                                        });
-                                    } else {
-                                        var myMsg = mensajes.create({
-                                            title: "Cancelacion",
-                                            message: "El proceso de cancelación concluyó, revise el acuse de cancelación en la subpestaña de CFDI Infomation",
-                                            type: mensajes.Type.CONFIRMATION
-                                        });
-                                    }
-
-                                    myMsg.show({ duration: 5500 });
-
-                                    console.log(response);
-                                    if (response.body) {
-                                        var body_data = JSON.parse(response.body);
-                                        console.log(response.body);
-                                        console.log(body_data.id_tran);
-
-                                        var output = url.resolveRecord({
-                                            recordType: 'invoice',
-                                            recordId: body_data.id_tran,
-                                            isEditMode: true
-                                        });
-                                        window.open(output, '_blank');
-                                        console.log(output);
-                                    }
-                                    // location.reload();
-
-                                    //location.reload();
-                                } else if (response.code == 500) {
-                                    myMsg_create.hide();
-                                    var myMsg = mensajes.create({
-                                        title: "Cancelacion",
-                                        message: "Ocurrio un error, verifique su conexión.",
-                                        type: mensajes.Type.ERROR
-                                    });
-                                    myMsg.show();
-                                } else {
-                                    myMsg_create.hide();
-                                    var myMsg = mensajes.create({
-                                        title: "Cancelacion",
-                                        message: "Ocurrio un error, verifique si su CFDI puede cancelarse.",
-                                        type: mensajes.Type.ERROR
-                                    });
-                                    myMsg.show();
-                                }
-
-                            })
-                            .catch(function onRejected(reason) {
-                                log.debug({
-                                    title: 'Invalid Request: ',
-                                    details: reason
-                                });
-                            });
-                    }
-                }
-            }
-
-            function test() {
-                var dato = document.getElementById('cancelar').value;
-                var div = document.getElementById('option');//se apunta al mensaje de arriba
-                var update = document.createElement('div');//se crea lo que se necesita
-
-                var rawDateString = (tranData.trandate).split('T');
-                var fechafinText = rawDateString[0];            
-                var responseDate = moment(fechafinText).format('DD/MM/YYYY');
-                console.log('responseDate: ', responseDate);
-
-                if (dato == 1 && !flag) {
-                    var facturasArray = new Array();
-                    var buscaFactura = search.create({
-                        type: search.Type.TRANSACTION,
-                        filters: [
-                            ['mainline', search.Operator.IS, 'T']
-                            , 'AND',
-                            ['type', search.Operator.ANYOF, 'CustInvc', 'CashSale']
-                            , 'AND',
-                            ['custbody_mx_cfdi_uuid', search.Operator.ISNOTEMPTY, '']
-                            , 'AND',
-                            ['entity', search.Operator.ANYOF, tranData.entityid]
-                            ,'AND',
-                            ["trandate",search.Operator.ONORAFTER,responseDate]
-                        ],
-                        columns: [
-                            search.createColumn({ name: 'internalid' }),
-                            search.createColumn({ name: 'tranid' }),
-                            search.createColumn({ name: 'custbody_mx_cfdi_uuid' }),
-                        ]
-                    });
-                    buscaFactura.run().each(function (result) {
-                        var objFacturas = {
-                            id: "",
-                            numero: ""
-                        };
-                        objFacturas.id = result.getValue({ name: 'custbody_mx_cfdi_uuid' }) || 0;
-                        objFacturas.numero = result.getValue({ name: 'tranid' }) || 0;
-                        facturasArray.push(objFacturas);
-                        return true;
-                    });
-                    var facturasString = "";
-                    for (var x = 0; x < facturasArray.length; x++) {
-                        facturasString += '<option value="' + facturasArray[x].id + '" >' + facturasArray[x].numero + '</option>'
-
-                    }
-                    flag = true;
-                    console.log('el dato es: ', dato);
-                    console.log('aqui debe de hacer que aparezca lo que se pide')
-                    update.innerHTML = //se agrega a la variable lo de abajo
-
-                        "<style>" +
-                        "#option{" +
-                        'background-color: white;' +
-                        'padding: 10px;' +
-                        "}" +
-                        "#title{" +
-                        'font-family: Myriad Pro,Helvetica,sans-serif;' +
-                        'font-size: 14px;' +
-                        'color: #616161;' +
-                        "}" +
-                        ".mensajito{" +
-                        'height: 40%;' +
-                        "}" +
-                        "</style>" +
-                        "<p id='title'>Por favor selecciona la factura: </p>" +
-                        "<select id='listFact'>" +
-                        '<option value="0" disabled selected hidden>Seleccione una opción.</option>' +
-                        facturasString +
-                        "</select>";
-
-                    div.appendChild(update);//se agrega al mensaje
-                    //console.log(update);
-                } else if (dato == 2) {
-                    flag = false;
-                    console.log('el dato es: ', dato);
-                    update.innerHTML =
-                        "<style>" +
-                        ".mensajito{" +
-                        'height: 30%;' +
-                        "}" +
-                        "</style>";
-
-                    div.appendChild(update);
-                    document.getElementById('option').innerHTML = "";
-                } else if (dato == 3) {
-                    flag = false;
-                    console.log('el dato es: ', dato);
-                    update.innerHTML =
-                        "<style>" +
-                        ".mensajito{" +
-                        'height: 30%;' +
-                        "}" +
-                        "</style>";
-
-                    div.appendChild(update);
-                    document.getElementById('option').innerHTML = "";
-                } else if (dato == 4) {
-                    flag = false;
-                    console.log('el dato es: ', dato);
-                    update.innerHTML =
-                        "<style>" +
-                        ".mensajito{" +
-                        'height: 30%;' +
-                        "}" +
-                        "</style>";
-
-                    div.appendChild(update);
-                    document.getElementById('option').innerHTML = "";
-                }
-
-            }
-
-            function failSubs() {
-                console.log('se canceló la operación en sustitutción')
-                data.innerHTML = "";
-                var mensajeError = mensajes.create({
-                    title: "Atención.",
-                    message: "Se ha cancelado la operación...",
-                    type: mensajes.Type.INFORMATION
-                });
-                mensajeError.show();
-                // location.reload();
-            }
-        }
-
         return {
             pageInit: pageInit,
             // fieldChanged: fieldChanged,
@@ -1002,7 +547,6 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
             // validateDelete: validateDelete,
             // saveRecord: saveRecord,
             cancel_CFDI: cancel_CFDI,
-            cancel_subs_CFDI: cancel_subs_CFDI,
         };
 
     });
