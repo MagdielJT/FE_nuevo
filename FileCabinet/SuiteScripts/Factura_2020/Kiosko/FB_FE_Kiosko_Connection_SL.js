@@ -361,12 +361,13 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
 
                                     }
                                     log.audit({title: 'info_cliente_obj return', details: info_cliente_obj});
+                                    log.debug({ title:'valores 364', details:{id_related_fac: id_related_fac, gblrelacionada: gblrelacionada} });
                                     if (id_related_fac && info_cliente_obj.cliente.id) {
                                         var direccionKioskoSet = info_cliente_obj.direccion.calle + ' ' + info_cliente_obj.direccion.n_exterior + ' ' + info_cliente_obj.direccion.colonia + ' ' + info_cliente_obj.direccion.cp + ' ' + info_cliente_obj.direccion.municipio + ', ' + info_cliente_obj.direccion.estado + ' ' + info_cliente_obj.direccion.pais;
                                         var fieldsToSet = {
                                             'custbody_efx_fe_kiosko_customer' : info_cliente_obj.cliente.id,
                                             'custbody_efx_fe_kiosko_rfc' : info_cliente_obj.cliente.rfc,
-                                            'custbody_efx_fe_kiosko_rsocial' : info_cliente_obj.cliente.razonSocial,
+                                            'custbody_efx_fe_kiosko_rsocial' : info_cliente_obj.cliente.razonSocial || info_cliente_obj.cliente.compania,
                                             'custbody_efx_fe_kiosko_name' : info_cliente_obj.cliente.compania,
                                             'custbody_efx_fe_kiosko_regfiscal' : info_cliente_obj.cliente.regFiscal.value,
                                             'custbody_efx_fe_kiosko_zip' : info_cliente_obj.direccion.cp,
@@ -376,6 +377,24 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                         var setNewClient = record.submitFields({
                                             type: tipoTransactionNew,
                                             id: id_related_fac,
+                                            values: fieldsToSet
+                                        });
+                                    }
+                                    if (!id_related_fac && info_cliente_obj.cliente.id && !gblrelacionada) {
+                                        var direccionKioskoSet = info_cliente_obj.direccion.calle + ' ' + info_cliente_obj.direccion.n_exterior + ' ' + info_cliente_obj.direccion.colonia + ' ' + info_cliente_obj.direccion.cp + ' ' + info_cliente_obj.direccion.municipio + ', ' + info_cliente_obj.direccion.estado + ' ' + info_cliente_obj.direccion.pais;
+                                        var fieldsToSet = {
+                                            'custbody_efx_fe_kiosko_customer' : info_cliente_obj.cliente.id,
+                                            'custbody_efx_fe_kiosko_rfc' : info_cliente_obj.cliente.rfc,
+                                            'custbody_efx_fe_kiosko_rsocial' : info_cliente_obj.cliente.razonSocial || info_cliente_obj.cliente.compania,
+                                            'custbody_efx_fe_kiosko_name' : info_cliente_obj.cliente.compania,
+                                            'custbody_efx_fe_kiosko_regfiscal' : info_cliente_obj.cliente.regFiscal.value,
+                                            'custbody_efx_fe_kiosko_zip' : info_cliente_obj.direccion.cp,
+                                            'custbody_efx_fe_kiosko_address' : direccionKioskoSet
+                                        };
+                                        log.debug({title:'Data set 393', details:{tipo_transaccion: tipo_transaccion, fieldsToSet: fieldsToSet}});
+                                        var setNewClient = record.submitFields({
+                                            type: info_cliente_obj.transaccion.transType,
+                                            id: info_cliente_obj.transaccion.transId,
                                             values: fieldsToSet
                                         });
                                     }
@@ -657,7 +676,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                 if(context.request.body) {
 
                     var body = JSON.parse(context.request.body);
-
+                    log.audit({ title:'body_start 660', details:body });
                     var scriptObj = runtime.getCurrentScript();
                     var configKioskoId = context.request.parameters.custparam_config || '';
 
@@ -671,6 +690,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                     var document_pack = idKioskoConfig.getValue({fieldId:'custrecord_efx_kosko_documentpack'});
                     var plantilla_f = idKioskoConfig.getValue({fieldId:'custrecord_efx_fe_factura_template'});
                     var datos_clientes = idKioskoConfig.getValue({fieldId:'custrecord_efx_kiosko_aditional_info'});
+                    
                     if(datos_clientes){
                         datos_clientes = JSON.parse(datos_clientes);
                     }
@@ -779,7 +799,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                         if ((!relacionada_fact && !cliente_k_fact) || (!relacionada_fact && cliente_k_fact && global_fact)) {
                             log.debug({title:'data if 780', details:{uuid_fact: uuid_fact, certificado_fact: certificado_fact, cliente_k_fact: cliente_k_fact, relacionada_fact: relacionada_fact, global_fact: global_fact}});
                             if((uuid_fact || certificado_fact) || (!cliente_k_fact && !relacionada_fact && global_fact)) {
-                                log.audit({title: 'NoTieneRelacionada', details: ''});
+                                log.audit({title: 'NoTieneRelacionada 802', details: ''});
                                 id_factura_nueva = crearFactura(body.transaccion.transId, tipo_transaccion, cliente_objeto, body, plantilla_f,clienteoriginal_fact,SUBSIDIARIES,campos_refacturacion,regFiscalSubsidiaria);
                                 if (id_factura_nueva) {
                                     record_tipo.setValue({
@@ -835,7 +855,16 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                     fieldId: 'custbody_mx_txn_sat_payment_term',
                                     value: pay_method
                                 });
-
+                                // var actualizaclientecfdiConsulta = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_actualiza_datos_cli' });
+                                // if((actualizaclientecfdiConsulta==false || actualizaclientecfdiConsulta=='F')){
+                                //     var nombre_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_name'});
+                                //     var rfc_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_rfc'});
+                                //     var direccion_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_address'});
+                                //     var razon_social_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_rsocial'});
+                                //     var regimen_fiscal_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_regfiscal'});
+                                //     var zip_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_zip'});
+                                //     var has_cliente_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_customer'}) || false;
+                                // }
                                 record_tipo.setValue({
                                     fieldId: 'custbody_efx_fe_kiosko_customer',
                                     value: id_cliente,
@@ -887,7 +916,41 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                             });
                                         }
                                     }
-                                    
+                                // log.debug({ title:'actualizaClientecfdiConsulta 919', details:{actualizaclientecfdiConsulta: actualizaclientecfdiConsulta, has_cliente_kiosko: has_cliente_kiosko} });
+                                // if((actualizaclientecfdiConsulta==false || actualizaclientecfdiConsulta=='F') && has_cliente_kiosko!=false){
+                                //     log.debug({ title:'updateTransactionData', details:'Update transacation kiosko data 921' });
+                                //     // let after_name_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_name'});
+                                //     // if (!after_name_kiosko) {
+                                //         record_tipo.setValue({
+                                //             fieldId: 'custbody_efx_fe_kiosko_name',
+                                //             value: nombre_kiosko
+                                //         });
+                                //     // }
+                                //     // let after_rfc_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_rfc'});
+                                //     // if (!after_rfc_kiosko) {
+                                //         record_tipo.setValue({
+                                //             fieldId: 'custbody_efx_fe_kiosko_rfc',
+                                //             value: rfc_kiosko
+                                //         });
+                                //     // }
+                                //     // let after_razon_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_address'});
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_address',
+                                //         value: direccion_kiosko
+                                //     });
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_rsocial',
+                                //         value: razon_social_kiosko
+                                //     });
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_regfiscal',
+                                //         value: regimen_fiscal_kiosko
+                                //     });
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_zip',
+                                //         value: zip_kiosko
+                                //     });
+                                // }
 
                                 var recordUpd = record_tipo.save({
                                     enableSourcing: true,
@@ -916,6 +979,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                 log.audit({title: 'uso_cfdi', details: uso_cfdi});
                                 log.audit({title: 'pay_method', details: pay_method});
                                 log.audit({title: 'pay_form', details: pay_form});
+                                log.debug({ title:'body_all', details:body });
                                 record_tipo.setValue({
                                     fieldId: 'custbody_mx_cfdi_usage',
                                     value: uso_cfdi
@@ -934,6 +998,15 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                     value: id_cliente,
                                     ignoreFieldChange: true
                                 });
+                                // var actualizaclientecfdiConsulta = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_actualiza_datos_cli' });
+                                // if((actualizaclientecfdiConsulta==false || actualizaclientecfdiConsulta=='F')){
+                                //     var nombre_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_name'});
+                                //     var rfc_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_rfc'});
+                                //     var direccion_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_address'});
+                                //     var razon_social_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_rsocial'});
+                                //     var regimen_fiscal_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_regfiscal'});
+                                //     var zip_kiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_kiosko_zip'});
+                                // }
                                 if(rfcclientekiosko){
                                     if(body.cliente.rfc!=rfcclientekiosko){
                                         record_tipo.setValue({fieldId:'custbody_efx_fe_kiosko_rfc',value:body.cliente.rfc});
@@ -1003,6 +1076,41 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
 
                                 var contactodekiosko = record_tipo.getValue({fieldId:'custbody_efx_fe_mail_to'});
                                 log.audit({title: 'contactodekiosko', details: contactodekiosko});
+                                
+                                // if((actualizaclientecfdiConsulta==false || actualizaclientecfdiConsulta=='F')){
+                                //     // let after_name_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_name'});
+                                //     // if (!after_name_kiosko) {
+                                //         record_tipo.setValue({
+                                //             fieldId: 'custbody_efx_fe_kiosko_name',
+                                //             value: nombre_kiosko
+                                //         });
+                                //     // }
+                                //     // let after_rfc_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_rfc'});
+                                //     // if (!after_rfc_kiosko) {
+                                //         record_tipo.setValue({
+                                //             fieldId: 'custbody_efx_fe_kiosko_rfc',
+                                //             value: rfc_kiosko
+                                //         });
+                                //     // }
+                                //     // let after_razon_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_address'});
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_address',
+                                //         value: direccion_kiosko
+                                //     });
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_rsocial',
+                                //         value: razon_social_kiosko
+                                //     });
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_regfiscal',
+                                //         value: regimen_fiscal_kiosko
+                                //     });
+                                //     record_tipo.setValue({
+                                //         fieldId: 'custbody_efx_fe_kiosko_zip',
+                                //         value: zip_kiosko
+                                //     });
+                                // }
+
                                 record_tipo.save({
                                     enableSourcing: true,
                                     ignoreMandatoryFields: true
@@ -1015,6 +1123,16 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                     type: record.Type.INVOICE,
                                     id: id_factura_nueva
                                 });
+
+                                // var actualizaclientecfdiConsulta = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_actualiza_datos_cli' });
+                                // if((actualizaclientecfdiConsulta==false || actualizaclientecfdiConsulta=='F')){
+                                //     var nombre_kiosko = nueva_tran_obj.getValue({fieldId:'custbody_efx_fe_kiosko_name'});
+                                //     var rfc_kiosko = nueva_tran_obj.getValue({fieldId:'custbody_efx_fe_kiosko_rfc'});
+                                //     var direccion_kiosko = nueva_tran_obj.getValue({fieldId:'custbody_efx_fe_kiosko_address'});
+                                //     var razon_social_kiosko = nueva_tran_obj.getValue({fieldId:'custbody_efx_fe_kiosko_rsocial'});
+                                //     var regimen_fiscal_kiosko = nueva_tran_obj.getValue({fieldId:'custbody_efx_fe_kiosko_regfiscal'});
+                                //     var zip_kiosko = nueva_tran_obj.getValue({fieldId:'custbody_efx_fe_kiosko_zip'});
+                                // }
 
                                 generado_pdf = nueva_tran_obj.getValue({fieldId:'custbody_edoc_generated_pdf'});
                                 generado_xml = nueva_tran_obj.getValue({fieldId:'custbody_psg_ei_certified_edoc'});
@@ -1031,6 +1149,7 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                         nueva_tran_obj.setValue({fieldId:'custbody_mx_cfdi_usage',value:body.cliente.uso_cfdi.value});
                                         nueva_tran_obj.setValue({fieldId:'custbody_mx_txn_sat_payment_method',value:body.cliente.forma_pago.value});
                                         nueva_tran_obj.setValue({fieldId:'custbody_mx_txn_sat_payment_term',value:body.cliente.metodo_pago.value});
+                                        
                                         var numLines = record_tipo.getLineCount({
                                             sublistId: 'item'
                                         });
@@ -1070,6 +1189,40 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                                                 });
                                             }
                                         }
+
+                                        // if((actualizaclientecfdiConsulta==false || actualizaclientecfdiConsulta=='F')){
+                                        //     // let after_name_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_name'});
+                                        //     // if (!after_name_kiosko) {
+                                        //         nueva_tran_obj.setValue({
+                                        //             fieldId: 'custbody_efx_fe_kiosko_name',
+                                        //             value: nombre_kiosko
+                                        //         });
+                                        //     // }
+                                        //     // let after_rfc_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_rfc'});
+                                        //     // if (!after_rfc_kiosko) {
+                                        //         nueva_tran_obj.setValue({
+                                        //             fieldId: 'custbody_efx_fe_kiosko_rfc',
+                                        //             value: rfc_kiosko
+                                        //         });
+                                        //     // }
+                                        //     // let after_razon_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_address'});
+                                        //     nueva_tran_obj.setValue({
+                                        //         fieldId: 'custbody_efx_fe_kiosko_address',
+                                        //         value: direccion_kiosko
+                                        //     });
+                                        //     nueva_tran_obj.setValue({
+                                        //         fieldId: 'custbody_efx_fe_kiosko_rsocial',
+                                        //         value: razon_social_kiosko
+                                        //     });
+                                        //     nueva_tran_obj.setValue({
+                                        //         fieldId: 'custbody_efx_fe_kiosko_regfiscal',
+                                        //         value: regimen_fiscal_kiosko
+                                        //     });
+                                        //     nueva_tran_obj.setValue({
+                                        //         fieldId: 'custbody_efx_fe_kiosko_zip',
+                                        //         value: zip_kiosko
+                                        //     });
+                                        // }
                                     
                                         var transNew = nueva_tran_obj.save({
                                             enableSourcing: true,
@@ -2326,6 +2479,8 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                     objValues.firstname = objcliente.cliente.nombre;
                     objValues.lastname = objcliente.cliente.apellido;
                     objValues.custentity_mx_sat_registered_name = objcliente.cliente.nombre+' '+objcliente.cliente.apellido;
+                }else{
+                    objValues.custentity_mx_sat_registered_name = objcliente.cliente.nombre+' '+objcliente.cliente.apellido;
                 }
 
                 log.audit({title:'objValues',details:objValues});
@@ -2369,6 +2524,8 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                 if((actualizaclientecfdi==true || (actualizaclientecfdi && actualizaclientecfdi=='T'))){
                     objValues.isperson=tipo_persona;
                     objValues.companyname = objcliente.cliente.compania;
+                    objValues.custentity_mx_sat_registered_name = objcliente.cliente.compania;
+                }else{
                     objValues.custentity_mx_sat_registered_name = objcliente.cliente.compania;
                 }
 
@@ -2673,6 +2830,10 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
         function crearFactura(transid,tipo,cliente_id,objeto,plantilla_f,clienteoriginal_fact,SUBSIDIARIES,campos_refacturacion,regFiscalSubsidiaria){
 
             try {
+                log.debug({ title:'transid', details:transid });
+                log.debug({ title:'tipo', details:tipo });
+                log.debug({ title:'cliente_id', details:cliente_id });
+                log.debug({ title:'objeto', details:objeto });
                 var id_cliente = '';
                 if (!cliente_id) {
                     id_cliente = buscarCliente(objeto, objeto.cliente.rfc, 'T',SUBSIDIARIES);
@@ -2885,6 +3046,50 @@ define(['N/https', 'N/record', 'N/search','N/url','N/file','N/format','N/runtime
                     fieldId: 'custbody_efx_fe_kiosko_customer',
                     value: id_cliente
                 });
+                // var actualizaclientecfdiConsulta = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_actualiza_datos_cli' });
+                // log.debug({ title:'actualizaClientedfciConsulta', details:actualizaclientecfdiConsulta });
+                // if((actualizaclientecfdiConsulta==false || actualizaclientecfdiConsulta=='F')){
+                //     log.debug({ title:'Update datakiosko', details:'updatedatakiosko 3046' });
+                //     var nombre_kiosko = objeto.cliente.razonSocial || objeto.cliente.compania;
+                //     var rfc_kiosko = objeto.cliente.rfc;
+                //     var direccionKioskoSet = objeto.direccion.calle + ' ' + objeto.direccion.n_exterior + ' ' + objeto.direccion.colonia + ' ' + objeto.direccion.cp + ' ' + objeto.direccion.municipio + ', ' + objeto.direccion.estado + ' ' + objeto.direccion.pais;
+                //     var direccion_kiosko = direccionKioskoSet;
+                //     var razon_social_kiosko = objeto.cliente.razonSocial || objeto.cliente.compania;
+                //     var regimen_fiscal_kiosko = objeto.cliente.regFiscal.value;
+                //     var zip_kiosko = objeto.direccion.cp;
+                //     // let after_name_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_name'});
+                //     // if (!after_name_kiosko) {
+                //         record_invoice.setValue({
+                //             fieldId: 'custbody_efx_fe_kiosko_name',
+                //             value: nombre_kiosko
+                //         });
+                //     // }
+                //     // let after_rfc_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_rfc'});
+                //     // if (!after_rfc_kiosko) {
+                //         record_invoice.setValue({
+                //             fieldId: 'custbody_efx_fe_kiosko_rfc',
+                //             value: rfc_kiosko
+                //         });
+                //     // }
+                //     // let after_razon_kiosko = nueva_tran_obj.getValue({fieldId: 'custbody_efx_fe_kiosko_address'});
+                //     record_invoice.setValue({
+                //         fieldId: 'custbody_efx_fe_kiosko_address',
+                //         value: direccion_kiosko
+                //     });
+                //     record_invoice.setValue({
+                //         fieldId: 'custbody_efx_fe_kiosko_rsocial',
+                //         value: razon_social_kiosko
+                //     });
+                //     record_invoice.setValue({
+                //         fieldId: 'custbody_efx_fe_kiosko_regfiscal',
+                //         value: regimen_fiscal_kiosko
+                //     });
+                //     record_invoice.setValue({
+                //         fieldId: 'custbody_efx_fe_kiosko_zip',
+                //         value: zip_kiosko
+                //     });
+                    
+                // }
 
                 log.audit({title: 'edocument_sendmethod', details: edocument_sendmethod});
                 log.audit({title: 'edocument_template', details: edocument_template});
