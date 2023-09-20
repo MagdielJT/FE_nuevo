@@ -40,6 +40,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                 var comision_factor = transactionRecord.getFieldValue('custbody_efx_fe_comisiones_fact') || 0;
                 suma_factor = parseFloat(comision_factor) * parseFloat(exchangerate);
             }
+            nlapiLogExecution('AUDIT', 'reclasificar_same_tran:', reclasificar_same_tran);
             if (reclasificar_same_tran == 'T') {
                 numberOfApply = -1;
             }
@@ -97,6 +98,7 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                         idChildTransaction.push(transactionRecord.getLineItemValue('bill', 'internalid', t) || '');
                     }
                 } else {
+                    nlapiLogExecution('AUDIT', 'typeTranLine: ', typeTranLine);
                     if (transactionRecord.getLineItemValue('apply', 'apply', t) == 'T' && (typeTranLine != 'CustRfnd') && (typeTranLine != 'Journal')) {
                         idChildTransaction.push(transactionRecord.getLineItemValue('apply', 'internalid', t) || '');
                     }
@@ -159,7 +161,8 @@ function customizeGlImpact(transactionRecord, standardLines, customLines, book) 
                                 apply[x].porcentaje = apply[x].amount / apply[x].total;
                             }
                         } else {
-                            if (array_creditMemos) {
+                            var llaves = Object.keys(array_creditMemos);
+                            if (array_creditMemos && llaves.length > 0) {
                                 nlapiLogExecution('AUDIT', 'apply[x].amount: ', apply[x].amount);
                                 nlapiLogExecution('AUDIT', 'apply[x].total: ', apply[x].total);
                                 var tam_array_creditMemos = Object.keys(array_creditMemos.applydata).length;
@@ -1876,19 +1879,20 @@ function ismultiBook(tipo_transaccion) {
 function getCreditMemoId(idChildTransaction, array_creditMemos, fechadepago) {
     nlapiLogExecution('DEBUG', 'getCreditMemoId', '');
     nlapiLogExecution('DEBUG', 'idChildTransaction', idChildTransaction);
-    nlapiLogExecution('DEBUG', 'array_creditMemos', array_creditMemos);
+    nlapiLogExecution('DEBUG', 'array_creditMemos', JSON.stringify(array_creditMemos));
+    nlapiLogExecution('DEBUG', 'fechadepago', fechadepago);
     var arrayCreditMemos = new Array();
     var CreditMemosMontoTotal = 0;
     var objcreditmemos = {}
     if (idChildTransaction.length > 0) {
         try {
             //Se generan filtros para obtener informacion de las transacciones aplicadas
-            var filters = new Array();
+            /*  var filters = new Array();
             filters.push(new nlobjSearchFilter('type', null, 'anyof', 'CustCred'));
             filters.push(new nlobjSearchFilter('mainline', null, 'is', 'T'));
             filters.push(new nlobjSearchFilter('appliedtotransaction', null, 'anyof', idChildTransaction));
             filters.push(new nlobjSearchFilter('trandate', null, 'onorbefore', fechadepago));
-
+            nlapiLogExecution('AUDIT', 'filters - getCreditMemoId: ', JSON.stringify(filters));
             //Se generan las columnas de datos a usar de las transacciones
             var columns = new Array();
             columns.push(new nlobjSearchColumn('internalid'));
@@ -1897,30 +1901,51 @@ function getCreditMemoId(idChildTransaction, array_creditMemos, fechadepago) {
             columns.push(new nlobjSearchColumn('type'));
             columns.push(new nlobjSearchColumn('total'));
             columns.push(new nlobjSearchColumn('exchangerate'));
-            //Se genera una busqueda de las transacciones aplicadas
-            nlapiLogExecution('AUDIT', 'filters - getCreditMemoId: ', filters);
-            var search = nlapiSearchRecord('transaction', null, filters, columns);
-
-
-            for (var x = 0; x < search.length; x++) {
-                //Se guardan los datos de apply en el objeto respuesta de acuerdo al id de transaccion
-                arrayCreditMemos.push(search[x].getValue('internalid'));
-                CreditMemosMontoTotal = CreditMemosMontoTotal + (parseFloat(search[x].getValue('total')) * -1);
-                array_creditMemos[x] = {
-                    internalid: search[x].getValue('internalid'),
-                    factura: search[x].getValue('appliedtotransaction'),
-                    amount: search[x].getValue('total'),
-                    total: search[x].getValue('total'),
-                    trantype: search[x].getValue('type'),
-                    tipo_cambio_pago: search[x].getValue('exchangerate'),
-                    porcentaje: 0,
+            nlapiLogExecution('AUDIT', 'columns - getCreditMemoId: ', JSON.stringify(columns)); */
+            // Ejecuta la busqueda
+            var search = nlapiSearchRecord('transaction', null,
+                [
+                    ['type', 'anyof', 'CustCred'],
+                    "AND",
+                    ['mainline', 'is', 'T'],
+                    "AND",
+                    ['appliedtotransaction', 'anyof', idChildTransaction],
+                    "AND",
+                    ['trandate', 'onorbefore', fechadepago]
+                ],
+                [
+                    new nlobjSearchColumn('internalid'),
+                    new nlobjSearchColumn('tranid'),
+                    new nlobjSearchColumn('appliedtotransaction'),
+                    new nlobjSearchColumn('type'),
+                    new nlobjSearchColumn('total'),
+                    new nlobjSearchColumn('exchangerate'),
+                ]
+            );
+            nlapiLogExecution('AUDIT', 'resultados de la busqueda: ', JSON.stringify(search));
+            if (search != null) {
+                nlapiLogExecution('AUDIT', 'search.length: ', search.length);
+                for (var x = 0; x < search.length; x++) {
+                    //Se guardan los datos de apply en el objeto respuesta de acuerdo al id de transaccion
+                    arrayCreditMemos.push(search[x].getValue('internalid'));
+                    CreditMemosMontoTotal = CreditMemosMontoTotal + (parseFloat(search[x].getValue('total')) * -1);
+                    array_creditMemos[x] = {
+                        internalid: search[x].getValue('internalid'),
+                        factura: search[x].getValue('appliedtotransaction'),
+                        amount: search[x].getValue('total'),
+                        total: search[x].getValue('total'),
+                        trantype: search[x].getValue('type'),
+                        tipo_cambio_pago: search[x].getValue('exchangerate'),
+                        porcentaje: 0,
+                    }
                 }
-            }
 
-            nlapiLogExecution('AUDIT', 'array_creditMemos - getCreditMemoId: ', array_creditMemos);
-            objcreditmemos.applydata = array_creditMemos;
-            objcreditmemos.arrayNC = arrayCreditMemos;
-            objcreditmemos.totalCreditMemos = CreditMemosMontoTotal;
+                nlapiLogExecution('AUDIT', 'array_creditMemos - getCreditMemoId: ', array_creditMemos);
+                objcreditmemos.applydata = array_creditMemos;
+                objcreditmemos.arrayNC = arrayCreditMemos;
+                objcreditmemos.totalCreditMemos = CreditMemosMontoTotal;
+                nlapiLogExecution('AUDIT', 'objcreditmemos ', objcreditmemos);
+            }
         } catch (e) {
             nlapiLogExecution('ERROR', 'Error - getCreditMemoId: ', JSON.stringify(e));
         } finally {
