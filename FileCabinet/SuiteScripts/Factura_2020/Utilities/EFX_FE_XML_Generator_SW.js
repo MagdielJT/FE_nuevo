@@ -2537,7 +2537,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 var urlToken = url + '/security/authenticate';
                 log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
                 // pass = 'AAA111';
-                pass = 'Fr33Bug2023#';
+                pass = 'mQ*wP^e52K34';
                 var headers = {
                     "user": user,
                     "password": pass

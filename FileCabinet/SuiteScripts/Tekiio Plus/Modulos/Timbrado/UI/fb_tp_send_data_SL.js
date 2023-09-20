@@ -169,23 +169,13 @@ define(['N/https', '../../../Lib/fb_tp_data_structure.js', 'N/runtime', '../../.
             const { PAC_DATA } = constLib
             var dataReturn = { success: false, error: '', token: '' }
             try {
-                if (pruebas) {
-                    var urlToken = url + '/security/authenticate';
+                var urlToken = url + '/security/authenticate';
                     var headers = {
                         "user": user,
                         "password": PAC_DATA.PSW
                     };
                     log.audit({title: 'user', details: user});
                     log.audit({title: 'psw', details: PAC_DATA.PSW});
-                } else {
-                    var urlToken = url_prod + '/security/authenticate';
-                    var headers = {
-                        "user": user_prod,
-                        "password": PAC_DATA.PSW
-                    };
-                    log.audit({title: 'user', details: user_prod});
-                    log.audit({title: 'psw', details: PAC_DATA.PSW});
-                }
                 log.audit({title: 'urlToken', details: urlToken});
                 var response = https.post({
                     url: urlToken,

@@ -268,7 +268,10 @@
             <#if desglosa_ieps == true>
                 SubTotal="${desglose_cab.subtotal?number?string["0.00"]}"
                 <#assign total_xml = (desglose_cab.subtotal?number-totallocalesimp)>
-                <#assign total_cabecera = (total_xml + desglose_cab.totalImpuestos?number)-total_desc_cabecera>
+                <#assign total_cabecera = desglose_cab.subtotal?number + desglose_cab.iva_total?number>
+                <#if desglose_cab.descuentoConImpuesto gt 0>
+                    <#assign total_cabecera = total_cabecera - desglose_cab.descuentoConImpuesto>
+                </#if>
             <#else>
                 <#assign sub_conieps = desglose_cab.subtotal?number - desglose_cab.descuentoSinImpuesto?number + total_ieps>
                 <#assign total_xml = desglose_cab.total?number>

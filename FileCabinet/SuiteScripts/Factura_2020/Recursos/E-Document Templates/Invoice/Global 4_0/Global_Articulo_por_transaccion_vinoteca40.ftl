@@ -49,7 +49,7 @@
 
 <#assign "ComercioE" = transaction.custbody_efx_fe_comercio_exterior>
 
-<cfdi:Comprobante
+<cfdi:Comprobante xsi:schemaLocation= "http://www.sat.gob.mx/cfd/4 http://www.sat.gob.mx/sitio_internet/cfd/4/cfdv40.xsd"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:cce11="http://www.sat.gob.mx/ComercioExterior11"
         xmlns:cfdi="http://www.sat.gob.mx/cfd/4"

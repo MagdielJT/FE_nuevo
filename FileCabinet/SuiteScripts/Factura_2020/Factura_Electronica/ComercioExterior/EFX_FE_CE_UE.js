@@ -315,22 +315,47 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config', 'N/runtime', 
                                 "AND ( TansactionCurrency.Symbol = ? ) "+
                                 "ORDER BY CurrencyRate.id DESC" ;
 
-                                log.debug({title: 'onRequest querystr', details: querystr});
-                                var hoy = new Date();
-                                log.audit({title: 'hoy', details: hoy});
-                                var DIA_EN_MILISEGUNDOS = 24 * 60 * 60 * 1000;
-                                var ayer = new Date(hoy.getTime() - DIA_EN_MILISEGUNDOS);
-                                log.audit({title: 'ayer', details: ayer});
+                                var fecha_actual = record.getValue({ fieldId: 'custbody_efx_fe_actual_date' });
+                                log.audit({title: 'fecha_actual', details: fecha_actual});
 
-                                var configRecObj = config.load({
-                                    type: config.Type.USER_PREFERENCES
-                                });
-                                var dateFormat = configRecObj.getValue({
-                                    fieldId: 'DATEFORMAT'
-                                });
+                                var fecha_tran = record.getValue({ fieldId: 'trandate' });
+                                log.audit({title: 'fecha_tran', details: fecha_tran});
 
-                                var objDate = moment(ayer).format(dateFormat);
-                                log.audit({title: 'objDate', details: objDate});
+                                if (fecha_actual) {
+                                    log.debug({title: 'onRequest querystr si fecha actual es true', details: querystr});
+                                    var hoy = new Date();
+                                    log.audit({title: 'hoy', details: hoy});
+                                    var DIA_EN_MILISEGUNDOS = 24 * 60 * 60 * 1000;
+                                    var ayer = new Date(hoy.getTime() - DIA_EN_MILISEGUNDOS);
+                                    log.audit({title: 'ayer', details: ayer});
+
+                                    var configRecObj = config.load({
+                                        type: config.Type.USER_PREFERENCES
+                                    });
+                                    var dateFormat = configRecObj.getValue({
+                                        fieldId: 'DATEFORMAT'
+                                    });
+
+                                    var objDate = moment(ayer).format(dateFormat);
+                                    log.audit({title: 'objDate', details: objDate});
+                                } else {
+                                    log.debug({title: 'onRequest querystr si fecha actual es false', details: querystr});
+                                    var hoy = fecha_tran;
+                                    log.audit({title: 'hoy', details: hoy});
+                                    var DIA_EN_MILISEGUNDOS = 24 * 60 * 60 * 1000;
+                                    var ayer = new Date(hoy.getTime() - DIA_EN_MILISEGUNDOS);
+                                    log.audit({title: 'ayer', details: ayer});
+
+                                    var configRecObj = config.load({
+                                        type: config.Type.USER_PREFERENCES
+                                    });
+                                    var dateFormat = configRecObj.getValue({
+                                        fieldId: 'DATEFORMAT'
+                                    });
+
+                                    var objDate = moment(ayer).format(dateFormat);
+                                    log.audit({title: 'objDate', details: objDate});
+                                }
 
                                 var results = query.runSuiteQL({
                                     query: querystr,

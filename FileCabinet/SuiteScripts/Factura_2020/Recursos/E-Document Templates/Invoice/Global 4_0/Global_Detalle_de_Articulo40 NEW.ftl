@@ -206,8 +206,12 @@
             </#if>
         </#list>
         SubTotal="${(transaction.custbody_efx_fe_gbl_subtotal?number + descuentototal)?string["0.00"]}"
-        <#assign total_xml = (transaction.total + transaction.custbody_efx_fe_gbl_totaltax?number)?string["0.00"]>
-        Total="${total_xml}"
+        <#assign "total_traslados" = 0>
+        <#list obj_totales_imp as tras_rate, tras_total>
+            <#assign "total_traslados" = total_traslados?number + tras_total?number>
+        </#list>
+        <#assign total_xml = (transaction.total + total_traslados)?string["0.00"]>
+        Total="${transaction.total} + ${total_traslados}"
         TipoDeComprobante="${satCodes.proofType}"
         <#assign exportacion = transaction.custbody_mx_cfdi_sat_export_type?keep_before(' -')>
         Exportacion="${exportacion}"
@@ -287,11 +291,7 @@
 
             <cfdi:Concepto
                     Cantidad="${item.quantity?string["0.000000"]}"
-                    <#if transaction.custbody_efx_fe_donativo == true>
-                    ${getAttrPair("ClaveProdServ","01010101")}
-<#else>
                     ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"")!""}
-</#if>
                     <#if itemSatUnitCode != "">
                         ${getAttrPair("ClaveUnidad",itemSatUnitCode)!"H87"}
                     <#else>
@@ -447,13 +447,13 @@
                     <#list customItem.parts as part>
                         <#assign "partItem" = transaction.item[part.line?number]>
                         <#assign "partSatCodes" = satCodes.items[part.line?number]>
-                        <cfdi:Parte Cantidad="${partItem.quantity?string["0.0"]}" ClaveProdServ="${partSatCodes.itemCode}" Descripcion='${partItem.description?replace("<br />","")}' Importe="${part.amount?number?string["0.00"]}" ValorUnitario="${part.rate?number?string["0.00"]}"/>
+                        <cfdi:Parte Cantidad2="${partItem.quantity?string["0.0"]}" ClaveProdServ="${partSatCodes.itemCode}" Descripcion='${partItem.description?replace("<br />","")}' Importe="${part.amount?number?string["0.00"]}" ValorUnitario="${part.rate?number?string["0.00"]}"/>
                     </#list>
                 </#if>
             </cfdi:Concepto>
                 <#else>
                 <cfdi:Concepto
-                        Cantidad="1.000000"
+                        Cantidad3="1.000000"
                         <#if transaction.custbody_efx_fe_donativo == true>
                     ${getAttrPair("ClaveProdServ","01010101")}
 <#else>

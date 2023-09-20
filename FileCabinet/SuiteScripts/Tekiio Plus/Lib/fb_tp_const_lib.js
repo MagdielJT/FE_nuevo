@@ -53,7 +53,7 @@ define([], () => {
     PAC_DATA.USUARIO_INTEGRADOR = 'custrecord_efx_fe_mtd_env_usertest'
     PAC_DATA.URL_PROD = 'custrecord_efx_fe_mtd_env_url'
     PAC_DATA.USUARIO_INTEGRADOR_PROD = 'custrecord_efx_fe_mtd_env_user'
-    PAC_DATA.PSW = 'Fr33Bug2023#'
+    PAC_DATA.PSW = 'mQ*wP^e52K34'
 
     PAC_DATA.CODIGOS ={}
     PAC_DATA.CODIGOS.ERROR_NO_CLASIFICADO = 'CFDI40999'

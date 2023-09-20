@@ -104,6 +104,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     // }
 
                     var ocultagenerarcert = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_gencertificar' });
+                    log.audit({title: 'ocultagenerarcert', details: ocultagenerarcert});
                     sendMail(context, record_now, recType, pagot, cartaportecheck, ocultagenerarcert, uuidFactura);
                     var regenerarpdf = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_regenerar_pdf' });
                     log.audit({ title: 'regenerarpdf', details: regenerarpdf });
@@ -889,6 +890,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.audit({title: 'idPlantilla 893', details: idPlantilla});
                                     }
                                 }
 
@@ -1175,6 +1177,11 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
             var destinatarios = record_now.getValue({ fieldId: 'custbody_efx_fe_mail_to' });
             var certificado = record_now.getValue({ fieldId: 'custbody_psg_ei_certified_edoc' });
             var certificado_status = record_now.getValue({ fieldId: 'custbody_psg_ei_status' });
+            if (recType == "customerpayment") {
+                var cliente = record_now.getValue({ fieldId: 'customer' });
+            }else{
+                var cliente = record_now.getValue({ fieldId: 'entity' });
+            }
 
             log.audit({ title: 'cfdiversion', details: cfdiversion });
             log.audit({ title: 'status_cfdi', details: status_cfdi });
@@ -1187,7 +1194,8 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
             form.clientScriptModulePath = "./EFX_FE_Send_To_Mail_CS.js";
             var tranData = {
                 tranid: record_now.id,
-                trantype: recType
+                trantype: recType,
+                cliente: cliente
             };
             if (enviar_correos && destinatarios && recType != record.Type.PURCHASE_ORDER) {
                 if (destinatarios.length > 0) {
@@ -1330,7 +1338,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                         if (!uuidFactura) {
                             log.audit({title: 'status_cfdi', details: status_cfdi});
                             if ((status_cfdi != 3 && status_cfdi != 7) || (!certificado && certificado_status)) {
-                                log.audit({title: 'habilitado', details: habilitado});
+                                log.audit({title: '~1334~ habilitado', details: habilitado});
                                 if (habilitado) {
                                     log.audit({title: 'cfdiversion', details: cfdiversion});
                                     if (cfdiversion == 1) {
