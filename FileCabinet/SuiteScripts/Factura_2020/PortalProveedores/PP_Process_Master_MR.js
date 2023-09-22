@@ -590,6 +590,7 @@ define(['N/record', 'N/runtime', 'N/search','N/file','N/encode','N/xml','N/confi
             var rfcReceptor_empresa = '';
 
             var SUBSIDIARIES = runtime.isFeatureInEffect({ feature: "SUBSIDIARIES" });
+            var existeSuiteTax = runtime.isFeatureInEffect({ feature: 'tax_overhauling' });
 
             if(SUBSIDIARIES) {
                 var subsidiaryOC = orderObj.getValue({fieldId: 'subsidiary'});
@@ -597,7 +598,13 @@ define(['N/record', 'N/runtime', 'N/search','N/file','N/encode','N/xml','N/confi
                     type:record.Type.SUBSIDIARY,
                     id: subsidiaryOC
                 });
-                rfcReceptor_empresa = subsidiariaObj.getValue({fieldId:'federalidnumber'})
+                if (existeSuiteTax) {
+                    log.audit({title: 'LOG', details: 'tiene suitetax'});
+                    rfcReceptor_empresa = subsidiariaObj.getSublistValue({sublistId: 'taxregistration',fieldId: 'taxregistrationnumber',line:0});
+                    log.audit({title:'rfcReceptor_empresa-suitetax',details:rfcReceptor_empresa});
+                } else {
+                    rfcReceptor_empresa = subsidiariaObj.getValue({fieldId:'federalidnumber'})
+                }
 
 
             }else{
