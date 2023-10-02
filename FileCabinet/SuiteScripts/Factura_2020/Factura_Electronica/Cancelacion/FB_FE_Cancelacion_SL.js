@@ -93,7 +93,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                    id: tranid,
                    columns: columns
                 });
-                // log.debug({title:'lookData', details:lookData});
+                log.debug({title:'lookData', details:lookData});
                 if(searchTypeTran == 'customrecord_efx_pagos_compensacion'){ // TODO ejemplo para este escenario.
                     uuid = lookData.custrecord_efx_compensacion_uuid;
                 }else if(searchTypeTran == 'customrecord_efx_fe_cp_carta_porte'){ // TODO ejemplo para este escenario.
@@ -170,7 +170,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     "user": user,
                     "password": pass
                 };
-                var response = http.post({
+                var response = https.post({
                     url: urlToken,
                     headers: headers,
                     body: {}
@@ -203,7 +203,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                 var motivoCancelacionArray = motivoCancelacion.split(',')
                 url_pac = url_pac + '/cfdi33/cancel/' + rfcEmisor + '/' + uuid + '/' + motivoCancelacionArray[0]
                 log.audit({title: 'url_pac', details: url_pac});
-                var responsePAC = http.post({
+                var responsePAC = https.post({
                     url: url_pac,
                     headers: headersPos,
                     body: {}

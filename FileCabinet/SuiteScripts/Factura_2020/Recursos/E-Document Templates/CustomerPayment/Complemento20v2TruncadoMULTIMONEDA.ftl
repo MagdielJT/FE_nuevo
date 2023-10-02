@@ -338,6 +338,8 @@
                     <#else>
                         <#if transaction.currencysymbol == "USD">
                             TipoCambioP="${transaction.exchangerate?string["0.0000"]}"
+                        <#elseif transaction.currencysymbol == "EUR">
+                            TipoCambioP="${transaction.exchangerate?string["0.0000"]}"
                         <#else>
                             TipoCambioP="1"
                         </#if>

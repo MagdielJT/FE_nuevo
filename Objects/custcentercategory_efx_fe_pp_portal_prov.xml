@@ -1,0 +1,19 @@
+<centercategory scriptid="custcentercategory_efx_fe_pp_portal_prov">
+  <center>BASIC</center>
+  <centertab>[scriptid=custcentertab_efx_fe_cat_fac_electronica]</centertab>
+  <label>Portal de Proveedores</label>
+  <links>
+    <link>
+      <linklabel>Peticiones de Portal</linklabel>
+      <linkobject>[scriptid=customrecord_efx_pp_portal_request]</linkobject>
+      <linktasktype>LIST</linktasktype>
+      <shortlist>F</shortlist>
+    </link>
+    <link>
+      <linklabel>Configuración Portal</linklabel>
+      <linkobject>[scriptid=customrecordefx_pp_vendor_pconfig]</linkobject>
+      <linktasktype>LIST</linktasktype>
+      <shortlist>F</shortlist>
+    </link>
+  </links>
+</centercategory>

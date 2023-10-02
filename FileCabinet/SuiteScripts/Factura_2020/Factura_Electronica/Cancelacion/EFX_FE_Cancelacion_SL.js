@@ -27,8 +27,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     var solosustituir = context.request.parameters.custparam_solosutituye || '';
                     var cancelacionAutomatica = context.request.parameters.custparam_pa == 'T';
                     var motivoCancelacion = context.request.parameters.custparam_motivocancelacion || '';
-                    var uuid_sustitucion = context.request.parameters.custparam_uuidrelacionado || '';
-                    log.audit({title: 'uuid_sustitucion', details: uuid_sustitucion});
+                    var uuidaCancelar = context.request.parameters.custparam_uuidrelacionado || '';
                     var searchTypeTran = '';
                     switch (trantype) {
                         case 'invoice':
@@ -50,7 +49,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                             searchTypeTran = trantype;
                             break;
                     }
-                    var resultCancel = dataProcess(tranid, trantype, searchTypeTran, cancelacionAutomatica, sustituir, solosustituir, motivoCancelacion, uuid_sustitucion);
+                    var resultCancel = dataProcess(tranid, trantype, searchTypeTran, cancelacionAutomatica, sustituir, solosustituir, motivoCancelacion, uuidaCancelar);
                     log.debug({ title: 'resultCancel', details: resultCancel });
                     var resultData = { success: false, error: '' };
                     if (resultCancel.success == false) {
@@ -68,7 +67,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
             }
         }
 
-        function dataProcess(tranid, trantype, searchTypeTran, cancelacionAutomatica, sustituir, solosustituir, motivoCancelacion, uuid_sustitucion) {
+        function dataProcess(tranid, trantype, searchTypeTran, cancelacionAutomatica, sustituir, solosustituir, motivoCancelacion, uuidaCancelar) {
             const response = { success: false, error: '', datos: {} };
             try {
                 // log.debug({title:'Params_getNetsuiteData', details:{tranid: tranid, trantype: trantype, searchTypeTran: searchTypeTran, cancelacionAutomatica: cancelacionAutomatica, sustituir: sustituir, solosustituir: solosustituir, motivoCancelacion: motivoCancelacion, uuidaCancelar: uuidaCancelar}});
@@ -94,7 +93,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     id: tranid,
                     columns: columns
                 });
-                // log.debug({title:'lookData', details:lookData});
+                log.debug({ title: 'lookData', details: lookData });
                 if (searchTypeTran == 'customrecord_efx_pagos_compensacion') { // TODO ejemplo para este escenario.
                     uuid = lookData.custrecord_efx_compensacion_uuid;
                 } else if (searchTypeTran == 'customrecord_efx_fe_cp_carta_porte') { // TODO ejemplo para este escenario.
@@ -105,6 +104,22 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     if (SUBSIDIARIES) {
                         subsidiary = lookData.subsidiary[0].value;
                     }
+                }
+                if (subsidiary != "") {
+                    var search_pacinfo = search.create({
+                        type: 'customrecord_mx_pac_connect_info',
+                        filters: [
+                            ['custrecord_mx_pacinfo_subsidiary', search.Operator.IS, subsidiary]
+                        ],
+                        columns: [
+                            search.createColumn({ name: 'custrecord_mx_pacinfo_username' }),
+                        ]
+
+                    });
+                    var ejecutar = search_pacinfo.run();
+                    var resultado = ejecutar.getRange(0, 100);
+                    var user_pac = resultado[0].getValue({ name: 'custrecord_mx_pacinfo_username' });
+                    log.audit({ title: 'user_pac', details: user_pac });
                 }
                 if (!SUBSIDIARIES) {
                     var configRecObj = config.load({
@@ -126,23 +141,22 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                 var dataConectionPac = getPacConection();
                 log.debug({ title: 'dataconectionPac', details: dataConectionPac });
                 var url_pac = '';
-                var usuario_integrador = '';
+                var usuario_integrador = user_pac;
                 if (dataConectionPac.pruebas) {
                     rfcEmisor = dataConectionPac.emisorPrueba;
-                    usuario_integrador = dataConectionPac.userPrueba;
+                    // usuario_integrador = dataConectionPac.userPrueba;
                     url_pac = dataConectionPac.urlPrueba;
                 } else {
-                    usuario_integrador = dataConectionPac.user;
+                    // usuario_integrador = dataConectionPac.user;
                     url_pac = dataConectionPac.url;
                 }
-                log.audit({title: 'datos para el token: ', details: {user: usuario_integrador, url_pac: url_pac}});
                 var token = getTokenSW(usuario_integrador, '', url_pac);
                 log.debug({ title: 'tokenResult', details: token });
                 if (token.success == false) {
                     throw token.error;
                 }
                 var tokentry = token.token;
-                var cancelResponse = cancelUUID(tokentry, motivoCancelacion, url_pac, rfcEmisor, uuid, uuid_sustitucion);
+                var cancelResponse = cancelUUID(tokentry, motivoCancelacion, url_pac, rfcEmisor, uuid);
                 log.debug({ title: 'cancelResponse', details: cancelResponse });
                 if (cancelResponse.success == false) {
                     throw cancelResponse.error;
@@ -165,7 +179,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
             var dataReturn = { success: false, error: '', token: '' }
             try {
                 var urlToken = url + '/security/authenticate';
-                // log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
+                log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
                 // pass = 'AAA111';
                 pass = 'mQ*wP^e52K34';
                 var headers = {
@@ -195,7 +209,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
             return dataReturn;
         }
 
-        function cancelUUID(tokentry, motivoCancelacion, url_pac, rfcEmisor, uuid, uuid_sustitucion) {
+        function cancelUUID(tokentry, motivoCancelacion, url_pac, rfcEmisor, uuid) {
             const response = { success: false, error: '', data: '' };
             try {
                 // log.debug({title:'tokentry', details:tokentry});
@@ -203,7 +217,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     "Authorization": "Bearer " + tokentry.token
                 };
                 var motivoCancelacionArray = motivoCancelacion.split(',')
-                url_pac = url_pac + '/cfdi33/cancel/' + rfcEmisor + '/' + uuid + '/' + motivoCancelacionArray[0] + '/' + uuid_sustitucion|| ''
+                url_pac = url_pac + '/cfdi33/cancel/' + rfcEmisor + '/' + uuid + '/' + motivoCancelacionArray[0]
                 log.audit({ title: 'url_pac', details: url_pac });
                 var responsePAC = https.post({
                     url: url_pac,
@@ -213,6 +227,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                 // log.audit({ title: 'response ', details: responsePAC });
                 var responseBody = JSON.parse(responsePAC.body);
                 // log.audit({ title: 'responseBody', details: responseBody });
+                log.audit({title: 'respuesta PAC', details: responsePAC});
                 if (responsePAC.code == 200) {
                     // log.debug({title:'Se cancelo', details:'Se cancelo'});
                     response.data = responseBody.data;
@@ -222,6 +237,7 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                     if (responseBody.messageDetail) {
                         msgDetail = responseBody.message + ': ' + responseBody.messageDetail;
                     }
+
                     log.error({ title: 'No fue posible cancelar el UUID', details: msgDetail });
                     response.success = false;
                     response.error = msgDetail;
@@ -243,27 +259,14 @@ define(['N/log', 'N/ui/serverWidget', 'N/record', 'N/runtime', 'N/http', 'N/conf
                 log.debug({ title: 'uuidAcuse', details: uuidAcuse });
                 let responseCode = getAcuseCode(uuidAcuse);
                 log.debug({ title: 'responseCode', details: responseCode });
-                log.audit({title: 'tranype 244', details: trantype});
-                log.audit({title: 'responseCode.result 245', details: responseCode.result});
-                if (trantype == 'customrecord_efx_fe_cp_carta_porte') {
-                    var rec = record.submitFields({
-                        type: trantype,
-                        id: tranid,
-                        values: {
-                            'custrecord_efx_fe_cp_ccancel': true,
-                            'custrecord_efx_fe_cp_cacuse': responseCode.result
-                        }
-                    });
-                } else {
-                    var rec = record.submitFields({
-                        type: trantype,
-                        id: tranid,
-                        values: {
-                            'custbody_efx_fe_cfdi_cancelled': true,
-                            'custbody_efx_fe_acuse_cancel': responseCode.result
-                        }
-                    });
-                }
+                var rec = record.submitFields({
+                    type: trantype,
+                    id: tranid,
+                    values: {
+                        'custbody_efx_fe_cfdi_cancelled': true,
+                        'custbody_efx_fe_acuse_cancel': responseCode.result
+                    }
+                });
                 response.success = true;
                 response.data = rec;
             } catch (error) {

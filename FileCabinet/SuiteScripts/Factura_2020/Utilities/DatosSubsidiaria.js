@@ -731,8 +731,8 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     log.audit('cfdi_usage', cliente.getValue('custentity_efx_mx_cfdi_usage'))
 
                     var usocfdi = cliente.getValue('custentity_efx_mx_cfdi_usage') || '';
-                    var pagometodo = cliente.getValue('custentity_efx_mx_payment_method') || '';
-                    var pagoforma = cliente.getValue('custentity_efx_mx_payment_term') || '';
+                    /* var pagometodo = cliente.getValue('custentity_efx_mx_payment_method') || '';
+                    var pagoforma = cliente.getValue('custentity_efx_mx_payment_term') || ''; */
 
 
                     if(usocfdi){
@@ -750,7 +750,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                     }
 
 
-                    if(pagometodo){
+                    /* if(pagometodo){
                         log.audit('metodo de pago', cliente.getValue('custentity_efx_mx_payment_method'))
                         record_now.setValue({
                             fieldId: 'custbody_mx_txn_sat_payment_method',
@@ -765,7 +765,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                             fieldId: 'custbody_mx_txn_sat_payment_term',
                             value: pagoforma
                         });
-                    }
+                    } */
 
                 }
             }
@@ -1524,10 +1524,12 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
 
             var form = context.form;
             form.clientScriptModulePath = "./EFX_FE_Send_To_Mail_CS.js";
+            var id_cliente = record_now.getValue({fieldId:'entity'})
             var tranData = {
                 tranid: record_now.id,
                 trantype: recType,
-                anticipo: true
+                anticipo: true,
+                cliente: id_cliente
             };
 
             form.addButton({

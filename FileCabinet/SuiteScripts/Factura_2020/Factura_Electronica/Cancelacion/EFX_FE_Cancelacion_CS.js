@@ -260,7 +260,7 @@ define(['N/http', 'N/https', 'N/record', 'N/url', 'N/ui/message', 'N/currentReco
                         url_Script += '&custparam_tranid=' + tranid;
                         url_Script += '&custparam_trantype=' + trantype;
                         url_Script += '&custparam_sutituye=' + 'F';
-                        url_Script += '&custparam_motivocancelacion=' + codigoCancelacion; //custbody_efx_fe_cancelreason
+                        url_Script += '&custparam_motivocancelacion=' + codigoCancelacion[0]; //custbody_efx_fe_cancelreason
                         url_Script += '&custparam_uuidrelacionado=' + uuid_sustitucion; //custbody_efx_fe_cancelreason
 
                         var headers = {

@@ -586,6 +586,9 @@ define(['N/log', 'N/record', 'N/search', 'N/currency', 'N/config', 'N/runtime', 
                                 log.audit({ title: 'error', detail: JSON.stringify(error) });
                             }
                         }
+                        log.audit({title: 'totalValorDolares', details: totalValorDolares});
+                        log.audit({title: 'totalValorDolares tipo:', details: typeof(totalValorDolares)});
+                        totalValorDolares = totalValorDolares * 1;
                         totalValorDolares = totalValorDolares.toFixed(2);
                         record.setValue({ fieldId: 'custbody_efx_fe_ce_totalusd', value: totalValorDolares });
                         record.setValue({

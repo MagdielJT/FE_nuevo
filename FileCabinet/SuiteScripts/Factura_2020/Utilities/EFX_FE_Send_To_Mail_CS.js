@@ -432,18 +432,21 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
 
 
                 var tranid = tranData.tranid || '';
+                console.log({title: 'tranid ~ 435', details: tranid});
                 var trantype = tranData.trantype || '';
+                console.log({title: 'trantype ~ 437', details: trantype});
 
                 // OBTENER DATOS NECESARIO PARA MENSAJES
-                var datos_transaction = search.lookupFields({
+                /* var datos_transaction = search.lookupFields({
                     type: trantype,
                     id: tranid,
                     columns: ['custbody_mx_cfdi_usage', 'custbody_mx_txn_sat_payment_method', 'custbody_mx_txn_sat_payment_term', 'custbody_mx_cfdi_sat_export_type', 'custbody_psg_ei_template', 'custbody_psg_ei_sending_method', 'custbody_edoc_gen_trans_pdf']
-                });
+                }); */
                 /* console.log('datos_transaccion', datos_transaction);
                 console.log('cliente', datos_transaction.entity[0].value); */
 
                 var id_cliente = tranData.cliente;
+                console.log({title: 'id_cliente ~ 449', details: id_cliente});
                 // datos en el cliente
                 var datos_cliente = search.lookupFields({
                     type: 'customer',
@@ -521,6 +524,8 @@ define(['N/http', 'N/https', 'N/record','N/url','N/ui/message','N/search','N/run
                             }
                                     if (body.success) {
 
+                                        console.log({title: 'tranid ~ 527', details: tranid});
+                                        console.log({title: 'trantype ~ 528', details: trantype});
                                         var fieldLookUp = search.lookupFields({
                                             type: trantype,
                                             id: tranid,
