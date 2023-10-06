@@ -353,7 +353,7 @@
 <#else>
 <cfdi:Receptor Rfc=<#outputformat "plainText">"${customer.custentity_mx_rfc}"</#outputformat>
  Nombre=<#outputformat "XML">"${customer.custentity_mx_sat_registered_name}"</#outputformat>
-</#if>                
+</#if>
                 ${getAttrPair("DomicilioFiscalReceptor", DomicilioFiscalReceptor)}
 <#if ComercioE == true>
                     ${getAttrPair("ResidenciaFiscal", CEreceptorResidF)}
@@ -807,14 +807,14 @@
         </#if>
     </#if>
 
-    <#assign exentoContador = 0>    
+    <#assign exentoContador = 0>
     <#if tieneobjimp gt 0>
-    
+
         <#if desglosa_ieps == true>
-        
+
             <#if (desglose_cab.ieps_total != "0.00" || desglose_cab.iva_total != "0.00" || tieneExento == true) && desglose_cab.retencion_total != "0.00">
                 <#assign exentoContador = exentoContador+1>
-            
+
                 <cfdi:Impuestos TotalImpuestosRetenidos="${(desglose_cab.retencion_total?number)?string["0.00"]}" TotalImpuestosTrasladados="${total_impuestos_t?string["0.00"]}">
             <#elseif desglose_cab.retencion_total != "0.00">
                 <#assign exentoContador = exentoContador+1>
@@ -823,9 +823,9 @@
                 <#assign exentoContador = exentoContador+1>
                 <cfdi:Impuestos TotalImpuestosTrasladados="${total_impuestos_t?string["0.00"]}">
                 <#else>
-                
+
             </#if>
-        <#else>        
+        <#else>
             <#assign total_impuestos_t = total_impuestos_t+impuestoLineashipp?number>
             <#if (desglose_cab.ieps_total != "0.00" || desglose_cab.iva_total != "0.00" || tieneExento == true) && desglose_cab.retencion_total != "0.00">
                 <#assign exentoContador = exentoContador+1>
@@ -841,7 +841,7 @@
             </#if>
         </#if>
     </#if>
-        
+
 
 
         <#if desglose_cab.retencion_total != "0.00">
@@ -866,7 +866,7 @@
                     <#assign json_ieps_base = desglose_cab.bases_ieps>
                     <#assign json_exento_base = desglose_cab.bases_exento>
 
-                    <#list json_exento as exento_rate, exento_total>                                                                               
+                    <#list json_exento as exento_rate, exento_total>
                         <#if desglosa_ieps == true>
                         <#assign tiene_impuesto = tiene_impuesto + 1>
                             <cfdi:Traslado Base="${json_exento_base[exento_rate]}" Impuesto="002" TipoFactor="Exento" />
@@ -958,7 +958,7 @@
             </cfdi:Complemento>
         </#if>
 
-        <#if ImpLocalobj?has_content>
+        <#if ImpLocalobj?has_content && transaction.custbody_efx_fe_local_tax != "F" >
             <cfdi:Complemento>
                 <#if transaction.custbody_efx_fe_total_impuesto_local?has_content>
                     <implocal:ImpuestosLocales version="1.0" TotaldeRetenciones="${transaction.custbody_efx_fe_total_impuesto_local?string["0.00"]}" TotaldeTraslados="0.00">

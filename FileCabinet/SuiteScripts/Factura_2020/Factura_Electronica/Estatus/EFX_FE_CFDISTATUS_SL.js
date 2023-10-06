@@ -23,11 +23,15 @@ define(['N/runtime', 'N/log', 'N/ui/serverWidget', 'N/search', 'N/record', 'N/fo
 
             var xmlSend = '';
 
+            log.debug({ title: 'main parameters', details: context.request.parameters })
+
             //? PARAMETROS
             var uuid_comprobante = context.request.parameters.custparam_uuid || '';
             // log.audit({ title: 'custparam_uuid', details: JSON.stringify(uuid_comprobante) });
             var tranid = context.request.parameters.custparam_tranid || '';
+            log.audit({ title: 'tranid', details: tranid });
             var trantype = context.request.parameters.custparam_trantype || '';
+            log.audit({ title: 'trantype', details: trantype });
             var subsi = context.request.parameters.custparam_subsi || '';
             // log.audit({ title: 'subsi', details: JSON.stringify(subsi) });
             var rfc_receptor = context.request.parameters.custparam_rfc_receptor || '';
@@ -91,36 +95,44 @@ define(['N/runtime', 'N/log', 'N/ui/serverWidget', 'N/search', 'N/record', 'N/fo
                     var url_service = dataConectionPac.url_status_prod
                 }
 
-                var sello_digital_emisor = '6QMHhg==';
+                var obj_data_xml = search.lookupFields({
+                    type: trantype,
+                    id: tranid,
+                    columns: 'custbody_fb_tp_xml_data'
+                }) || '';
+                log.audit({ title: 'obj_data_xml', details: obj_data_xml});
+                var datos_xml = obj_data_xml.custbody_fb_tp_xml_data;
+                var obj_parsed = JSON.parse(datos_xml)
+                log.audit({title: 'obj_parsed', details: obj_parsed});
+
+                var sello_digital_emisor = obj_parsed.sello;
+                log.audit({title: 'sello:', details: sello_digital_emisor});
+                var total_comprobante = obj_parsed.total_xml;
+                log.audit({title: 'total:', details: total_comprobante});
+
 
                 log.audit({ title: 'datos:', details: { rfc_emisor: rfc_emisor, rfc_receptor: rfc_receptor, total_comprobante: total_comprobante, uuid_comprobante: uuid_comprobante, sello_digital_emisor: sello_digital_emisor } });
 
                 xmlSend = xmlConsultaEstatusSat(rfc_emisor, rfc_receptor, total_comprobante, uuid_comprobante, sello_digital_emisor);
+
                 if (xmlSend) {
                     var headers = {
                         'SOAPAction': 'http://tempuri.org/IConsultaCFDIService/Consulta',
-                        'Content-Type': 'text/xml;charset="utf-8"',
+                        'Content-Type': 'text/xml;charset=UTF-8',
                         'Accept': 'text/xml'
                     };
                     var url_service = 'https://consultaqr.facturaelectronica.sat.gob.mx/ConsultaCFDIService.svc'
                     log.audit({ title: 'datos de la peticion', details: { headers: headers, url: url_service, body: xmlSend } });
-                    https.post.promise({
+                    var response = https.post({
                         headers: {
+                            'Content-Type': 'text/xml;charset=UTF-8',
                             'SOAPAction': 'http://tempuri.org/IConsultaCFDIService/Consulta',
-                            'Content-Type': 'text/xml;charset="utf-8"',
                             'Accept': 'text/xml'
                         },
                         url: url_service,
                         body: xmlSend,
-                    }).then(function (res) {
-                        log.audit({ title: 'respuesta_sat', details: res });
-
-                    }).catch(function onRejected(reason){
-                        log.audit({title: 'reason', details: reason});
                     });
-                    // response.addHeader({name:'Accept', value: 'text/xml'});
-
-                    // log.audit({ title: 'response ', details: response });
+                    log.audit({ title: 'respuesta_sat', details: response });
 
                     var responseCode = response.code || 0;
                     var responseBody = response.body || '';
@@ -128,150 +140,41 @@ define(['N/runtime', 'N/log', 'N/ui/serverWidget', 'N/search', 'N/record', 'N/fo
                     log.audit({ title: 'responseCode', details: responseCode });
                     // log.audit({ title: 'responseBody', details: responseBody });
                     if (responseCode == 200) {
+                        //log.audit({ title: 'responseBody', details: responseBody });
                         var xmlDocument = xml.Parser.fromString({
                             text: responseBody
                         });
 
+                        //  log.audit({ title: 'xmlDocument', details: xmlDocument });
+
                         var anyType = xml.XPath.select({
                             node: xmlDocument,
-                            xpath: 'soap:Envelope//soap:Body//nlapi:ConsultaEstatusSatResponse//nlapi:ConsultaEstatusSatResult//nlapi:anyType'
+                            xpath: 's:Envelope//s:Body'
                         });
                         log.audit({ title: 'anyType[2].textContent', details: JSON.stringify(anyType) });
 
-                        var xmldoc = anyType[3].textContent;
+                        var xmldoc = anyType[0].textContent;
                         log.audit({ title: 'xmldoc', details: JSON.stringify(xmldoc) });
-                        if (parseInt(anyType[1].textContent, 10) == 0) {
-                            var xmlresultado = xml.Parser.fromString({
-                                text: xmldoc
-                            });
-                            var RespuestaSatUUID = xml.XPath.select({
-                                node: xmlresultado,
-                                xpath: 'nlapi:ResultadoServicioConsultaEstatusSat//nlapi:UUID'
-                            });
-                            log.audit({ title: 'RespuestaSatUUID', details: JSON.stringify(RespuestaSatUUID) });
-
-                            if (RespuestaSatUUID[0].textContent) {
-                                messageResponse.push({
-                                    type: 'success',
-                                    title: 'Información ',
-                                    message: 'UUID: ' + RespuestaSatUUID[0].textContent
-                                });
-                                messageResponseText = messageResponseText + 'UUID: ' + RespuestaSatUUID[0].textContent + '\n';
+                        log.audit({ title: 'trantype', details: JSON.stringify(trantype) });
+                        log.audit({ title: 'tranid', details: JSON.stringify(tranid) });
+                        var id = record.submitFields({
+                            type: trantype,
+                            id: tranid,
+                            values: {
+                                custbody_efx_fe_cfdistatus: xmldoc,
+                            },
+                            options: {
+                                enableSourcing: false,
+                                ignoreMandatoryFields: true
                             }
-
-                            var RespuestaSatCodigoEstatusSat = xml.XPath.select({
-                                node: xmlresultado,
-                                xpath: 'nlapi:ResultadoServicioConsultaEstatusSat//nlapi:RespuestaSat//nlapi:CodigoEstatusSat'
-                            });
-                            log.audit({ title: 'RespuestaSat', details: JSON.stringify(RespuestaSatCodigoEstatusSat) });
-
-                            if (RespuestaSatCodigoEstatusSat[0].textContent) {
-                                messageResponse.push({
-                                    type: 'success',
-                                    title: 'Información ',
-                                    message: 'Codigo de Estatus de Sat: ' + RespuestaSatCodigoEstatusSat[0].textContent
-                                });
-                                messageResponseText = messageResponseText + 'Codigo de Estatus de Sat: ' + RespuestaSatCodigoEstatusSat[0].textContent + '\n';
-                            }
-
-                            var RespuestaSatEsCancelable = xml.XPath.select({
-                                node: xmlresultado,
-                                xpath: 'nlapi:ResultadoServicioConsultaEstatusSat//nlapi:RespuestaSat//nlapi:EsCancelable'
-                            });
-                            log.audit({ title: 'RespuestaSat', details: JSON.stringify(RespuestaSatEsCancelable) });
-
-                            if (RespuestaSatEsCancelable[0].textContent) {
-                                messageResponse.push({
-                                    type: 'success',
-                                    title: 'Información ',
-                                    message: 'Es Cancelable: ' + RespuestaSatEsCancelable[0].textContent
-                                });
-                                messageResponseText = messageResponseText + 'Es Cancelable: ' + RespuestaSatEsCancelable[0].textContent + '\n';
-                            }
-
-                            var RespuestaSatEstadoCancelacion = xml.XPath.select({
-                                node: xmlresultado,
-                                xpath: 'nlapi:ResultadoServicioConsultaEstatusSat//nlapi:RespuestaSat//nlapi:EstadoCancelacion'
-                            });
-                            log.audit({ title: 'RespuestaSatEstadoCancelacion', details: JSON.stringify(RespuestaSatEstadoCancelacion) });
-
-                            if (RespuestaSatEstadoCancelacion[0].textContent) {
-                                messageResponse.push({
-                                    type: 'success',
-                                    title: 'Información ',
-                                    message: 'Estado de Cancelacion: ' + RespuestaSatEstadoCancelacion[0].textContent
-                                });
-                                messageResponseText = messageResponseText + 'Estado de Cancelacion: ' + RespuestaSatEstadoCancelacion[0].textContent + '\n';
-                            }
-
-                            var RespuestaSatEstadoComprobante = xml.XPath.select({
-                                node: xmlresultado,
-                                xpath: 'nlapi:ResultadoServicioConsultaEstatusSat//nlapi:RespuestaSat//nlapi:EstadoComprobante'
-                            });
-                            log.audit({ title: 'RespuestaSatEstadoComprobante', details: JSON.stringify(RespuestaSatEstadoComprobante) });
-
-                            if (RespuestaSatEstadoComprobante[0].textContent) {
-                                var estadoRespuestaSatEstadoComprobante = 'success'
-                                if (RespuestaSatEstadoComprobante[0].textContent != 'Vigente') {
-                                    estadoRespuestaSatEstadoComprobante = 'error'
-
-                                }
-                                messageResponse.push({
-                                    type: estadoRespuestaSatEstadoComprobante,
-                                    title: 'Información ',
-                                    message: 'Estado de Comprobante: ' + RespuestaSatEstadoComprobante[0].textContent
-                                });
-                                messageResponseText = messageResponseText + 'Estado de Comprobante: ' + RespuestaSatEstadoComprobante[0].textContent + '\n';
-                            }
-
-                            var RespuestaSatEstadoSat = xml.XPath.select({
-                                node: xmlresultado,
-                                xpath: 'nlapi:ResultadoServicioConsultaEstatusSat//nlapi:RespuestaSat//nlapi:EstadoSat'
-                            });
-                            log.audit({ title: 'RespuestaSatEstadoSat', details: JSON.stringify(RespuestaSatEstadoSat) });
-
-                            if (RespuestaSatEstadoSat[0].textContent) {
-                                var estadoRespuestaSatEstadoSat = 'success'
-                                if (RespuestaSatEstadoSat[0].textContent != 'Vigente') {
-                                    estadoRespuestaSatEstadoSat = 'error'
-
-                                }
-                                messageResponse.push({
-                                    type: estadoRespuestaSatEstadoSat,
-                                    title: 'Información ',
-                                    message: 'Estado Sat: ' + RespuestaSatEstadoSat[0].textContent
-                                });
-                                messageResponseText = messageResponseText + 'Estado Sat: ' + RespuestaSatEstadoSat[0].textContent + '\n';
-                            }
-
-                            var RespuestaSatTipoCancelacion = xml.XPath.select({
-                                node: xmlresultado,
-                                xpath: 'nlapi:ResultadoServicioConsultaEstatusSat//nlapi:RespuestaSat//nlapi:TipoCancelacion'
-                            });
-                            log.audit({ title: 'RespuestaSatTipoCancelacion', details: JSON.stringify(RespuestaSatTipoCancelacion) });
-
-                            if (RespuestaSatTipoCancelacion[0].textContent) {
-                                messageResponse.push({
-                                    type: 'success',
-                                    title: 'Información ',
-                                    message: 'Tipo de Cancelacion: ' + RespuestaSatTipoCancelacion[0].textContent
-                                });
-                                messageResponseText = messageResponseText + 'Tipo de Cancelacion: ' + RespuestaSatTipoCancelacion[0].textContent + '\n';
-                            }
-
-                        } else {
-                            messageResponse.push({
-                                type: 'error',
-                                title: 'Error ' + anyType[2].textContent,
-                                message: JSON.stringify(anyType[8].textContent)
-                            });
-                            messageResponseText = 'Error: ' + JSON.stringify(anyType[8].textContent);
-                        }
+                        });
+                        log.debug("updated id", id)
 
                     }
                 }
 
                 log.audit({ title: 'xmlSend', details: JSON.stringify(xmlSend) });
+
 
 
             } catch (estatusSatError) {
@@ -282,21 +185,6 @@ define(['N/runtime', 'N/log', 'N/ui/serverWidget', 'N/search', 'N/record', 'N/fo
                     title: 'Error ' + estatusSatError.message,
                     message: JSON.stringify(estatusSatError)
                 }];
-                // var rec = record.load({
-                //     id: tranid,
-                //     type: trantype
-                // });
-                //
-                // rec.setValue({
-                //     fieldId: 'custbody_efx_fe_cfdistatus',
-                //     value: mensajeErrorText,
-                //     ignoreFieldChange: true
-                // });
-                // rec.save({
-                //     // enableSourcing: true,
-                //     enableSourcing: false,
-                //     ignoreMandatoryFields: true
-                // });
 
                 record.submitFields({
                     type: trantype,
@@ -314,41 +202,6 @@ define(['N/runtime', 'N/log', 'N/ui/serverWidget', 'N/search', 'N/record', 'N/fo
             }
             log.audit({ title: 'messageResponse', details: JSON.stringify(messageResponse) });
 
-            try {
-                // var rec = record.load({
-                //     id: tranid,
-                //     type: trantype
-                // });
-                //
-                // rec.setValue({
-                //     fieldId: 'custbody_efx_fe_cfdistatus',
-                //     value: messageResponseText,
-                //     ignoreFieldChange: true
-                // });
-                // rec.save({
-                //     // enableSourcing: true,
-                //     enableSourcing: false,
-                //     ignoreMandatoryFields: true
-                // });
-
-                record.submitFields({
-                    type: trantype,
-                    id: tranid,
-                    values: {
-                        custbody_efx_fe_cfdistatus: messageResponseText,
-                    },
-                    options: {
-                        enableSourcing: false,
-                        ignoreMandatoryFields: true
-                    }
-                });
-
-
-            } catch (error_status_fields) {
-                log.audit({ title: 'error_status_fields', details: JSON.stringify(error_status_fields) });
-            }
-
-
         }
 
 
@@ -364,19 +217,19 @@ define(['N/runtime', 'N/log', 'N/ui/serverWidget', 'N/search', 'N/record', 'N/fo
             xmlReturn += '    </soapenv:Body>';
             xmlReturn += '</soapenv:Envelope>'; */
 
-            xmlReturn += '<soapenv: Envelope';
-            xmlReturn += '    xmlns: soapenv="http://schemas.xmlsoap.org/soap/envelope/"';
-            xmlReturn += '    xmlns: tem="http://tempuri.org/">';
-            xmlReturn += '    <soapenv: Header />';
-            xmlReturn += '    <soapenv: Body>';
-            xmlReturn += '        <tem: Consulta>';
-            xmlReturn += '            <tem: expresionImpresa>';
-            xmlReturn += '                <![CDATA[?re=PPE860521690&rr=TSO991022PB6&tt=15523.70&id=7e3db60a-c652-4978-9855-fc4ee0d11175&fe=jbh4nA==]]>';
-            // xmlReturn += '                <![CDATA[?' + 're=' + rfc_emisor + '&rr=' + rfc_receptor + '&tt=' + total_comprobante + '&id=' + uuid_comprobante + '&fe=' + sello_digital_emisor + ']]>';
-            xmlReturn += '            </tem: expresionImpresa>';
-            xmlReturn += '        </tem: Consulta>';
-            xmlReturn += '    </soapenv: Body>';
-            xmlReturn += '</soapenv: Envelope>';
+            xmlReturn += '<soapenv:Envelope';
+            xmlReturn += ' xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"';
+            xmlReturn += ' xmlns:tem="http://tempuri.org/">';
+            xmlReturn += '<soapenv:Header/>';
+            xmlReturn += '<soapenv:Body>';
+            xmlReturn += ' <tem:Consulta>';
+            xmlReturn += '<tem:expresionImpresa>';
+            //xmlReturn += '               <![CDATA[?re=CAU180123GEA&rr=GACM650215GH9&tt=398.39&id=f5ee9a7f-a60d-483c-a2a0-9ffae1edb5ea&fe=uDu8/g==]]>';
+            xmlReturn += '                <![CDATA[?' + 're=' + rfc_emisor + '&rr=' + rfc_receptor + '&tt=' + total_comprobante + '&id=' + uuid_comprobante + '&fe=' + sello_digital_emisor + ']]>';
+            xmlReturn += '            </tem:expresionImpresa>';
+            xmlReturn += '        </tem:Consulta>';
+            xmlReturn += '    </soapenv:Body>';
+            xmlReturn += '</soapenv:Envelope>';
 
             log.audit({ title: 'xmlReturn xmlConsultaEstatusSat', details: xmlReturn });
             return xmlReturn;

@@ -280,6 +280,9 @@
                         <#if transaction.custbody_efx_fe_tipo_cambio?number lt 0>
                             <#assign montoTotalPago = transaction.applied?number>
                             MontoTotalPagos="${(monto_total_pago/tipo_cambio_pago)?string["0.00"]}"
+                        <#elseif transaction.currencysymbol=="USD" && transaction.custbody_efx_fe_moneda.symbol == "MXN">
+                            <#assign montoTotalPago = transaction.applied?number>
+                            MontoTotalPagos="${(monto_total_pago/transaction.custbody_efx_fe_tipo_cambio?number)?string["0.00"]}"
                         <#else>
                             MontoTotalPagos="${(monto_total_pago*tipo_cambio_pago)?string["0.00"]}"
                         </#if>
@@ -1023,7 +1026,7 @@
                                             <#elseif transaction.custbody_efx_fe_moneda?has_content == false && transaction.currencysymbol == "USD">
                                                 <pago20:TrasladoP BaseP="${basePmonto?string['0.00']}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string['0.000000']}" ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string['0.00'])?number*tasaCuota?number)/tipocambioCustom)?string['0.00']}"/>
                                             <#else>
-                                                <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${((ImportePIVA16?number)/tipocambioCustom)?string['0.00']}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
+                                                <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${ImportePIVA16}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
                                             </#if>
                                         </#if>
                                     <#else>

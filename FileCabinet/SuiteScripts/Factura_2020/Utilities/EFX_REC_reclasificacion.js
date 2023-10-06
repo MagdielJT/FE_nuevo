@@ -398,42 +398,48 @@ function getAppliesData(config, apply, idChildTransaction, tax_code_expense, typ
     nlapiLogExecution('DEBUG', 'existeSuiteTax', existeSuiteTax);
     if (idChildTransaction.length > 0) {
         try {
-
-
-            //Se generan filtros para obtener informacion de las transacciones aplicadas
-            var filters = new Array();
-            filters.push(new nlobjSearchFilter('internalid', null, 'anyof', idChildTransaction));
-            filters.push(new nlobjSearchFilter('taxline', null, 'is', 'T'));
             if (existeSuiteTax) {
-                filters.push(new nlobjSearchFilter('item', null, 'anyof', config.array));
+                var search = nlapiSearchRecord('transaction', null,
+                    [
+                        ['internalid', 'anyof', idChildTransaction],
+                        "AND",
+                        ['taxline', 'is', 'T'],
+                        "AND",
+                        ['item', 'anyof', config.array]
+                    ],
+                    [
+                        nlobjSearchColumn('transactionlinetype'),
+                        nlobjSearchColumn('taxline'),
+                        nlobjSearchColumn('item'),
+                        nlobjSearchColumn('fxamount'),
+                        nlobjSearchColumn('exchangerate'),
+                        nlobjSearchColumn('type'),
+                    ]
+
+                );
+
             } else {
-                filters.push(new nlobjSearchFilter('taxitem', null, 'anyof', config.array));
+                var search = nlapiSearchRecord('transaction', null,
+                    [
+                        ['internalid', 'anyof', idChildTransaction],
+                        "AND",
+                        ['taxline', 'is', 'T'],
+                        "AND",
+                        ['taxitem', 'anyof', config.array]
+                    ],
+                    [
+                        nlobjSearchColumn('transactionlinetype'),
+                        nlobjSearchColumn('taxline'),
+                        nlobjSearchColumn('taxcode'),
+                        nlobjSearchColumn('netamountnotax'),
+                        nlobjSearchColumn('fxamount'),
+                        nlobjSearchColumn('exchangerate'),
+                        nlobjSearchColumn('type'),
+                    ]
+                );
             }
 
-            //Se generan las columnas de datos a usar de las transacciones
-            var columns = new Array();
-            if (existeSuiteTax) {
-                columns.push(new nlobjSearchColumn('transactionlinetype'));
-                columns.push(new nlobjSearchColumn('taxline'));
-                columns.push(new nlobjSearchColumn('item'));
-                columns.push(new nlobjSearchColumn('fxamount'));
-                columns.push(new nlobjSearchColumn('exchangerate'));
-                columns.push(new nlobjSearchColumn('type'));
-            } else {
-                columns.push(new nlobjSearchColumn('transactionlinetype'));
-                columns.push(new nlobjSearchColumn('taxline'));
-                columns.push(new nlobjSearchColumn('taxcode'));
-                columns.push(new nlobjSearchColumn('netamountnotax'));
-                columns.push(new nlobjSearchColumn('fxamount'));
-                columns.push(new nlobjSearchColumn('exchangerate'));
-                columns.push(new nlobjSearchColumn('type'));
-            }
-
-            //Se genera una busqueda de las transacciones aplicadas
-            nlapiLogExecution('AUDIT', 'filters - getAppliesData: ', filters);
-            var search = nlapiSearchRecord('transaction', null, filters, columns);
-
-
+            nlapiLogExecution('AUDIT', '~ 451 search.length: ', search.length);
             for (var x = 0; x < search.length; x++) {
                 //Se guardan los datos de apply en el objeto respuesta de acuerdo al id de transaccion
                 if (!respuesta[search[x].id]) {

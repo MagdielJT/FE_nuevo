@@ -779,7 +779,17 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
 
         function agregaPlantillas(context, record_now, recType) {
             try {
+                /* var record_now_file = file.create({
+                    name: 'record_now.txt',
+                    fileType: file.Type.PLAINTEXT,
+                    contents: JSON.stringify(record_now),
+                    folder: 11366
+                });
+                var idArchivo = record_now_file.save();
+
+                log.audit({title: 'record_now', details: idArchivo});
                 var idrecdyn = record_now.id;
+                log.audit({title: 'idrecdyn', details: idrecdyn});
                 var recobjdyn = record.load({
                     type: recType,
                     id: idrecdyn,
@@ -787,16 +797,7 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                 });
                 var plantillaOptions = recobjdyn.getField({ fieldId: 'custbody_psg_ei_template' });
                 var metodoOptions = recobjdyn.getField({ fieldId: 'custbody_psg_ei_sending_method' });
-
-                log.audit({ title: 'seloptions', details: plantillaOptions.getSelectOptions().length });
-                var datosPlantilla = false;
-                var datosMetodo = false;
-                if (plantillaOptions.getSelectOptions().length > 0) {
-                    datosPlantilla = true;
-                }
-                if (metodoOptions.getSelectOptions().length > 0) {
-                    datosMetodo = true;
-                }
+                log.audit({ title: 'seloptions', details: plantillaOptions.getSelectOptions().length }); */
                 var cfdiversion = runtime.getCurrentScript().getParameter({ name: 'custscript_efx_fe_version' });
                 if (context.type == context.UserEventType.CREATE || context.type == context.UserEventType.EDIT) {
 
@@ -862,263 +863,310 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
 
                             if (cfdiversion == '' || !cfdiversion) {
                                 if (recType == record.Type.INVOICE && invoice40 && cfdiversionCustomer == 2) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
                                         log.audit({ title: 'idPlantilla 906', details: idPlantilla });
-                                    } else {
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 } else if (recType == record.Type.INVOICE && invoice30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({ title: 'idPlantilla 921', details: idPlantilla });
-                                    } else {
+                                        log.audit({ title: 'idPlantilla 890', details: idPlantilla });
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({title: 'idPlantilla 893', details: idPlantilla});
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 }
 
                                 if (recType == record.Type.CASH_SALE && cashsale40 && cfdiversionCustomer == 2) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({ title: 'idPlantilla 938', details: idPlantilla });
-                                    } else {
+                                        log.audit({ title: 'idPlantilla 910', details: idPlantilla });
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 } else if (recType == record.Type.CASH_SALE && cashsale30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({ title: 'idPlantilla 953', details: idPlantilla });
-                                    } else {
+                                        log.audit({ title: 'idPlantilla 928', details: idPlantilla });
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 }
 
                                 if (recType == record.Type.CREDIT_MEMO && nc40 && cfdiversionCustomer == 2) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({ title: 'idPlantilla 970', details: idPlantilla });
-                                    } else {
+                                        log.audit({ title: 'idPlantilla 948', details: idPlantilla });
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 } else if (recType == record.Type.CREDIT_MEMO && nc30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({ title: 'idPlantilla 985', details: idPlantilla });
-                                    } else {
+                                        log.audit({ title: 'idPlantilla 966', details: idPlantilla });
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 }
 
                                 if (recType == record.Type.CUSTOMER_PAYMENT && payment40 && cfdiversionCustomer == 2) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({ title: 'idPlantilla 1002', details: idPlantilla });
-                                    } else {
+                                        log.audit({ title: 'idPlantilla 986', details: idPlantilla });
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 } else if (recType == record.Type.CUSTOMER_PAYMENT && payment30 && (cfdiversionCustomer == 1 || cfdiversionCustomer == '')) {
-                                    if (datosPlantilla) {
+                                    try {
                                         record_now.setValue({
                                             fieldId: 'custbody_psg_ei_template',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
-                                        log.audit({ title: 'idPlantilla 1017', details: idPlantilla });
-                                    } else {
+                                        log.audit({ title: 'idPlantilla 1004', details: idPlantilla });
+                                        log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                    } catch (error) {
                                         record_now.setValue({
                                             fieldId: 'custbody_efx_fe_plantilla_docel',
                                             value: idPlantilla,
                                             ignoreFieldChange: true
                                         });
+                                        log.error({title: 'ERROR', details: error});
+                                        log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                     }
                                 }
                             } else {
                                 if (cfdiversion == 1) {
                                     if (recType == record.Type.INVOICE && invoice30) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1035', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1025', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                     if (recType == record.Type.CASH_SALE && cashsale30) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1051', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1044', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                     if (recType == record.Type.CREDIT_MEMO && nc30) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1067', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1063', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                     if (recType == record.Type.CUSTOMER_PAYMENT && payment30) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1083', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1082', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                 }
                                 if (cfdiversion == 2) {
                                     if (recType == record.Type.INVOICE && invoice40) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1101', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1103', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                     if (recType == record.Type.CASH_SALE && cashsale40) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1117', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1122', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                     if (recType == record.Type.CREDIT_MEMO && nc40) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1133', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1141', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                     if (recType == record.Type.CUSTOMER_PAYMENT && payment40) {
-                                        if (datosPlantilla) {
+                                        try {
                                             record_now.setValue({
                                                 fieldId: 'custbody_psg_ei_template',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
-                                            log.audit({ title: 'idPlantilla 1149', details: idPlantilla });
-                                        } else {
+                                            log.audit({ title: 'idPlantilla 1160', details: idPlantilla });
+                                            log.audit({title: 'LOG', details: 'Si pudo poner plantilla en el campo nativo'});
+                                        } catch (error) {
                                             record_now.setValue({
                                                 fieldId: 'custbody_efx_fe_plantilla_docel',
                                                 value: idPlantilla,
                                                 ignoreFieldChange: true
                                             });
+                                            log.error({title: 'ERROR', details: error});
+                                            log.audit({title: 'LOG_CATCH', details: 'NO pudo poner plantilla en el campo nativo'});
                                         }
                                     }
                                 }
@@ -1144,18 +1192,21 @@ define(['N/record', 'N/file', 'N/runtime', 'N/format', 'N/xml', 'N/search', 'N/c
                             var metodo = result.getValue({ name: 'internalid' });
 
                             if (metodo) {
-                                if (datosMetodo) {
+                                try {
                                     record_now.setValue({
                                         fieldId: 'custbody_psg_ei_sending_method',
                                         value: metodo,
                                         ignoreFieldChange: true
                                     });
-                                } else {
+                                    log.audit({title: 'LOG', details: 'SI se pudo poner el dato en el campo nativo'});
+                                } catch (error) {
                                     record_now.setValue({
                                         fieldId: 'custbody_efx_fe_metodo_docel',
                                         value: metodo,
                                         ignoreFieldChange: true
                                     });
+                                    log.error({title: 'ERROR', details: error})
+                                    log.audit({title: 'LOG', details: 'NO se pudo poner el dato en el campo nativo'});
                                 }
                             }
 

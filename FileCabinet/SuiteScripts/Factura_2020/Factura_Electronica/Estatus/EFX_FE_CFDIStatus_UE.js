@@ -29,7 +29,13 @@ define(['N/record'],
                 var uuid = obj_record.getValue({fieldId: 'custbody_mx_cfdi_uuid'}) || '';
                 var subsi = obj_record.getValue({fieldId: 'subsidiary'}) || '';
                 var rfc_receptor = obj_record.getValue({fieldId: 'custbody_mx_customer_rfc'}) || '';
-                var total_comprobante = obj_record.getValue({fieldId: 'total'}) || '';
+                var obj_data = obj_record.getValue({fieldId: 'custbody_fb_tp_xml_data'}||'');
+                log.audit({title: 'obj_data', details: obj_data});
+                /* // var datos_xml = JSON.parse(obj_data);
+                var total_comprobante = obj_data.total_xml;
+                log.audit({title: 'total: ', details: total_comprobante});
+                var sello_digital_emisor = obj_data.sello;
+                log.audit({title: 'datos a mandar', details: {total: total_comprobante, sello: sello_digital_emisor}}); */
                 log.audit({title: 'uuid', details: JSON.stringify(uuid)});
 
 
@@ -40,7 +46,8 @@ define(['N/record'],
                         uuid: uuid,
                         subsi: subsi,
                         rfc_receptor: rfc_receptor,
-                        total_comprobante: total_comprobante
+                        /* total_comprobante: total_comprobante,
+                        sello_digital_emisor:sello_digital_emisor */
                     };
                     form.addButton({
                         id: "custpage_btn_consulta_estatus_sat",
