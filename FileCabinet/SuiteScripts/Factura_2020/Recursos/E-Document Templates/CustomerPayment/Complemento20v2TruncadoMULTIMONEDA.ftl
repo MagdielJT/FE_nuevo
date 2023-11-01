@@ -200,6 +200,7 @@
                             <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
                                 <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
                             <#else>
+                                <#--  <#assign totaltrasladosiva16div = (totaltrasladosiva16div+((transaction.apply)))>  -->
                                 <#assign totaltrasladosiva16div = (totaltrasladosiva16div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.16)?string["0.00"]?number)>
                             </#if>
                             <#assign totaltrasladosiva16base = totaltrasladosiva16base+(ivaValue?number*equivalenciaImpuesto)>
@@ -208,6 +209,7 @@
                             <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">
                                 <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
                             <#else>
+                                <#--  <#assign totaltrasladosiva8div = (totaltrasladosiva16div+((transaction.applied)/1.08))>  -->
                                 <#assign totaltrasladosiva8div = (totaltrasladosiva8div+(((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string["0.00"]?number)/0.08)?string["0.00"]?number)>
                             </#if>
                             <#assign totaltrasladosiva8base = totaltrasladosiva8base+(ivaValue?number*equivalenciaImpuesto)>
@@ -299,11 +301,11 @@
                 </#if>
             <#if esTrasladoIva==true>
                 <#if totaltrasladosiva16base gt 0>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"> <#assign base_multiomneda = (totaltrasladosiva16div / tipocambioCustom)?string["0.00"]> TotalTrasladosBaseIVA16="${(base_multiomneda?number * tipocambioCustom)?string["0.00"]}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosBaseIVA16="${totaltrasladosiva16div?string["0.00"]}"</#if>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"><#assign ImportePIVA16 = (totaltrasladosiva16)> <#assign importe_multimoneda = (totaltrasladosiva16 / tipocambioCustom)?string["0.00"]> TotalTrasladosImpuestoIVA16="${(importe_multimoneda?number * tipocambioCustom)?string["0.00"]}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode=="USD">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#else>TotalTrasladosImpuestoIVA16="${totaltrasladosiva16?string["0.00"]}"<#assign ImportePIVA16 = totaltrasladosiva16?string["0.00"]></#if>
+                    <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"> <#assign base_multiomneda = (totaltrasladosiva16div / tipocambioCustom)?string["0.00"]> TotalTrasladosBaseIVA16="${(base_multiomneda?number * tipocambioCustom)?string["0.00"]}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="USD">TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA16="${(totaltrasladosiva16div*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosBaseIVA16="${(monto_total_pago/1.16)?string("##0.00;; roundingMode=down")}"</#if>
+                    <#if transaction.custbody_efx_fe_moneda.symbol == "USD" && transaction.currencysymbol == "MXN"><#assign ImportePIVA16 = (totaltrasladosiva16)> <#assign importe_multimoneda = (totaltrasladosiva16 / tipocambioCustom)?string["0.00"]> TotalTrasladosImpuestoIVA16="${(importe_multimoneda?number * tipocambioCustom)?string["0.00"]}"<#elseif transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD"><#assign ImportePIVA16 = (totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#elseif currencyCode=="USD">TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA16="${(totaltrasladosiva16*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA16 = (totaltrasladosiva16*transaction.exchangerate)?string["0.00"]><#else>TotalTrasladosImpuestoIVA16="${totaltrasladosiva16?string["0.00"]}"<#assign ImportePIVA16 = totaltrasladosiva16?string["0.00"]></#if>
                 </#if>
                 <#if totaltrasladosiva8base gt 0>
-                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="USD">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")}"<#else>TotalTrasladosBaseIVA8="${totaltrasladosiva8div?string["0.00"]}"</#if>
+                    <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="EUR">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string["0.00"]}"<#elseif currencyCode=="USD">TotalTrasladosBaseIVA8="${(totaltrasladosiva8div*transaction.exchangerate)?string("##0.00;; roundingMode=halfUp")}"<#else>TotalTrasladosBaseIVA8="${(monto_total_pago/1.08)?string("##0.00;; roundingMode=down")}"</#if>
                     <#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8/tipocambioCustom)?string("##0.00;; roundingMode=down")}"<#assign ImportePIVA8 = (totaltrasladosiva8/tipocambioCustom)?string("##0.00;; roundingMode=down")><#elseif currencyCode=="EUR">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA8 = (totaltrasladosiva8*transaction.exchangerate)?string["0.00"]><#elseif currencyCode==transaction.custbody_efx_fe_moneda.symbol>TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#assign ImportePIVA8 = (totaltrasladosiva8*transaction.exchangerate)?string["0.00"]><#elseif currencyCode=="USD">TotalTrasladosImpuestoIVA8="${(totaltrasladosiva8*transaction.exchangerate)?string["0.00"]}"<#else>TotalTrasladosImpuestoIVA8="${totaltrasladosiva8?string["0.00"]}"<#assign ImportePIVA8 = totaltrasladosiva8?string["0.00"]></#if>
                 </#if>
                 <#if totaltrasladosiva0base gt 0>
@@ -405,6 +407,7 @@
                 <#assign "ImpuestosPRetencion_base" = {}>
                 <#assign "ImpuestosPRetencion_importe" = {}>
                 <#assign tieneobjetoimpDR = 0>
+                <#assign suma_baseDR = 0>
 
                     <#list custom.appliedTxns as appliedTxn>
                         <#assign "txnitem" = transaction.apply[appliedTxn.line?number]>
@@ -451,18 +454,18 @@
                                     </#if>
                                 </#if>
                             <#assign CalculoParcialidad = appliedTxn.parcialidad>
-                            <#else>
-                                <#assign jsonParcialidadField = transaction.custbody_efx_fe_parcialidad>
-                                <#if jsonParcialidadField?has_content>
-                                    <#assign jsonParcialidad = jsonParcialidadField?eval>
-                                    <#list jsonParcialidad as jsonParcialidad_line>
-                                        <#if foliorelated==jsonParcialidad_line.facturaRef>
-                                            <#assign ImpSaldoAnt = jsonParcialidad_line.imp>
-                                        </#if>
-                                        <#assign CalculoParcialidad = jsonParcialidad_line.parcialidad>
-                                    </#list>
+                        <#else>
+                            <#assign jsonParcialidadField = transaction.custbody_efx_fe_parcialidad>
+                            <#if jsonParcialidadField?has_content>
+                                <#assign jsonParcialidad = jsonParcialidadField?eval>
+                                <#list jsonParcialidad as jsonParcialidad_line>
+                                    <#if foliorelated==jsonParcialidad_line.facturaRef>
+                                        <#assign ImpSaldoAnt = jsonParcialidad_line.imp>
+                                    </#if>
+                                    <#assign CalculoParcialidad = jsonParcialidad_line.parcialidad>
+                                </#list>
 
-                                </#if>
+                            </#if>
 
                         </#if>
 
@@ -706,168 +709,167 @@
                                     <#assign impuestosPago = jsonImpuestoVar?eval>
                                     <#if objetoimpDR!="01">
                                     <pago20:ImpuestosDR>
+                                        <#if impuestosPago.bases_retencion?has_content>
+                                            <pago20:RetencionesDR>
+                                                <#list impuestosPago.bases_retencion as retRate, retValue>
+                                                    <#if ImpuestosPRetencion_base?has_content>
+                                                        <#assign "conteos" = 0>
+                                                        <#list ImpuestosPRetencion_base?keys as key>
 
-                                    <#if impuestosPago.bases_retencion?has_content>
-                                        <pago20:RetencionesDR>
-                                            <#list impuestosPago.bases_retencion as retRate, retValue>
-                                                <#if ImpuestosPRetencion_base?has_content>
-                                                    <#assign "conteos" = 0>
-                                                    <#list ImpuestosPRetencion_base?keys as key>
+                                                            <#if key == retRate>
+                                                                <#assign "conteos" = 1>
 
-                                                        <#if key == retRate>
-                                                            <#assign "conteos" = 1>
+                                                                <#assign "total_rate" = ImpuestosPRetencion_base[key]?number + ((retValue?number*equivalenciaImpuesto)?string['0.00'])?number>
+                                                                <#assign "ImpuestosPRetencion_base"= ImpuestosPRetencion_base + {retRate : total_rate?number}>
 
-                                                            <#assign "total_rate" = ImpuestosPRetencion_base[key]?number + ((retValue?number*equivalenciaImpuesto)?string['0.00'])?number>
-                                                            <#assign "ImpuestosPRetencion_base"= ImpuestosPRetencion_base + {retRate : total_rate?number}>
-
+                                                            </#if>
+                                                        </#list>
+                                                        <#if conteos == 0>
+                                                            <#assign "ImpuestosPRetencion_base"= ImpuestosPRetencion_base + {retRate : retValue?number*equivalenciaImpuesto}>
                                                         </#if>
-                                                    </#list>
-                                                    <#if conteos == 0>
-                                                        <#assign "ImpuestosPRetencion_base"= ImpuestosPRetencion_base + {retRate : retValue?number*equivalenciaImpuesto}>
+
+                                                    <#else>
+                                                        <#assign ImpuestosPRetencion_base = ImpuestosPRetencion_base + {retRate : retValue?number*equivalenciaImpuesto}>
                                                     </#if>
+                                                    <#if ImpuestosPRetencion_importe?has_content>
+                                                        <#assign "conteos" = 0>
+                                                        <#list ImpuestosPRetencion_importe?keys as key>
 
-                                                <#else>
-                                                    <#assign ImpuestosPRetencion_base = ImpuestosPRetencion_base + {retRate : retValue?number*equivalenciaImpuesto}>
-                                                </#if>
-                                                <#if ImpuestosPRetencion_importe?has_content>
-                                                    <#assign "conteos" = 0>
-                                                    <#list ImpuestosPRetencion_importe?keys as key>
+                                                            <#if key == retRate>
+                                                                <#assign "conteos" = 1>
 
-                                                        <#if key == retRate>
-                                                            <#assign "conteos" = 1>
+                                                                <#assign "total_rate" = ImpuestosPRetencion_importe[key]?number + ((impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto)?string['0.00'])?number>
+                                                                <#assign "ImpuestosPRetencion_importe"= ImpuestosPRetencion_importe + {retRate : total_rate?number}>
 
-                                                            <#assign "total_rate" = ImpuestosPRetencion_importe[key]?number + ((impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto)?string['0.00'])?number>
-                                                            <#assign "ImpuestosPRetencion_importe"= ImpuestosPRetencion_importe + {retRate : total_rate?number}>
-
+                                                            </#if>
+                                                        </#list>
+                                                        <#if conteos == 0>
+                                                            <#assign "ImpuestosPRetencion_importe"= ImpuestosPRetencion_importe + {retRate : impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto}>
                                                         </#if>
-                                                    </#list>
-                                                    <#if conteos == 0>
-                                                        <#assign "ImpuestosPRetencion_importe"= ImpuestosPRetencion_importe + {retRate : impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto}>
+
+                                                    <#else>
+                                                        <#assign ImpuestosPRetencion_importe = ImpuestosPRetencion_importe + {retRate : impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto}>
                                                     </#if>
+                                                    <#if ImpuestosPRetencion_tasa?has_content>
+                                                        <#assign "conteos" = 0>
+                                                        <#list ImpuestosPRetencion_tasa?keys as key>
 
-                                                <#else>
-                                                    <#assign ImpuestosPRetencion_importe = ImpuestosPRetencion_importe + {retRate : impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto}>
-                                                </#if>
-                                                <#if ImpuestosPRetencion_tasa?has_content>
-                                                    <#assign "conteos" = 0>
-                                                    <#list ImpuestosPRetencion_tasa?keys as key>
+                                                            <#if key == retRate>
+                                                                <#assign "conteos" = 1>
 
-                                                        <#if key == retRate>
-                                                            <#assign "conteos" = 1>
+                                                                <#assign "ImpuestosPTraslados_tasa"= ImpuestosPRetencion_tasa + {retRate : "002"}>
 
+                                                            </#if>
+                                                        </#list>
+                                                        <#if conteos == 0>
                                                             <#assign "ImpuestosPTraslados_tasa"= ImpuestosPRetencion_tasa + {retRate : "002"}>
-
                                                         </#if>
-                                                    </#list>
-                                                    <#if conteos == 0>
-                                                        <#assign "ImpuestosPTraslados_tasa"= ImpuestosPRetencion_tasa + {retRate : "002"}>
+
+                                                    <#else>
+                                                        <#assign ImpuestosPRetencion_tasa = ImpuestosPRetencion_tasa + {retRate : "002"}>
                                                     </#if>
+                                                    <#assign rateDR = retRate?number/100>
+                                                    <#assign montoimpuestosPago = ((impuestosPago.rates_retencion_data[retRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
+                                                    <#assign rateimpuestosPago = (retRate?number/100)?string["0.00"]>
 
-                                                <#else>
-                                                    <#assign ImpuestosPRetencion_tasa = ImpuestosPRetencion_tasa + {retRate : "002"}>
-                                                </#if>
-                                                <#assign rateDR = retRate?number/100>
-                                                <#assign montoimpuestosPago = ((impuestosPago.rates_retencion_data[retRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
-                                                <#assign rateimpuestosPago = (retRate?number/100)?string["0.00"]>
+                                                    <pago20:RetencionDR BaseDR="${((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']}" ImpuestoDR="002" TipoFactorDR="Tasa" TasaOCuotaDR="${rateDR?string["0.000000"]}" ImporteDR="${(impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto)?string["0.00"]}"/>
+                                                </#list>
+                                            </pago20:RetencionesDR>
+                                        </#if>
 
-                                                <pago20:RetencionDR BaseDR="${((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']}" ImpuestoDR="002" TipoFactorDR="Tasa" TasaOCuotaDR="${rateDR?string["0.000000"]}" ImporteDR="${(impuestosPago.rates_retencion_data[retRate]?number*equivalenciaImpuesto)?string["0.00"]}"/>
-                                            </#list>
-                                        </pago20:RetencionesDR>
-                                    </#if>
+                                        <#if impuestosPago.bases_iva?has_content || impuestosPago.bases_ieps?has_content>
+                                            <pago20:TrasladosDR>
+                                                <#list impuestosPago.bases_iva as ivaRate, ivaValue>
+                                                    <#assign tasaCuota = ivaRate?number / 100>
+                                                    <#if ImpuestosPTraslados_base?has_content>
+                                                        <#assign "conteos" = 0>
+                                                        <#list ImpuestosPTraslados_base?keys as key>
 
-                                    <#if impuestosPago.bases_iva?has_content || impuestosPago.bases_ieps?has_content>
-                                        <pago20:TrasladosDR>
-                                            <#list impuestosPago.bases_iva as ivaRate, ivaValue>
-                                            <#assign tasaCuota = ivaRate?number / 100>
-                                                <#if ImpuestosPTraslados_base?has_content>
-                                                    <#assign "conteos" = 0>
-                                                    <#list ImpuestosPTraslados_base?keys as key>
+                                                            <#if key == ivaRate>
+                                                                <#assign "conteos" = 1>
 
-                                                        <#if key == ivaRate>
-                                                            <#assign "conteos" = 1>
+                                                                <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((ivaValue?number * equivalenciaImpuesto)?string['0.00'])?number>
+                                                                <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : total_rate?number}>
 
-                                                            <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((ivaValue?number * equivalenciaImpuesto)?string['0.00'])?number>
-                                                            <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : total_rate?number}>
-
+                                                            </#if>
+                                                        </#list>
+                                                        <#if conteos == 0>
+                                                            <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : ((ivaValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
                                                         </#if>
-                                                    </#list>
-                                                    <#if conteos == 0>
-                                                        <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {ivaRate : ((ivaValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
-                                                    </#if>
 
-                                                <#else>
-                                                    <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {ivaRate : ((ivaValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
-                                                </#if>
-                                                <#if ImpuestosPTraslados_importe?has_content>
-                                                    <#assign "conteos" = 0>
-                                                    <#list ImpuestosPTraslados_importe?keys as key>
-                                                        <#if key == ivaRate>
-                                                            <#assign "conteos" = 1>
+                                                    <#else>
+                                                        <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {ivaRate : ((ivaValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
+                                                    </#if>
+                                                    <#if ImpuestosPTraslados_importe?has_content>
+                                                        <#assign "conteos" = 0>
+                                                        <#list ImpuestosPTraslados_importe?keys as key>
+                                                            <#if key == ivaRate>
+                                                                <#assign "conteos" = 1>
+                                                                <#if ivaRate?number gt 0 && impuestosPago.rates_iva_data[ivaRate]?number gt 0>
+                                                                    <#assign "total_rate" = ImpuestosPTraslados_importe[key]?number + (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number>
+                                                                <#else>
+                                                                    <#assign "total_rate" = ImpuestosPTraslados_importe[key]?number + (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number)?string["0.00"]?number>
+                                                                </#if>
+
+                                                                <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {ivaRate : total_rate?number}>
+                                                            </#if>
+                                                        </#list>
+                                                        <#if conteos == 0>
                                                             <#if ivaRate?number gt 0 && impuestosPago.rates_iva_data[ivaRate]?number gt 0>
-                                                                <#assign "total_rate" = ImpuestosPTraslados_importe[key]?number + (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number>
+                                                                <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
                                                             <#else>
-                                                                <#assign "total_rate" = ImpuestosPTraslados_importe[key]?number + (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number)?string["0.00"]?number>
+                                                                <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number)?string["0.00"]?number}>
                                                             </#if>
 
-                                                            <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {ivaRate : total_rate?number}>
-                                                        </#if>
-                                                    </#list>
-                                                    <#if conteos == 0>
-                                                        <#if ivaRate?number gt 0 && impuestosPago.rates_iva_data[ivaRate]?number gt 0>
-                                                            <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
-                                                        <#else>
-                                                            <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number)?string["0.00"]?number}>
                                                         </#if>
 
-                                                    </#if>
-
-                                                <#else>
-                                                    <#if ivaRate?number gt 0 && impuestosPago.rates_iva_data[ivaRate]?number gt 0>
-                                                        <#assign ImpuestosPTraslados_importe = ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
                                                     <#else>
-                                                        <#assign ImpuestosPTraslados_importe = ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number)?string["0.00"]?number}>
+                                                        <#if ivaRate?number gt 0 && impuestosPago.rates_iva_data[ivaRate]?number gt 0>
+                                                            <#assign ImpuestosPTraslados_importe = ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
+                                                        <#else>
+                                                            <#assign ImpuestosPTraslados_importe = ImpuestosPTraslados_importe + {ivaRate : (((impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00'])?number)?string["0.00"]?number}>
+                                                        </#if>
                                                     </#if>
-                                                </#if>
-                                                <#if ImpuestosPTraslados_tasa?has_content>
-                                                    <#assign "conteos" = 0>
-                                                    <#list ImpuestosPTraslados_tasa?keys as key>
+                                                    <#if ImpuestosPTraslados_tasa?has_content>
+                                                        <#assign "conteos" = 0>
+                                                        <#list ImpuestosPTraslados_tasa?keys as key>
 
-                                                        <#if key == ivaRate>
-                                                            <#assign "conteos" = 1>
+                                                            <#if key == ivaRate>
+                                                                <#assign "conteos" = 1>
 
+                                                                <#assign "ImpuestosPTraslados_tasa"= ImpuestosPTraslados_tasa + {ivaRate : "002"}>
+
+                                                            </#if>
+                                                        </#list>
+                                                        <#if conteos == 0>
                                                             <#assign "ImpuestosPTraslados_tasa"= ImpuestosPTraslados_tasa + {ivaRate : "002"}>
-
                                                         </#if>
-                                                    </#list>
-                                                    <#if conteos == 0>
-                                                        <#assign "ImpuestosPTraslados_tasa"= ImpuestosPTraslados_tasa + {ivaRate : "002"}>
+
+                                                    <#else>
+                                                        <#assign ImpuestosPTraslados_tasa = ImpuestosPTraslados_tasa + {ivaRate : "002"}>
                                                     </#if>
+                                                    <#assign rateDR = ivaRate?number/100>
+                                                    <#assign montoimpuestosPago = ((impuestosPago.rates_iva_data[ivaRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
+                                                    <#assign rateimpuestosPago = (ivaRate?number/100)?string["0.000000"]>
 
-                                                <#else>
-                                                    <#assign ImpuestosPTraslados_tasa = ImpuestosPTraslados_tasa + {ivaRate : "002"}>
-                                                </#if>
-                                                <#assign rateDR = ivaRate?number/100>
-                                                <#assign montoimpuestosPago = ((impuestosPago.rates_iva_data[ivaRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
-                                                <#assign rateimpuestosPago = (ivaRate?number/100)?string["0.000000"]>
-
-                                                <#if ImpuestosPTraslados_baseDR?has_content>
-                                                    <#list ImpuestosPTraslados_baseDR?keys as keydr>
-                                                        <#if keydr == ivaRate>
-                                                            <#if montoimpuestosPago gt 0>
-                                                            <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number>
-                                                        <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : total_ratebase?number}>
-                                                        <#else>
-                                                        <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((ivaValue?number*equivalenciaImpuesto))?string['0.00']?number>
-                                                        <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : total_ratebase?number}>
-                                                        </#if>
-                                                        <#else>
-                                                            <#if montoimpuestosPago gt 0>
-                                                        <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
-                                                        <#else>
-                                                        <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((ivaValue?number*equivalenciaImpuesto))?string['0.00']?number}>
-                                                        </#if>
-                                                        </#if>
-                                                    </#list>
+                                                    <#if ImpuestosPTraslados_baseDR?has_content>
+                                                        <#list ImpuestosPTraslados_baseDR?keys as keydr>
+                                                            <#if keydr == ivaRate>
+                                                                <#if montoimpuestosPago gt 0>
+                                                                <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number>
+                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : total_ratebase?number}>
+                                                            <#else>
+                                                            <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((ivaValue?number*equivalenciaImpuesto))?string['0.00']?number>
+                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : total_ratebase?number}>
+                                                            </#if>
+                                                            <#else>
+                                                                <#if montoimpuestosPago gt 0>
+                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
+                                                            <#else>
+                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((ivaValue?number*equivalenciaImpuesto))?string['0.00']?number}>
+                                                            </#if>
+                                                            </#if>
+                                                        </#list>
                                                     <#else>
                                                         <#if montoimpuestosPago gt 0>
                                                         <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
@@ -875,99 +877,112 @@
                                                         <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {ivaRate : ((ivaValue?number*equivalenciaImpuesto))?string['0.00']?number}>
                                                         </#if>
                                                     </#if>
-                                                <pago20:TrasladoDR <#if montoimpuestosPago gt 0>BaseDR="${((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']}"<#else>BaseDR="${((ivaValue?number*equivalenciaImpuesto))?string['0.00']}"</#if> ImpuestoDR="002" TipoFactorDR="Tasa" TasaOCuotaDR="${rateDR?string['0.000000']}" ImporteDR="${(impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00']}"/>
-                                            </#list>
-                                            <#if desglosa_ieps == true>
-                                                <#list impuestosPago.bases_ieps as iepsRate, iepsValue>
-                                                <#assign tasaCuota = iepsRate?number / 100>
-                                                    <#if ImpuestosPTraslados_base?has_content>
-                                                        <#assign "conteos" = 0>
-                                                        <#list ImpuestosPTraslados_base?keys as key>
-
-                                                            <#if key == iepsRate>
-                                                                <#assign "conteos" = 1>
-
-                                                                <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((iepsValue?number*equivalenciaImpuesto)?string['0.00'])?number>
-                                                                <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {iepsRate : total_rate?number}>
-
-                                                            </#if>
-                                                        </#list>
-                                                        <#if conteos == 0>
-                                                            <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {iepsRate : ((iepsValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
-                                                        </#if>
-
-                                                    <#else>
-                                                        <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {iepsRate : ((iepsValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
-                                                    </#if>
-                                                    <#if ImpuestosPTraslados_importe?has_content>
-                                                        <#assign "conteos" = 0>
-                                                        <#list ImpuestosPTraslados_importe?keys as key>
-                                                            <#if key == iepsRate>
-                                                                <#assign "conteos" = 1>
-                                                                <#assign "total_rate" = ImpuestosPTraslados_importe[key]?number + (((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number>
-                                                                <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {iepsRate : total_rate?number}>
-                                                            </#if>
-                                                        </#list>
-                                                        <#if conteos == 0>
-                                                            <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {iepsRate : (((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
-                                                        </#if>
-
-                                                    <#else>
-                                                        <#assign ImpuestosPTraslados_importe = ImpuestosPTraslados_importe + {iepsRate : (((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
-                                                    </#if>
-                                                    <#if ImpuestosPTraslados_tasa?has_content>
-                                                        <#assign "conteos" = 0>
-                                                        <#list ImpuestosPTraslados_tasa?keys as key>
-
-                                                            <#if key == iepsRate>
-                                                                <#assign "conteos" = 1>
-
-                                                                <#assign "ImpuestosPTraslados_tasa"= ImpuestosPTraslados_tasa + {iepsRate : "003"}>
-
-                                                            </#if>
-                                                        </#list>
-                                                        <#if conteos == 0>
-                                                            <#assign "ImpuestosPTraslados_tasa"= ImpuestosPTraslados_tasa + {iepsRate : "003"}>
-                                                        </#if>
-
-                                                    <#else>
-                                                        <#assign ImpuestosPTraslados_tasa = ImpuestosPTraslados_tasa + {iepsRate : "003"}>
-                                                    </#if>
-                                                    <#assign rateDR = iepsRate?number/100>
-                                                    <#assign montoimpuestosPago = ((impuestosPago.rates_ieps_data[iepsRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
-                                                    <#assign rateimpuestosPago = (iepsRate?number/100)?string["0.000000"]>
-
-                                                    <#if ImpuestosPTraslados_baseDR?has_content>
-                                                        <#list ImpuestosPTraslados_baseDR?keys as keydr>
-                                                            <#if keydr == iepsRate>
-                                                                <#if montoimpuestosPago gt 0>
-                                                                <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number>
-                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : total_ratebase?number}>
+                                                    <pago20:TrasladoDR
+                                                        <#if montoimpuestosPago gt 0>
+                                                            <#if rateimpuestosPago?number?string["0.00"] == "0.16">
+                                                                BaseDR="${((txnitem.amount)/1.16)?string["0.00"]}"
+                                                                <#assign suma_baseDR = suma_baseDR + (txnitem.amount)/1.16>
+                                                            <#elseif rateimpuestosPago?number?string["0.00"] == "0.08">
+                                                                BaseDR="${(txnitem.amount/1.08)}"
+                                                                <#assign suma_baseDR = suma_baseDR + (txnitem.amount)/1.08>
                                                             <#else>
-                                                            <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((iepsValue?number*equivalenciaImpuesto))?string['0.00']?number>
-                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : total_ratebase?number}>
+                                                                BaseDR="${((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']}"
                                                             </#if>
-                                                            <#else>
-                                                                <#if montoimpuestosPago gt 0>
-                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
-                                                            <#else>
-                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((iepsValue?number*equivalenciaImpuesto))?string['0.00']?number}>
-                                                            </#if>
-                                                            </#if>
-                                                        </#list>
                                                         <#else>
-                                                            <#if montoimpuestosPago gt 0>
-                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
-                                                            <#else>
-                                                            <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((iepsValue?number*equivalenciaImpuesto))?string['0.00']?number}>
-                                                            </#if>
+                                                            BaseDR="${((ivaValue?number*equivalenciaImpuesto))?string['0.00']}"
                                                         </#if>
-                                                    <pago20:TrasladoDR BaseDR="${((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']}" ImpuestoDR="003" TipoFactorDR="Tasa" TasaOCuotaDR="${rateDR?string['0.000000']}" ImporteDR="${(impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00']}"/>
+                                                        ImpuestoDR="002" TipoFactorDR="Tasa" TasaOCuotaDR="${rateDR?string['0.000000']}" ImporteDR="${(impuestosPago.rates_iva_data[ivaRate]?number*equivalenciaImpuesto)?string['0.00']}"/>
                                                 </#list>
-                                            </#if>
-                                        </pago20:TrasladosDR>
-                                    </#if>
+                                                <#if desglosa_ieps == true>
+                                                    <#list impuestosPago.bases_ieps as iepsRate, iepsValue>
+                                                        <#assign tasaCuota = iepsRate?number / 100>
+                                                        <#if ImpuestosPTraslados_base?has_content>
+                                                            <#assign "conteos" = 0>
+                                                            <#list ImpuestosPTraslados_base?keys as key>
 
+                                                                <#if key == iepsRate>
+                                                                    <#assign "conteos" = 1>
+
+                                                                    <#assign "total_rate" = ImpuestosPTraslados_base[key]?number + ((iepsValue?number*equivalenciaImpuesto)?string['0.00'])?number>
+                                                                    <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {iepsRate : total_rate?number}>
+
+                                                                </#if>
+                                                            </#list>
+                                                            <#if conteos == 0>
+                                                                <#assign "ImpuestosPTraslados_base"= ImpuestosPTraslados_base + {iepsRate : ((iepsValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
+                                                            </#if>
+
+                                                        <#else>
+                                                            <#assign ImpuestosPTraslados_base = ImpuestosPTraslados_base + {iepsRate : ((iepsValue?number*equivalenciaImpuesto)?string['0.00'])?number}>
+                                                        </#if>
+                                                        <#if ImpuestosPTraslados_importe?has_content>
+                                                            <#assign "conteos" = 0>
+                                                            <#list ImpuestosPTraslados_importe?keys as key>
+                                                                <#if key == iepsRate>
+                                                                    <#assign "conteos" = 1>
+                                                                    <#assign "total_rate" = ImpuestosPTraslados_importe[key]?number + (((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number>
+                                                                    <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {iepsRate : total_rate?number}>
+                                                                </#if>
+                                                            </#list>
+                                                            <#if conteos == 0>
+                                                                <#assign "ImpuestosPTraslados_importe"= ImpuestosPTraslados_importe + {iepsRate : (((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
+                                                            </#if>
+
+                                                        <#else>
+                                                            <#assign ImpuestosPTraslados_importe = ImpuestosPTraslados_importe + {iepsRate : (((impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00'])?number/tasaCuota)?string["0.00"]?number}>
+                                                        </#if>
+                                                        <#if ImpuestosPTraslados_tasa?has_content>
+                                                            <#assign "conteos" = 0>
+                                                            <#list ImpuestosPTraslados_tasa?keys as key>
+
+                                                                <#if key == iepsRate>
+                                                                    <#assign "conteos" = 1>
+
+                                                                    <#assign "ImpuestosPTraslados_tasa"= ImpuestosPTraslados_tasa + {iepsRate : "003"}>
+
+                                                                </#if>
+                                                            </#list>
+                                                            <#if conteos == 0>
+                                                                <#assign "ImpuestosPTraslados_tasa"= ImpuestosPTraslados_tasa + {iepsRate : "003"}>
+                                                            </#if>
+
+                                                        <#else>
+                                                            <#assign ImpuestosPTraslados_tasa = ImpuestosPTraslados_tasa + {iepsRate : "003"}>
+                                                        </#if>
+                                                        <#assign rateDR = iepsRate?number/100>
+                                                        <#assign montoimpuestosPago = ((impuestosPago.rates_ieps_data[iepsRate]?number)*equivalenciaImpuesto)?string['0.00']?number>
+                                                        <#assign rateimpuestosPago = (iepsRate?number/100)?string["0.000000"]>
+
+                                                        <#if ImpuestosPTraslados_baseDR?has_content>
+                                                            <#list ImpuestosPTraslados_baseDR?keys as keydr>
+                                                                <#if keydr == iepsRate>
+                                                                    <#if montoimpuestosPago gt 0>
+                                                                    <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number>
+                                                                <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : total_ratebase?number}>
+                                                                <#else>
+                                                                <#assign "total_ratebase" = ImpuestosPTraslados_baseDR[keydr]?number + ((iepsValue?number*equivalenciaImpuesto))?string['0.00']?number>
+                                                                <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : total_ratebase?number}>
+                                                                </#if>
+                                                                <#else>
+                                                                    <#if montoimpuestosPago gt 0>
+                                                                <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
+                                                                <#else>
+                                                                <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((iepsValue?number*equivalenciaImpuesto))?string['0.00']?number}>
+                                                                </#if>
+                                                                </#if>
+                                                            </#list>
+                                                            <#else>
+                                                                <#if montoimpuestosPago gt 0>
+                                                                <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']?number}>
+                                                                <#else>
+                                                                <#assign "ImpuestosPTraslados_baseDR" = ImpuestosPTraslados_baseDR + {iepsRate : ((iepsValue?number*equivalenciaImpuesto))?string['0.00']?number}>
+                                                                </#if>
+                                                            </#if>
+                                                        <pago20:TrasladoDR BaseDR="${((montoimpuestosPago/rateimpuestosPago?number))?string['0.00']}" ImpuestoDR="003" TipoFactorDR="Tasa" TasaOCuotaDR="${rateDR?string['0.000000']}" ImporteDR="${(impuestosPago.rates_ieps_data[iepsRate]?number*equivalenciaImpuesto)?string['0.00']}"/>
+                                                    </#list>
+                                                </#if>
+                                            </pago20:TrasladosDR>
+                                        </#if>
                                     </pago20:ImpuestosDR>
                                     </#if>
                                 </#if>
@@ -1026,7 +1041,11 @@
                                             <#elseif transaction.custbody_efx_fe_moneda?has_content == false && transaction.currencysymbol == "USD">
                                                 <pago20:TrasladoP BaseP="${basePmonto?string['0.00']}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string['0.000000']}" ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string['0.00'])?number*tasaCuota?number)/tipocambioCustom)?string['0.00']}"/>
                                             <#else>
-                                                <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${ImportePIVA16}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
+                                                <#if suma_baseDR gt 0>
+                                                    <pago20:TrasladoP BaseP="${suma_baseDR?string("##0.00;; roundingMode=down")}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${ImportePIVA16}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
+                                                <#else>
+                                                    <pago20:TrasladoP BaseP="${basePmonto?string["0.00"]}" ImpuestoP="${impuestoPType}" TipoFactorP="Tasa" TasaOCuotaP="${tasaCuota?string["0.000000"]}" <#if ImportePIVA16?number gte 0 && tasaCuota?string["0.000000"] == "0.160000">ImporteP="${ImportePIVA16}"<#elseif ImportePIVA8?number gt 0 && tasaCuota?string["0.000000"] == "0.080000">ImporteP="${ImportePIVA8}"<#else><#if transaction.custbody_efx_fe_moneda.symbol == "MXN" && transaction.currencysymbol == "USD">ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"<#else>ImporteP="${(((ImpuestosPTraslados_importe[baseTkey]?string["0.00"])?number*tasaCuota?number)/tipocambioCustom)?string["0.00"]}"</#if></#if>/>
+                                                </#if>
                                             </#if>
                                         </#if>
                                     <#else>

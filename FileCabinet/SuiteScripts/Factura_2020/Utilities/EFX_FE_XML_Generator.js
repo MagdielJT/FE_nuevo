@@ -78,7 +78,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
             log.audit({ title: 'tipo_transaccion', details: tipo_transaccion });
             if (tipo_transaccion == 'customsale_efx_fe_factura_global') {
                 tipo_transaccion_gbl = tipo_transaccion;
-                tipo_transaccion = 'invoice';
+                tipo_transaccion = 'customsale_efx_fe_factura_global';
             } else if (tipo_transaccion == 'cashsale' && tipo_cp) {
                 tipo_transaccion_cp = tipo_transaccion;
                 tipo_transaccion = 'itemfulfillment';
@@ -252,7 +252,6 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                 filtros_Array_pac.push(['custrecord_mx_pacinfo_subsidiary', search.Operator.ANYOF, subsidiaria_id]);
                             }
 
-                            log.audit({title: 'filtros para el registro de conexion con el PAC', details: filtros_Array_pac});
                             var search_pacinfo = search.create({
                                 type: 'customrecord_mx_pac_connect_info',
                                 filters: filtros_Array_pac,
@@ -284,7 +283,7 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
 
 
 
-                            if (tipo_transaccion == 'invoice') {
+                            if (tipo_transaccion == 'invoice' || tipo_transaccion == 'customsale_efx_fe_factura_global') {
                                 log.audit({ title: 'resultado', details: resultado });
                                 template_invoice_pac = resultado[0].getValue({ name: 'custrecord_mx_invoice_pdf_tmpl' });
                                 log.audit({ title: 'template_invoice_pac', details: template_invoice_pac });
@@ -327,6 +326,8 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                             } else {
                                 var cfdiversionCustomer = 2;
                             }
+
+
 
                             log.audit({ title: 'recordobj', details: recordobj });
 
@@ -794,6 +795,29 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                                     objRespuesta.dataXML = objPDF;
                                     log.audit({ title: 'objPDF', details: objPDF });
 
+                                    // datos necesarios para la consulta de estatus de facturas
+                                    // mandar a llamar una funcion que parse los datos necesarios del objeto de datos de timbrado
+                                    /* var monto_total_tran = record.getValue({fieldId:'total'});
+                                    log.audit({title: 'monto total de la transaccion', details: monto_total_tran}); */
+                                    var obj_data ={}
+                                    var sello_cfd_completo = objRespuesta.dataXML.atributos.Sello;
+                                    var caracteres = 8;
+                                    var sello = sello_cfd_completo.substring(sello_cfd_completo.length - caracteres);
+                                    var total_tran = objRespuesta.dataXML.atributos.Total;
+                                    log.audit({title: 'objeto de datos del XML: ', details: {sello: sello, total: total_tran}});
+                                    log.audit({title: 'tipo_transaccion ~ 807', details: tipo_transaccion});
+                                    log.audit({title: 'id_transaccion ~ 808', details: id_transaccion});
+                                    obj_data = {
+                                        sello: sello,
+                                        total_xml: total_tran
+                                    }
+                                    record.submitFields({
+                                        type: tipo_transaccion,
+                                        id: id_transaccion,
+                                        values: {
+                                            custbody_fb_tp_xml_data	: JSON.stringify(obj_data)
+                                        },
+                                    });
                                     var nombreXml = '';
                                     if (tipo_cp) {
                                         var fileXMLTimbrado = file.create({
@@ -2130,13 +2154,20 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 };
 
 
+                //? se manda el objeto de customDatasources a la funcion XML_DATA para poder parsear los datos de timbrado del XML
+                // pasarle el datasource mas el id de la transaccion y el tipo para poder hacer un submitfields
+                /* var sello_cfd = datasource.certData.custbody_mx_cfdi_signature;
+                log.audit({title: 'datos para la funcion', details: {sello_cfd: sello_cfd, tranid: tran_tranid, tipo: tipo_transaccion}});
+                XML_DATA(sello_cfd, tran_tranid, tipo_transaccion); */
+
                 /* var fileresult = file.create({
                     name: 'Results.json',
                     fileType: file.Type.PLAINTEXT,
                     contents: JSON.stringify(datasource),
-                    folder: idFolder
+                    folder: 11366
                 });
-                fileresult.save();*/
+                var id_archivo_txt = fileresult.save();
+                log.audit({title: 'id_archivo', details: id_archivo_txt});*/
 
                 renderer.addCustomDataSource(datasource);
 
@@ -2530,13 +2561,13 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
             return dataReturn;
         }
 
+
         function getTokenSW(user, pass, url) {
             var dataReturn = {success: false, error: '', token: ''}
             try {
                 var urlToken = url + '/security/authenticate';
                 log.debug({title:'getTokenDat', details:{url: url, user: user, pass: pass}});
                 // pass = 'AAA111';
-                // pass = 'mQ*wP^e52K34';
                 pass = 'mQ*wP^e52K34';
                 var headers = {
                     "user": user,
@@ -2814,6 +2845,15 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                     }
                 };
             }
+           /*  log.audit({title: 'objRespuesta ~ 2827', details: objRespuesta.certData});
+            var XML_data = file.create({
+                name: 'datos_prueba.txt',
+                fileType: file.Type.PLAINTEXT,
+                contents: objRespuesta.certData,
+                folder: 11366
+            });
+            var id_archivo_test = XML_data.save();
+            log.audit({title: '2834 ~ archivo de prueba', details: id_archivo_test}); */
             log.audit({title: 'objRespuesta_return', details: objRespuesta});
             return objRespuesta;
         }

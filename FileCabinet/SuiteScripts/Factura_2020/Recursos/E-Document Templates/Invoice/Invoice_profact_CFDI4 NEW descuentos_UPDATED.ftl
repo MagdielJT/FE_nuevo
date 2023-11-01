@@ -267,14 +267,17 @@
             <#assign subtotal_xml = desglose_cab.subtotal?string["0.00"]>
             <#if desglosa_ieps == true>
                 SubTotal="${desglose_cab.subtotal?number?string["0.00"]}"
-                <#assign total_xml = (desglose_cab.total?number-totallocalesimp)?string["0.00"]>
+                <#assign total_xml = (desglose_cab.subtotal?number-totallocalesimp)>
+                <#assign total_cabecera = desglose_cab.subtotal?number + desglose_cab.iva_total?number>
+                <#if desglose_cab.descuentoConImpuesto gt 0>
+                    <#assign total_cabecera = total_cabecera - desglose_cab.descuentoConImpuesto>
+                </#if>
             <#else>
                 <#assign sub_conieps = desglose_cab.subtotal?number - desglose_cab.descuentoSinImpuesto?number + total_ieps>
                 <#assign total_xml = desglose_cab.total?number>
                 SubTotal="${((total_xml - total_ivasubtotal)+total_desc_cabecera)?string["0.00"]}"
             </#if>
-
-            Total="${total_xml}"
+            Total="${desglose_cab.total}"
         </#if>
 
 
@@ -403,29 +406,55 @@ Descuento="${total_desc_cabecera}">
             <#if item.item != articulo_timbrado>
                 <#if item.itemtype != "Group" && item.itemtype != "EndGroup" && item.itemtype != "Discount" && item.itemtype != "Description" && customItem.quantity?number gt 0>
                     <cfdi:Concepto
-                    <#if customItem.type == "Markup">
+                        <#if customItem.type == "Markup">
                             Cantidad="1.000000"
-                            <#else>
+                        <#else>
                             Cantidad="${item.quantity?string["0.000000"]}"
-                            </#if>
-                            <#if ComercioE == true>
-                                <#if item.custcol_efx_fe_upc_code?has_content>
-                                    NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                <#else>
-                                    NoIdentificacion="${item.item}"
-                                </#if>
-                            </#if>
+                        </#if>
+                        <#if ComercioE == true>
                             <#if item.custcol_efx_fe_upc_code?has_content>
-                                <#if ComercioE == false>
-                                    NoIdentificacion="${item.custcol_efx_fe_upc_code}"
-                                </#if>
+                                NoIdentificacion="${item.custcol_efx_fe_upc_code}"
+                            <#else>
+                                NoIdentificacion="${item.item}"
                             </#if>
+                        </#if>
+                        <#if item.custcol_efx_fe_upc_code?has_content>
+                            <#if ComercioE == false>
+                                NoIdentificacion="${item.custcol_efx_fe_upc_code}"
+                            </#if>
+                        </#if>
 
-                            ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"")!""}
-                            ${getAttrPair("ClaveUnidad",itemSatUnitCode)!""}
-                            Descripcion=<#outputformat "XML">"${item.description?replace("<br />","")}"</#outputformat>
-                            <#assign impdesglosaieps = 0>
-                            <#if desglosa_ieps == true>
+                        ${getAttrPair("ClaveProdServ",(itemSatCodes.itemCode)!"")!""}
+                        ${getAttrPair("ClaveUnidad",itemSatUnitCode)!""}
+                        Descripcion=<#outputformat "XML">"${item.description?replace("<br />","")}"</#outputformat>
+                        <#assign impdesglosaieps = 0>
+                        <#if desglosa_ieps == true>
+                            Importe="${customItem.amount?number?string["0.00"]}"
+                            <#if customItem.rate != "">
+                                ValorUnitario="${customItem.rate?number?string["0.00000"]}"
+                            <#else>
+                                <#assign rate_faltante = customItem.amount?number / item.quantity?number>
+                                ValorUnitario="${rate_faltante?string["0.00000"]}"
+                            </#if>
+                        <#else>
+                            <#if desglose.ieps.name?has_content>
+                                <#assign imp_ieps_linea = desglose.ieps.importe?number>
+                                <#assign imp_linea_sindesglose =  customItem.amount?number + imp_ieps_linea>
+                                <#assign impdesglosaieps = imp_linea_sindesglose>
+                                <#if desglosa_ieps == true>
+                                    <#assign valu_linea_sindesglose =  desglose.iva.base_importe?number/item.quantity>
+                                    Importe="${desglose.iva.base_importe?number?string["0.00"]}"
+                                <#else>
+                                    <#assign valu_linea_sindesglose =  imp_linea_sindesglose/item.quantity>
+                                    Importe="${imp_linea_sindesglose?string["0.00"]}"
+                                </#if>
+                                <#if valu_linea_sindesglose?has_content>
+                                    ValorUnitario="${valu_linea_sindesglose?string["0.00000"]}"
+                                <#else>
+                                    <#assign rate_faltante = imp_linea_sindesglose / item.quantity>
+                                    ValorUnitario="${rate_faltante?string["0.00000"]}"
+                                </#if>
+                            <#else>
                                 Importe="${customItem.amount?number?string["0.00"]}"
                                 <#if customItem.rate != "">
                                     ValorUnitario="${customItem.rate?number?string["0.00000"]}"
@@ -433,42 +462,15 @@ Descuento="${total_desc_cabecera}">
                                     <#assign rate_faltante = customItem.amount?number / item.quantity?number>
                                     ValorUnitario="${rate_faltante?string["0.00000"]}"
                                 </#if>
-                            <#else>
-                                <#if desglose.ieps.name?has_content>
-                                    <#assign imp_ieps_linea = desglose.ieps.importe?number>
-                                    <#assign imp_linea_sindesglose =  customItem.amount?number + imp_ieps_linea>
-                                    <#assign impdesglosaieps = imp_linea_sindesglose>
-                                    <#if desglosa_ieps == true>
-                                        <#assign valu_linea_sindesglose =  desglose.iva.base_importe?number/item.quantity>
-                                        Importe="${desglose.iva.base_importe?number?string["0.00"]}"
-                                    <#else>
-                                        <#assign valu_linea_sindesglose =  imp_linea_sindesglose/item.quantity>
-                                        Importe="${imp_linea_sindesglose?string["0.00"]}"
-                                    </#if>
-                                    <#if valu_linea_sindesglose?has_content>
-                                        ValorUnitario="${valu_linea_sindesglose?string["0.00000"]}"
-                                    <#else>
-                                        <#assign rate_faltante = imp_linea_sindesglose / item.quantity>
-                                        ValorUnitario="${rate_faltante?string["0.00000"]}"
-                                    </#if>
-                                <#else>
-                                    Importe="${customItem.amount?number?string["0.00"]}"
-                                    <#if customItem.rate != "">
-                                        ValorUnitario="${customItem.rate?number?string["0.00000"]}"
-                                    <#else>
-                                        <#assign rate_faltante = customItem.amount?number / item.quantity?number>
-                                        ValorUnitario="${rate_faltante?string["0.00000"]}"
-                                    </#if>
-                                </#if>
                             </#if>
-                            <#assign json_descuentos = desglose.descuentoSinImpuesto>
-                            <#if json_descuentos?number gt 0>
+                        </#if>
+                        <#assign json_descuentos = desglose.descuentoSinImpuesto>
+                        <#if json_descuentos?number gt 0>
                             <#if desglosa_ieps == false && desglose.iva.name?has_content && desglose.ieps.name?has_content && desglose.iva.rate_div?number==0>
                                 Descuento="${desglose.descuentoConImpuesto?number?string["0.00"]}"
                             <#else>
                                 Descuento="${desglose.descuentoSinImpuesto?number?string["0.00"]}"
                             </#if>
-
                             ObjetoImp="${objimp}">
                         <#else>
 
@@ -1085,7 +1087,14 @@ Descuento="${total_desc_cabecera}">
                     <#if CEPropNumreg?has_content && CEpropResidenciaF?has_content>
                         <cce11:Propietario NumRegIdTrib="${CEPropNumreg}" ResidenciaFiscal="${CEpropResidenciaF}"/>
                     </#if>
-                    <cce11:Receptor NumRegIdTrib="${CEreceptorNumR}">
+                    <cce11:Receptor
+                        <#if CEreceptorNumR?has_content>
+                            NumRegIdTrib="${CEreceptorNumR}">
+                        <#elseif transaction.custbody_efx_fe_ce_recep_num_reg?has_content>
+                            NumRegIdTrib="${transaction.custbody_efx_fe_ce_recep_num_reg}">
+                        <#elseif transaction.customer.custentity_efx_fe_numregidtrib?has_content>
+                            NumRegIdTrib="${transaction.customer.custentity_efx_fe_numregidtrib}">
+                        </#if>
                         <cce11:Domicilio Calle="${json_direccion.receptor.Calle}"
                                 <#if json_direccion.receptor.NumeroExterior?has_content>
                                     NumeroExterior="${json_direccion.receptor.NumeroExterior}"

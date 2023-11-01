@@ -484,12 +484,6 @@
             <td colspan="3" style="font-size:9px;">${record.otherrefnum}</td>
 
         </tr>
-        <!--<tr>
-<th colspan= "18" style="width: 100%;">Comentarios</th>
-</tr>
-<tr>
-<td colspan= "18" style="width: 100%; font-size:10px;">${record.memo}</td>
-</tr>-->
     </table>
 
     <#assign "line_discount"= 0>
@@ -600,7 +594,7 @@
                                                                     style="font-size: 5pt; padding-top: 0px; padding-bottom: 0px;">${traslado_imp.atributos.Base?number?string[",##0.00"]}</td>
                                                                 <td align="left" colspan="2"
                                                                     style="font-size: 5pt;padding-top: 0px; padding-bottom: 0px;">${traslado_imp.atributos.Impuesto}</td>
-                                                                    <#assign tasa_line = traslado_imp.atributos.TasaOCuota?number * 100>                                              
+                                                                    <#assign tasa_line = traslado_imp.atributos.TasaOCuota?number * 100>
                                                                 <#if traslado_imp.atributos.TasaOCuota?has_content>
                                                                 <td align="left" colspan="4"
                                                                     style="font-size: 5pt;padding-top: 0px; padding-bottom: 0px;">${tasa_line?string[",##0.00"]}
@@ -734,7 +728,7 @@
                             style="border-left: 1px; border-color: #e3e3e3;font-size: 5pt; padding-top: 1px; padding-left: 0px; padding-right: 0px;">${Conceptos.atributos.Importe?number?string[",##0.00"]}</td>
                     </tr>
                     <#if record.custbody_efx_fe_complemento_educativo?has_content && record.custbody_efx_fe_complemento_educativo == true && Conceptos.ComplementoConcepto.instEducativas.atributos.nombreAlumno?has_content>
-                        <tr>                
+                        <tr>
                             <td align="left" colspan="13"
                                 style="font-size: 5pt; vertical-align: middle; padding: 5px 6px 3px; background-color: #e3e3e3; color: #161616;"><b>Nombre del Alumno</b><br/>${Conceptos.ComplementoConcepto.instEducativas.atributos.nombreAlumno}
                             </td>
@@ -747,7 +741,7 @@
                             <td align="left" colspan="13"
                                 style="font-size: 5pt; vertical-align: middle; padding: 5px 6px 3px; background-color: #e3e3e3; color: #161616;"><b>AUTRVOE</b><br/>${Conceptos.ComplementoConcepto.instEducativas.atributos.autRVOE}
                             </td>
-                        </tr>                      
+                        </tr>
                     </#if>
 
                 </#list>
@@ -971,7 +965,7 @@
                         style="border-left: 1px; border-color: #e3e3e3;font-size: 5pt; padding-top: 1px; padding-left: 0px; padding-right: 0px;">${dataXML.Conceptos.Concepto.atributos.Importe?number?string[",##0.00"]}</td>
                 </tr>
                 <#if record.custbody_efx_fe_complemento_educativo?has_content && record.custbody_efx_fe_complemento_educativo == true && dataXML.Conceptos.Concepto.ComplementoConcepto.instEducativas.atributos.nombreAlumno?has_content>
-                        <tr>                
+                        <tr>
                             <td align="left" colspan="13"
                                 style="font-size: 5pt; vertical-align: middle; padding: 5px 6px 3px; background-color: #e3e3e3; color: #161616;"><b>Nombre del Alumno</b><br/>${dataXML.Conceptos.Concepto.ComplementoConcepto.instEducativas.atributos.nombreAlumno}
                             </td>
@@ -984,7 +978,7 @@
                             <td align="left" colspan="13"
                                 style="font-size: 5pt; vertical-align: middle; padding: 5px 6px 3px; background-color: #e3e3e3; color: #161616;"><b>AUTRVOE</b><br/>${dataXML.Conceptos.Concepto.ComplementoConcepto.instEducativas.atributos.autRVOE}
                             </td>
-                        </tr> 
+                        </tr>
                     </#if>
             </#if>
         </table>
@@ -1124,7 +1118,7 @@
                                                 </#if>
 
                                                 <#if desglose_exento?has_content>
-                                                
+
                                                     <tr>
 
                                                         <td align="left" colspan="4"
@@ -1139,9 +1133,9 @@
                                                         <td align="left" colspan="4"
                                                             style="font-size: 5pt;padding-top: 0px; padding-bottom: 0px;"></td>
                                                     </tr>
-                                                
+
                                                 </#if>
-                                                
+
 
                                             </table>
 
@@ -1162,7 +1156,7 @@
                                                 style="font-size: 4pt; padding-top: 1px;  padding-bottom: 1px; border-left: 1px; border-color: #e3e3e3;"><b>Objeto de impuesto:</b>
                                             </td>
                                             <#--  <td colspan="13" style="font-size: 4pt; padding-top: 1px;  padding-bottom: 1px;">${custcol_mx_txn_line_sat_tax_object}</td>  -->
-                                            
+
                                             <td colspan="13" style="font-size: 4pt; padding-top: 1px;  padding-bottom: 1px;">${item.custcol_mx_txn_line_sat_tax_object}</td>
                                         </tr>
                                     </#if>
@@ -1208,7 +1202,7 @@
                     </tr>
 
                     <#if record.custbody_efx_fe_complemento_educativo?has_content && record.custbody_efx_fe_complemento_educativo == true && item.custcol_csc_nombrealumno?has_content>
-                        <tr>                
+                        <tr>
                             <td align="left" colspan="14"
                                 style="font-size: 5pt; vertical-align: middle; padding: 5px 6px 3px; background-color: #e3e3e3; color: #161616;"><b>Nombre del Alumno</b><br/>${item.custcol_csc_nombrealumno}
                             </td>
@@ -1221,7 +1215,7 @@
                             <td align="left" colspan="14"
                                 style="font-size: 5pt; vertical-align: middle; padding: 5px 6px 3px; background-color: #e3e3e3; color: #161616;"><b>AUTRVOE</b><br/>${item.custcol_csc_rvoeitem}
                             </td>
-                        </tr> 
+                        </tr>
                     </#if>
 
                 </#if>
@@ -1279,7 +1273,7 @@
                             style="border-top: 0px; border-bottom: 1px; border-color: #e3e3e3; font-size: 7pt;border-right: 0px;">
                             <strong>Cantidad con letra:</strong> ${record.custbody_efx_fe_total_text}</td>
                     </tr>
-                    
+
                     <tr>
                         <td align="left"
                             style="border-right: 1px; border-bottom: 1px; border-color: #e3e3e3; font-size: 7pt;">
@@ -1542,7 +1536,7 @@
             <#if dataXML?has_content>
             <#if dataXML.atributos.LugarExpedicion?has_content>
                     <td colspan="2" style="font-size: 7pt;">${dataXML.atributos.LugarExpedicion}</td>
-                
+
                 </#if>
                 <#else>
                     <td colspan="2" style="font-size: 7pt;">${record.subsidiary.zip}</td>
@@ -1740,14 +1734,14 @@
 <#if record.custbody_efx_fe_donativo == true>
 <table class="tablascompletas" style="margin-top:5px;">
             <tr>
-                <td colspan="9" class="cabecera"><b>Complemento Donativo</b></td>                
+                <td colspan="9" class="cabecera"><b>Complemento Donativo</b></td>
             </tr>
-            <tr>            
+            <tr>
                 <td colspan="9" class="cuerposnoarticulos">
                 <b>Número de Autorización: </b>${record.custbody_efx_fe_cd_no_autorizacion}<br/>
                 <b>Fecha de Autorización: </b>${record.custbody_efx_fe_cd_fecha_autorizacion}<br/>
                 <b>Leyenda: </b>${record.custbody_efx_fe_cd_fe_leyenda}
-                </td>            
+                </td>
             </tr>
         </table>
         </#if>
@@ -1792,18 +1786,18 @@
                     <td colspan="3" style="font-weight: bold;border-top:1px;border-bottom:1px;border-color: #e3e3e3;">UUID</td>
                     </tr>
                     <#list record.recmachcustrecord_mx_rcs_orig_trans as cfdiRelType>
-                    
+
                         <tr style="border-left: 1px;border-right: 1px; border-color: #e3e3e3;font-size:90%; padding-left: 12px;font-size: 6pt;">
                             <td colspan="2" style="font-weight: bold;border-bottom:1px;border-right:1px;border-color: #e3e3e3;">
                                 ${cfdiRelType.custrecord_mx_rcs_rel_cfdi}
                             </td>
-                        
-                        
+
+
                             <td colspan="3" style="font-weight: bold;border-bottom:1px;border-right:1px;border-color: #e3e3e3;">
                                 ${cfdiRelType.custrecord_mx_rcs_rel_type}
                             </td>
-                        
-                        
+
+
                             <td colspan="3" style="font-weight: bold;border-bottom:1px;border-color: #e3e3e3;">
                                 ${cfdiRelType.custrecord_mx_rcs_uuid}
                             </td>

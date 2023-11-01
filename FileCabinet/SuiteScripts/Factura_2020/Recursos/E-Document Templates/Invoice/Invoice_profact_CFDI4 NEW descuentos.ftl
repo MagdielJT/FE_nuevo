@@ -71,7 +71,7 @@
             xmlns:cce11="http://www.sat.gob.mx/ComercioExterior11"
         </#if>
         xmlns:cfdi="http://www.sat.gob.mx/cfd/4"
-        <#if ImpLocal == true || ImpLocalobj?has_content>
+        <#if ImpLocal != "F" && ImpLocalobj?has_content>
             xmlns:implocal="http://www.sat.gob.mx/implocal"
         </#if>
         <#if CPorte == true>
@@ -126,7 +126,7 @@
                 <#assign "CEreceptorResidF" = transaction.custbody_efx_fe_ce_rec_residenciaf>
             </#if>
             <#assign xsischemalocation_CE = " http://www.sat.gob.mx/ComercioExterior11 http://www.sat.gob.mx/sitio_internet/cfd/ComercioExterior11/ComercioExterior11.xsd">
-        <#elseif ImpLocal == true || ImpLocalobj?has_content>
+        <#elseif ImpLocal != "F" && ImpLocalobj?has_content>
             <#assign xsischemalocation_imploc = " http://www.sat.gob.mx/implocal http://www.sat.gob.mx/sitio_internet/cfd/implocal/implocal.xsd">
         </#if>
 
@@ -978,7 +978,7 @@ Descuento="${total_desc_cabecera}">
             </#if>
         </#if>
 
-        <#if ImpLocal == true>
+        <#if ImpLocal != "F">
             <cfdi:Complemento>
                 <#if desglose_cab.local_total?number gt 0>
                 <implocal:ImpuestosLocales version="1.0" TotaldeRetenciones="0.00" TotaldeTraslados="${desglose_cab.local_total?number?string["0.00"]}">
@@ -1000,7 +1000,7 @@ Descuento="${total_desc_cabecera}">
             </cfdi:Complemento>
         </#if>
 
-        <#if ImpLocalobj?has_content>
+        <#if ImpLocalobj?has_content && ImpLocal != "F">
             <cfdi:Complemento>
                 <#if transaction.custbody_efx_fe_total_impuesto_local?has_content>
                     <implocal:ImpuestosLocales version="1.0" TotaldeRetenciones="${transaction.custbody_efx_fe_total_impuesto_local?string["0.00"]}" TotaldeTraslados="0.00">

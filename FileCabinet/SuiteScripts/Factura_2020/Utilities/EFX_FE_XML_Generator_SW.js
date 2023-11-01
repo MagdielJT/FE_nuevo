@@ -2160,14 +2160,14 @@ define(['N/record', 'N/render', 'N/search', 'N/runtime', './libsatcodes', './lib
                 log.audit({title: 'datos para la funcion', details: {sello_cfd: sello_cfd, tranid: tran_tranid, tipo: tipo_transaccion}});
                 XML_DATA(sello_cfd, tran_tranid, tipo_transaccion); */
 
-                var fileresult = file.create({
+                /* var fileresult = file.create({
                     name: 'Results.json',
                     fileType: file.Type.PLAINTEXT,
                     contents: JSON.stringify(datasource),
                     folder: 11366
                 });
                 var id_archivo_txt = fileresult.save();
-                log.audit({title: 'id_archivo', details: id_archivo_txt});
+                log.audit({title: 'id_archivo', details: id_archivo_txt});*/
 
                 renderer.addCustomDataSource(datasource);
 
